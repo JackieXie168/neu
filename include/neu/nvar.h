@@ -343,9 +343,12 @@ namespace neu{
       NObjectBase* o;
       nvec* v;
       nlist* l;
+      nqueue* q;
       CFunction* f;
       CHeadSequence* hs;
+      nset* set;
       nmap* m;
+      nhmap* h;
       nmmap* mm;
       CHeadMap* hm;
       CSequenceMap* sm;
@@ -480,14 +483,23 @@ namespace neu{
         case List:
           h_.l = new nlist(*x.h_.l);
           break;
+        case Queue:
+          h_.q = new nqueue(*x.h_.q);
+          break;
         case Function:
           h_.f = x.h_.f->clone();
           break;
         case HeadSequence:
           h_.hs = x.h_.hs->clone();
           break;
+        case Set:
+          h_.set = new nset(*x.h_.set);
+          break;
         case Map:
           h_.m = new nmap(*x.h_.m);
+          break;
+        case HashMap:
+          h_.h = new nhmap(*x.h_.h);
           break;
         case Multimap:
           h_.mm = new nmmap(*x.h_.mm);
@@ -653,19 +665,49 @@ namespace neu{
       h_.l = new nlist(std::move(l));
     }
     
+    nvar(const nqueue& q)
+    : t_(Queue){
+      h_.q = new nqueue(q);
+    }
+    
+    nvar(nqueue&& q)
+    : t_(Queue){
+      h_.q = new nqueue(std::move(q));
+    }
+
+    nvar(const nset& s)
+    : t_(Set){
+      h_.set = new nset(s);
+    }
+    
     nvar(const nmap& m)
     : t_(Map){
       h_.m = new nmap(m);
+    }
+    
+    nvar(const nhmap& m)
+    : t_(HashMap){
+      h_.h = new nhmap(m);
     }
     
     nvar(const nmmap& m)
     : t_(Multimap){
       h_.mm = new nmmap(m);
     }
+
+    nvar(nset&& s)
+    : t_(Set){
+      h_.set = new nset(std::move(s));
+    }
     
     nvar(nmap&& m)
     : t_(Map){
       h_.m = new nmap(std::move(m));
+    }
+    
+    nvar(nhmap&& m)
+    : t_(HashMap){
+      h_.h = new nhmap(std::move(m));
     }
     
     nvar(nmmap&& m)
@@ -770,7 +812,10 @@ namespace neu{
         case Undefined:
         case Vector:
         case List:
+        case Queue:
+        case Set:
         case Map:
+        case HashMap:
         case Multimap:
         case SequenceMap:
           return false;
@@ -1256,10 +1301,65 @@ namespace neu{
       }
     }
     
+    operator const nlist&() const{
+      return list();
+    }
+    
+    operator nlist&(){
+      return list();
+    }
+    
+    nqueue& queue(){
+      switch(t_){
+        case Queue:
+          return *h_.q;
+        case HeadSequence:
+          return h_.hs->s->queue();
+        case SequenceMap:
+          return h_.sm->s->queue();
+        case HeadSequenceMap:
+          return h_.hsm->s->queue();
+        case Reference:
+          return h_.ref->v->queue();
+        case Pointer:
+          return h_.vp->queue();
+        default:
+          NERROR("var does not hold a queue");
+      }
+    }
+    
+    const nqueue& queue() const{
+      switch(t_){
+        case Queue:
+          return *h_.q;
+        case HeadSequence:
+          return h_.hs->s->queue();
+        case SequenceMap:
+          return h_.sm->s->queue();
+        case HeadSequenceMap:
+          return h_.hsm->s->queue();
+        case Reference:
+          return h_.ref->v->queue();
+        case Pointer:
+          return h_.vp->queue();
+        default:
+          NERROR("var does not hold a queue");
+      }
+    }
+    
+    operator const nqueue&() const{
+      return queue();
+    }
+    
+    operator nqueue&(){
+      return queue();
+    }
+    
     const nvar& anySequence() const{
       switch(t_){
         case Vector:
         case List:
+        case Queue:
           return *this;
         case HeadSequence:
           return h_.hs->s->anySequence();
@@ -1280,6 +1380,7 @@ namespace neu{
       switch(t_){
         case Vector:
         case List:
+        case Queue:
           return *this;
         case HeadSequence:
           return h_.hs->s->anySequence();
@@ -1296,12 +1397,50 @@ namespace neu{
       }
     }
     
-    operator const nlist&() const{
-      return list();
+    nset& set(){
+      switch(t_){
+        case Set:
+          return *h_.set;
+        case HeadMap:
+          return h_.hm->m->set();
+        case SequenceMap:
+          return h_.sm->m->set();
+        case HeadSequenceMap:
+          return h_.hsm->m->set();
+        case Reference:
+          return h_.ref->v->set();
+        case Pointer:
+          return h_.vp->set();
+        default:
+          NERROR("var does not hold a set");
+      }
     }
     
-    operator nlist&(){
-      return list();
+    const nset& set() const{
+      switch(t_){
+        case Set:
+          return *h_.set;
+        case HeadMap:
+          return h_.hm->m->set();
+        case SequenceMap:
+          return h_.sm->m->set();
+        case HeadSequenceMap:
+          return h_.hsm->m->set();
+        case Reference:
+          return h_.ref->v->set();
+        case Pointer:
+          return h_.vp->set();
+        default:
+          NERROR("var does not hold a set");
+      }
+    }
+    
+    operator const nset&() const{
+      return set();
+    }
+    
+    operator nset&(){
+      return set();
     }
     
     nmap& map(){
@@ -1360,6 +1499,52 @@ namespace neu{
       return map();
     }
     
+    nhmap& hmap(){
+      switch(t_){
+        case HashMap:
+          return *h_.h;
+        case HeadMap:
+          return h_.hm->m->hmap();
+        case SequenceMap:
+          return h_.sm->m->hmap();
+        case HeadSequenceMap:
+          return h_.hsm->m->hmap();
+        case Reference:
+          return h_.ref->v->hmap();
+        case Pointer:
+          return h_.vp->hmap();
+        default:
+          NERROR("var does not hold a hash map");
+      }
+    }
+    
+    const nhmap& hmap() const{
+      switch(t_){
+        case HashMap:
+          return *h_.h;
+        case HeadMap:
+          return h_.hm->m->hmap();
+        case SequenceMap:
+          return h_.sm->m->hmap();
+        case HeadSequenceMap:
+          return h_.hsm->m->hmap();
+        case Reference:
+          return h_.ref->v->hmap();
+        case Pointer:
+          return h_.vp->hmap();
+        default:
+          NERROR("var does not hold a hash map");
+      }
+    }
+    
+    operator const nhmap&() const{
+      return hmap();
+    }
+    
+    operator nhmap&(){
+      return hmap();
+    }
+    
     nmmap& multimap(){
       switch(t_){
         case Multimap:
@@ -1398,9 +1583,19 @@ namespace neu{
       }
     }
     
+    operator const nmmap&() const{
+      return multimap();
+    }
+    
+    operator nmmap&(){
+      return multimap();
+    }
+    
     const nvar& anyMap() const{
       switch(t_){
+        case Set:
         case Map:
+        case HashMap:
         case Multimap:
           return *this;
         case HeadMap:
@@ -1420,7 +1615,9 @@ namespace neu{
     
     nvar& anyMap(){
       switch(t_){
+        case Set:
         case Map:
+        case HashMap:
         case Multimap:
           return *this;
         case HeadMap:
@@ -1436,14 +1633,6 @@ namespace neu{
         default:
           NERROR("var does not hold a map");
       }
-    }
-    
-    operator const nmmap&() const{
-      return multimap();
-    }
-    
-    operator nmmap&(){
-      return multimap();
     }
     
     operator double() const{
@@ -1530,6 +1719,9 @@ namespace neu{
         case List:
           h_.l->emplace_back(std::move(x));
           break;
+        case Queue:
+          h_.q->emplace_back(std::move(x));
+          break;
         case Function:
           h_.f->v.emplace_back(std::move(x));
           break;
@@ -1609,6 +1801,9 @@ namespace neu{
         case List:
           h_.l->push_back(x);
           break;
+        case Queue:
+          h_.q->push_back(x);
+          break;
         case Function:
           h_.f->v.push_back(x);
           break;
@@ -1684,6 +1879,9 @@ namespace neu{
           break;
         case List:
           h_.l->emplace_back(std::move(x));
+          break;
+        case Queue:
+          h_.q->emplace_back(std::move(x));
           break;
         case Function:
           h_.f->v.emplace_back(std::move(x));
@@ -1816,6 +2014,13 @@ namespace neu{
             return true;
           }
           return false;
+        case Queue:
+          if(h_.q->empty()){
+            delete h_.q;
+            t_ = Undefined;
+            return true;
+          }
+          return false;
         case HeadSequence:{
           nvar* s = h_.hs->s;
           if(s->normalize()){
@@ -1836,9 +2041,23 @@ namespace neu{
             return true;
           }
           return false;
+        case Set:
+          if(h_.set->empty()){
+            delete h_.set;
+            t_ = Undefined;
+            return true;
+          }
+          return false;
         case Map:
           if(h_.m->empty()){
             delete h_.m;
+            t_ = Undefined;
+            return true;
+          }
+          return false;
+        case HashMap:
+          if(h_.h->empty()){
+            delete h_.h;
             t_ = Undefined;
             return true;
           }
@@ -2337,7 +2556,15 @@ namespace neu{
             return itr->second.t_ == t;
           }
           return false;
+        case Set:{
+          auto itr = h_.m->find(key);
+          return itr->second.t_ == t;
+        }
         case Map:{
+          auto itr = h_.m->find(key);
+          return itr->second.t_ == t;
+        }
+        case HashMap:{
           auto itr = h_.m->find(key);
           return itr->second.t_ == t;
         }
@@ -2454,8 +2681,52 @@ namespace neu{
       }
     }
     
+    static void streamOutputQueue_(std::ostream& ostr,
+                                  const nqueue& q,
+                                  bool& first,
+                                  bool concise){
+      for(const nvar& vi : q){
+        if(first){
+          first = false;
+        }
+        else{
+          ostr << ",";
+        }
+        vi.streamOutput_(ostr, concise);
+      }
+    }
+
+    static bool streamOutputSet_(std::ostream& ostr,
+                                 const nset& s,
+                                 bool& first,
+                                 bool concise){
+      bool found = false;
+      for(auto& itr : s){
+        const nvar& k = *itr;
+        
+        if(k.isHidden()){
+          continue;
+        }
+        
+        if(first){
+          first = false;
+        }
+        else{
+          ostr << ", ";
+        }
+        
+        k.streamOutput_(ostr, concise);
+        ostr << ":";
+
+        found = true;
+      }
+      
+      return found;
+    }
+
+    template<class T>
     static bool streamOutputMap_(std::ostream& ostr,
-                                 const nmap& m,
+                                 const T& m,
                                  bool& first,
                                  bool concise){
       bool found = false;
@@ -2477,64 +2748,6 @@ namespace neu{
         ostr << ":";
         itr.second.streamOutput_(ostr, concise);
           
-        found = true;
-      }
-      
-      return found;
-    }
-    
-    static bool streamOutputFuncMap_(std::ostream& ostr,
-                                     const nmap& m,
-                                     bool& first,
-                                     bool concise){
-      bool found = false;
-      for(auto& itr : m){
-        const nvar& k = *itr.first;
-        
-        if(k.isHidden()){
-          continue;
-        }
-        
-        if(first){
-          first = false;
-        }
-        else{
-          ostr << ",";
-        }
-        
-        k.streamOutput_(ostr, concise);
-        ostr << ":";
-        itr.second.streamOutput_(ostr, concise);
-        
-        found = true;
-      }
-      
-      return found;
-    }
-    
-    static bool streamOutputMultimap_(std::ostream& ostr,
-                                      const nmmap& m,
-                                      bool& first,
-                                      bool concise){
-      bool found = false;
-      for(auto& itr : m){
-        const nvar& k = *itr.first;
-
-        if(k.isHidden()){
-          continue;
-        }
-        
-        if(first){
-          first = false;
-        }
-        else{
-          ostr << ", ";
-        }
-        
-        k.streamOutput_(ostr, concise);
-        ostr << ":";
-        itr.second.streamOutput_(ostr, concise);
-        
         found = true;
       }
       
@@ -2567,6 +2780,8 @@ namespace neu{
           return h_.v->empty();
         case List:
           return h_.l->empty();
+        case Queue:
+          return h_.q->empty();
         case Function:
           return h_.f->v.empty();
         case HeadSequence:
@@ -2586,8 +2801,12 @@ namespace neu{
 
     bool mapEmpty() const{
       switch(t_){
+        case Set:
+          return h_.s->empty();
         case Map:
           return h_.m->empty();
+        case HashMap:
+          return h_.h->empty();
         case Multimap:
           return h_.mm->empty();
         case Function:
@@ -2613,8 +2832,14 @@ namespace neu{
           return h_.v->empty();
         case List:
           return h_.l->empty();
+        case Queue:
+          return h_.q->empty();
+        case Set:
+          return h_.s->empty();
         case Map:
           return h_.m->empty();
+        case HashMap:
+          return h_.h->empty();
         case Multimap:
           return h_.mm->empty();
         case Function:
@@ -2650,6 +2875,12 @@ namespace neu{
           }
           
           return h_.l->back();
+        case Queue:
+          if(h_.q->empty()){
+            NERROR("queue is empty");
+          }
+          
+          return h_.q->back();
         case Function:
           if(h_.f->v.empty()){
             NERROR("function is empty");
@@ -2685,6 +2916,12 @@ namespace neu{
           }
           
           return h_.l->back();
+        case Queue:
+          if(h_.q->empty()){
+            NERROR("queue is empty");
+          }
+          
+          return h_.q->back();
         case Function:
           if(h_.f->v.empty()){
             NERROR("function is empty");
@@ -2744,10 +2981,30 @@ namespace neu{
       }
     }
     
+    bool hasQueue() const{
+      switch(t_){
+        case Queue:
+          return true;
+        case HeadSequence:
+          return h_.hs->s->hasQueue();
+        case SequenceMap:
+          return h_.sm->s->hasQueue();
+        case HeadSequenceMap:
+          return h_.hsm->s->hasQueue();
+        case Reference:
+          return h_.ref->v->hasQueue();
+        case Pointer:
+          return h_.vp->hasQueue();
+        default:
+          return false;
+      }
+    }
+    
     bool hasSequence() const{
       switch(t_){
         case Vector:
         case List:
+        case Queue:
         case HeadSequence:
         case SequenceMap:
         case HeadSequenceMap:
@@ -2756,6 +3013,25 @@ namespace neu{
           return h_.ref->v->hasSequence();
         case Pointer:
           return h_.vp->hasSequence();
+        default:
+          return false;
+      }
+    }
+
+    bool hasSet() const{
+      switch(t_){
+        case Set:
+          return true;
+        case HeadMap:
+          return h_.hm->m->hasSet();
+        case SequenceMap:
+          return h_.sm->m->hasSet();
+        case HeadSequenceMap:
+          return h_.hsm->m->hasSet();
+        case Reference:
+          return h_.ref->v->hasSet();
+        case Pointer:
+          return h_.vp->hasSet();
         default:
           return false;
       }
@@ -2777,6 +3053,25 @@ namespace neu{
           return h_.ref->v->hasMap();
         case Pointer:
           return h_.vp->hasMap();
+        default:
+          return false;
+      }
+    }
+    
+    bool hasHashMap() const{
+      switch(t_){
+        case HashMap:
+          return true;
+        case HeadMap:
+          return h_.hm->m->hasHashMap();
+        case SequenceMap:
+          return h_.sm->m->hasHashMap();
+        case HeadSequenceMap:
+          return h_.hsm->m->hasHashMap();
+        case Reference:
+          return h_.ref->v->hasHashMap();
+        case Pointer:
+          return h_.vp->hasHashMap();
         default:
           return false;
       }
@@ -2820,11 +3115,20 @@ namespace neu{
         case List:
           delete h_.l;
           break;
+        case Queue:
+          delete h_.q;
+          break;
         case Function:
           delete h_.f;
           break;
+        case Set:
+          delete h_.set;
+          break;
         case Map:
           delete h_.m;
+          break;
+        case HashMap:
+          delete h_.h;
           break;
         case Multimap:
           delete h_.mm;
@@ -3317,10 +3621,32 @@ namespace neu{
             }
           }
           break;
+        case Set:
+          for(const auto& itr : *h_.set){
+            const nvar& k = *itr;
+            
+            if(k.isHidden()){
+              continue;
+            }
+            
+            v.push_back(k);
+          }
+          break;
         case Map:
           for(const auto& itr : *h_.m){
             const nvar& k = itr.first;
 
+            if(k.isHidden()){
+              continue;
+            }
+            
+            v.push_back(k);
+          }
+          break;
+        case HashMap:
+          for(const auto& itr : *h_.h){
+            const nvar& k = itr.first;
+            
             if(k.isHidden()){
               continue;
             }
@@ -3370,8 +3696,26 @@ namespace neu{
             }
           }
           return false;
+        case Set:
+          for(const auto& itr : *h_.set){
+            const nvar& k = *itr;
+            
+            if(!k.isHidden()){
+              return true;
+            }
+          }
+          return false;
         case Map:
           for(const auto& itr : *h_.m){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              return true;
+            }
+          }
+          return false;
+        case HashMap:
+          for(const auto& itr : *h_.h){
             const nvar& k = itr.first;
             
             if(!k.isHidden()){
@@ -3415,8 +3759,18 @@ namespace neu{
             }
           }
           break;
+        case Set:
+          for(const auto& itr : *h_.set){
+            v.push_back(*itr);
+          }
+          break;
         case Map:
           for(const auto& itr : *h_.m){
+            v.push_back(itr.first);
+          }
+          break;
+        case HashMap:
+          for(const auto& itr : *h_.h){
             v.push_back(itr.first);
           }
           break;
@@ -3443,10 +3797,12 @@ namespace neu{
       switch(t_){
         case Function:
           return h_.f->v.begin();
-        case List:
-          NERROR("expected a vector not a list");
         case Vector:
           return h_.v->begin();
+        case List:
+          NERROR("expected a vector not a list");
+        case Queue:
+          NERROR("expected a vector not a queue");
         case HeadSequence:
           return h_.hs->s->begin();
         case SequenceMap:
@@ -3471,6 +3827,8 @@ namespace neu{
           return h_.v->begin();
         case List:
           NERROR("expected a vector not a list");
+        case Queue:
+          NERROR("expected a vector not a list");
         case HeadSequence:
           return h_.hs->s->begin();
         case SequenceMap:
@@ -3494,6 +3852,8 @@ namespace neu{
           return h_.v->end();
         case List:
           NERROR("expected a vector not a list");
+        case Queue:
+          NERROR("expected a vector not a queue");
         case HeadSequence:
           return h_.hs->s->end();
         case SequenceMap:
@@ -3518,6 +3878,8 @@ namespace neu{
           return h_.v->end();
         case List:
           NERROR("expected a vector not a list");
+        case Queue:
+          NERROR("expected a vector not a queue");
         case HeadSequence:
           return h_.hs->s->end();
         case SequenceMap:
@@ -3796,7 +4158,8 @@ namespace neu{
         case SharedObject:
           return size_t(h_.o);
         case Vector:
-        case List:{
+        case List:
+        case Queue:{
           size_t h = 0;
           size_t size = h_.v->size();
           for(size_t i = 0; i < size; ++i){
@@ -3814,9 +4177,24 @@ namespace neu{
         }
         case HeadSequence:
           return head().hash() ^ h_.hs->s->hash();
+        case Set:{
+          size_t h = 0;
+          for(auto& itr : *h_.set){
+            h ^= (*itr).hash();
+          }
+          return h + t_;
+        }
         case Map:{
           size_t h = 0;
           for(auto& itr : *h_.m){
+            h ^= itr.first.hash();
+            h ^= itr.second.hash();
+          }
+          return h + t_;
+        }
+        case HashMap:{
+          size_t h = 0;
+          for(auto& itr : *h_.h){
             h ^= itr.first.hash();
             h ^= itr.second.hash();
           }
