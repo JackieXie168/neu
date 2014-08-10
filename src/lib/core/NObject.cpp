@@ -1684,31 +1684,11 @@ namespace neu{
       return p1;
     }
     
-    nvar Unite(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
-      nvar p3 = process(v3);
-      
-      p1.unite(p2, p3);
-      
-      return p1;
-    }
-    
     nvar Intersect(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       nvar p2 = process(v2);
       
       p1.intersect(p2);
-      
-      return p1;
-    }
-    
-    nvar Intersect(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
-      nvar p3 = process(v3);
-      
-      p1.intersect(p2, p3);
       
       return p1;
     }
@@ -2522,19 +2502,9 @@ FuncMap::FuncMap(){
         return NObject_::obj(o)->Unite(v[0], v[1]);
       });
   
-  add("Unite", 3,
-      [](void* o, const nvar& v) -> nvar{
-        return NObject_::obj(o)->Unite(v[0], v[1], v[2]);
-      });
-  
   add("Intersect", 2,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->Intersect(v[0], v[1]);
-      });
-  
-  add("Intersect", 3,
-      [](void* o, const nvar& v) -> nvar{
-        return NObject_::obj(o)->Intersect(v[0], v[1], v[2]);
       });
   
   add("Complement", 2,
@@ -3179,16 +3149,8 @@ nvar NObject::Unite(const nvar& v1, const nvar& v2){
   return x_->Unite(v1, v2);
 }
 
-nvar NObject::Unite(const nvar& v1, const nvar& v2, const nvar& v3){
-  return x_->Unite(v1, v2, v3);
-}
-
 nvar NObject::Intersect(const nvar& v1, const nvar& v2){
   return x_->Intersect(v1, v2);
-}
-
-nvar NObject::Intersect(const nvar& v1, const nvar& v2, const nvar& v3){
-  return x_->Intersect(v1, v2, v3);
 }
 
 nvar NObject::Complement(const nvar& v1, const nvar& v2){

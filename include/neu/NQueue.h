@@ -295,9 +295,21 @@ namespace neu{
     void pop_front(){
       q_.pop_front();
     }
+
+    value_type popFront(){
+      T ret = std::move(*(q_.begin()));
+      q_.pop_back();
+      return ret;
+    }
     
     void pop_back(){
       q_.pop_back();
+    }
+    
+    value_type popBack(){
+      T ret = std::move(*(--q_.end()));
+      q_.pop_back();
+      return ret;
     }
     
     iterator erase(const_iterator p){

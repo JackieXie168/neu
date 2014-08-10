@@ -2651,41 +2651,12 @@ namespace neu{
       }
     }
     
-    static void streamOutputVector_(std::ostream& ostr,
-                                    const nvec& v,
-                                    bool& first,
-                                    bool concise){
-      for(const nvar& vi : v){
-        if(first){
-          first = false;
-        }
-        else{
-          ostr << ",";
-        }
-        vi.streamOutput_(ostr, concise);
-      }
-    }
-    
-    static void streamOutputList_(std::ostream& ostr,
-                                  const nlist& l,
-                                  bool& first,
-                                  bool concise){
-      for(const nvar& vi : l){
-        if(first){
-          first = false;
-        }
-        else{
-          ostr << ",";
-        }
-        vi.streamOutput_(ostr, concise);
-      }
-    }
-    
-    static void streamOutputQueue_(std::ostream& ostr,
-                                  const nqueue& q,
-                                  bool& first,
-                                  bool concise){
-      for(const nvar& vi : q){
+    template<class S>
+    static void streamOutputSequence_(std::ostream& ostr,
+                                      const S& s,
+                                      bool& first,
+                                      bool concise){
+      for(const nvar& vi : s){
         if(first){
           first = false;
         }
@@ -4120,9 +4091,9 @@ namespace neu{
     
     void outerMerge(const nvar& x);
 
-    nvar& unite(const nvar& x, bool outer=false);
+    nvar& unite(const nvar& x);
 
-    nvar& intersect(const nvar& x, bool outer=false);
+    nvar& intersect(const nvar& x);
 
     nvar& complement(const nvar& x);
 

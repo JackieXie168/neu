@@ -361,11 +361,7 @@ namespace neu{
     
     nvar Unite(const nvar& v1, const nvar& v2);
     
-    nvar Unite(const nvar& v1, const nvar& v2, const nvar& v3);
-
     nvar Intersect(const nvar& v1, const nvar& v2);
-    
-    nvar Intersect(const nvar& v1, const nvar& v2, const nvar& v3);
     
     nvar Complement(const nvar& v1, const nvar& v2);
     

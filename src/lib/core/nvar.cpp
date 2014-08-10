@@ -255,15 +255,22 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case Vector:{
       ostr << "[";
       bool first = true;
-      streamOutputVector_(ostr, *h_.v, first, concise);
+      streamOutputSequence_(ostr, *h_.v, first, concise);
       ostr << "]";
       break;
     }
     case List:{
       ostr << "(";
       bool first = true;
-      streamOutputList_(ostr, *h_.l, first, concise);
+      streamOutputSequence_(ostr, *h_.l, first, concise);
       ostr << ")";
+      break;
+    }
+    case Queue:{
+      ostr << "[[";
+      bool first = true;
+      streamOutputSequence_(ostr, *h_.q, first, concise);
+      ostr << "]]";
       break;
     }
     case Function:{
@@ -282,25 +289,50 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       
       if(h_.f->m){
-        streamOutputFuncMap_(ostr, *h_.f->m, first, concise);
+        streamOutputMap_(ostr, *h_.f->m, first, concise);
       }
       
       ostr << ")";
       break;
     }
     case HeadSequence:{
-      bool first = false;
-      if(h_.hs->s->t_ == Vector){
-        ostr << "[:";
-        h_.hs->h->streamOutput_(ostr, concise);
-        streamOutputVector_(ostr, *h_.hs->s->h_.v, first, concise);
+      stringstream sstr;
+      h_.hs->h->streamOutput_(sstr, concise);
+      
+      bool first = true;
+      
+      switch(h_.hs->s->t_){
+        case Vector:
+          ostr << "[:" << sstr.str();
+          streamOutputSequence_(ostr, *h_.hs->s->h_.v, first, concise);
+          ostr << "]";
+          break;
+        case List:
+          ostr << "(:" << sstr.str();
+          streamOutputSequence_(ostr, *h_.hs->s->h_.l, first, concise);
+          ostr << ")";
+          break;
+        case Queue:
+          ostr << "[[:" << sstr.str();
+          streamOutputSequence_(ostr, *h_.hs->s->h_.q, first, concise);
+          ostr << "]]";
+          break;
+        default:
+          assert(false && "invalid case");
+      }
+      break;
+    }
+    case Set:{
+      stringstream sstr;
+      bool first = true;
+      bool found = streamOutputSet_(sstr, *h_.set, first, concise);
+      if(found){
+        ostr << "[%";
+        ostr << sstr.str();
         ostr << "]";
       }
       else{
-        ostr << "(:";
-        h_.hs->h->streamOutput_(ostr, concise);
-        streamOutputList_(ostr, *h_.hs->s->h_.l, first, concise);
-        ostr << ")";
+        ostr << "undef";
       }
       break;
     }
@@ -318,10 +350,24 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       break;
     }
+    case HashMap:{
+      stringstream sstr;
+      bool first = true;
+      bool found = streamOutputMap_(sstr, *h_.h, first, concise);
+      if(found){
+        ostr << "[=";
+        ostr << sstr.str();
+        ostr << "]";
+      }
+      else{
+        ostr << "undef";
+      }
+      break;
+    }
     case Multimap:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputMultimap_(sstr, *h_.mm, first, concise);
+      bool found = streamOutputMap_(sstr, *h_.mm, first, concise);
       if(found){
         ostr << "[|";
         ostr << sstr.str();
@@ -333,125 +379,179 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       break;
     }
     case HeadMap:{
+      stringstream hstr;
+      h_.hm->h->streamOutput_(hstr, concise);
+      
+      stringstream sstr;
+      
       bool first = false;
-      bool mm;
       
-      bool found;
-      
-      if(h_.hm->m->t_ == Map){
-        mm = false;
-        stringstream sstr;
-        found = streamOutputMap_(sstr, *h_.hm->m->h_.m, first, concise);
-        if(found){
-          ostr << "[:";
-          h_.hm->h->streamOutput_(ostr, concise);
-          ostr << sstr.str();
-        }
-        else{
-          h_.hm->h->streamOutput_(ostr, concise);
-        }
+      switch(h_.hm->m->t_){
+        case Set:
+          if(streamOutputSet_(sstr, *h_.hm->m->h_.set, first, concise)){
+            ostr << "[%:" << hstr.str() << ", " << sstr.str() << "]";
+          }
+          else{
+            ostr << hstr.str();
+          }
+          break;
+        case Map:
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.m, first, concise)){
+            ostr << "[:" << hstr.str() << ", " << sstr.str() << "]";
+          }
+          else{
+            ostr << hstr.str();
+          }
+          break;
+        case HashMap:
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.h, first, concise)){
+            ostr << "[=:" << hstr.str() << ", " << sstr.str() << "]";
+          }
+          else{
+            ostr << hstr.str();
+          }
+          break;
+        case Multimap:
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.mm, first, concise)){
+            ostr << "[|:" << hstr.str() << ", " << sstr.str() << "]";
+          }
+          else{
+            ostr << hstr.str();
+          }
+          break;
+        default:
+          assert(false && "invalid case");
       }
-      else{
-        mm = true;
-        
-        stringstream sstr;
-        found = streamOutputMultimap_(sstr, *h_.hm->m->h_.mm, first, concise);
-        if(found){
-          ostr << "[|:";
-          h_.hm->h->streamOutput_(ostr, concise);
-          ostr << sstr.str();
-        }
-        else{
-          h_.hm->h->streamOutput_(ostr, concise);
-        }
-      }
-      
-      if(found){
-        ostr << "]";
-      }
+
       break;
     }
     case SequenceMap:{
+      nstr m;
+
+      switch(h_.sm->m->t_){
+        case Set:
+          m = "%";
+          break;
+        case Map:
+          break;
+        case Multimap:
+          m = "|";
+          break;
+        case HashMap:
+          m = "=";
+          break;
+        default:
+          assert(false && "invalid case");
+      }
+      
+      nstr end;
       bool first = true;
-      bool vec = h_.sm->s->t_ == Vector;
-      bool mm =  h_.sm->m->t_ == Multimap;
       
-      if(vec){
-        if(mm){
-          ostr << "[|";
-        }
-        else{
-          ostr << "[";
-        }
-        
-        streamOutputVector_(ostr, *h_.sm->s->h_.v, first, concise);
+      switch(h_.sm->s->t_){
+        case Queue:
+          ostr <<  "[[" << m;
+          end = "]]";
+          streamOutputSequence_(ostr, *h_.sm->s->h_.q, first, concise);
+          break;
+        case Vector:
+          ostr << "[" << m;
+          end = "]";
+          streamOutputSequence_(ostr, *h_.sm->s->h_.v, first, concise);
+          break;
+        case List:
+          ostr << "(" << m;
+          end = ")";
+          streamOutputSequence_(ostr, *h_.sm->s->h_.l, first, concise);
+          break;
+        default:
+          assert(false && "invalid case");
       }
-      else{
-        if(mm){
-          ostr << "(|";
-        }
-        else{
-          ostr << "(";
-        }
-        
-        streamOutputList_(ostr, *h_.sm->s->h_.l, first, concise);
+
+      switch(h_.sm->m->t_){
+        case Set:
+          streamOutputSet_(ostr, *h_.sm->m->h_.set, first, concise);
+          break;
+        case Map:
+          streamOutputMap_(ostr, *h_.sm->m->h_.m, first, concise);
+          break;
+        case HashMap:
+          streamOutputMap_(ostr, *h_.sm->m->h_.h, first, concise);
+          break;
+        case Multimap:
+          streamOutputMap_(ostr, *h_.sm->m->h_.mm, first, concise);
+          break;
+        default:
+          assert(false && "invalid case");
       }
+
+      ostr << end;
       
-      if(mm){
-        streamOutputMultimap_(ostr, *h_.sm->m->h_.mm, first, concise);
-      }
-      else{
-        streamOutputMap_(ostr, *h_.sm->m->h_.m, first, concise);
-      }
-      
-      if(vec){
-        ostr << "]";
-      }
-      else{
-        ostr << ")";
-      }
       break;
     }
     case HeadSequenceMap:{
-      bool first = false;
-      bool vec = h_.hsm->s->t_ == Vector;
-      bool mm =  h_.hsm->m->t_ == Multimap;
+      stringstream hstr;
+      h_.hm->h->streamOutput_(hstr, concise);
       
-      if(vec){
-        if(mm){
-          ostr << "[|:";
-        }
-        else{
-          ostr << "[:";
-        }
-        h_.hsm->h->streamOutput_(ostr, concise);
-        streamOutputVector_(ostr, *h_.hsm->s->h_.v, first, concise);
-      }
-      else{
-        if(mm){
-          ostr << "(|:";
-        }
-        else{
-          ostr << "(:";
-        }
-        
-        h_.hsm->h->streamOutput_(ostr, concise);
-        streamOutputList_(ostr, *h_.hsm->s->h_.l, first, concise);
+      nstr m;
+      
+      switch(h_.sm->m->t_){
+        case Set:
+          m = "%";
+          break;
+        case Map:
+          break;
+        case Multimap:
+          m = "|";
+          break;
+        case HashMap:
+          m = "=";
+          break;
+        default:
+          assert(false && "invalid case");
       }
       
-      if(mm){
-        streamOutputMultimap_(ostr, *h_.hsm->m->h_.mm, first, concise);
-      }
-      else{
-        streamOutputMap_(ostr, *h_.hsm->m->h_.m, first, concise);
+      nstr end;
+      bool first = true;
+      
+      switch(h_.hsm->s->t_){
+        case Queue:
+          ostr <<  "[[" << m << ":" << hstr.str() << ", ";
+          end = "]]";
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.q, first, concise);
+          break;
+        case Vector:
+          ostr << "[" << m << ":" << hstr.str() << ", ";
+          end = "]";
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.v, first, concise);
+          break;
+        case List:
+          ostr << "(" << m << ":" << hstr.str() << ", ";
+          end = ")";
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.l, first, concise);
+          break;
+        default:
+          assert(false && "invalid case");
       }
       
-      if(vec){
-        ostr << "]";
+      switch(h_.hsm->m->t_){
+        case Set:
+          streamOutputSet_(ostr, *h_.hsm->m->h_.set, first, concise);
+          break;
+        case Map:
+          streamOutputMap_(ostr, *h_.hsm->m->h_.m, first, concise);
+          break;
+        case HashMap:
+          streamOutputMap_(ostr, *h_.hsm->m->h_.h, first, concise);
+          break;
+        case Multimap:
+          streamOutputMap_(ostr, *h_.hsm->m->h_.mm, first, concise);
+          break;
+        default:
+          assert(false && "invalid case");
       }
-      else{
-        ostr << ")";
-      }
+      
+      ostr << end;
+      
       break;
     }
     case Reference:
@@ -539,6 +639,19 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       
       break;
     }
+    case Queue:{
+      h_.q = new nqueue;
+      
+      nqueue& q = *h_.q;
+      const nqueue& xq = *x.h_.q;
+      size_t size = xq.size();
+      
+      for(size_t i = 0; i < size; ++i){
+        q.emplace_back(nvar(xq[i], Copy));
+      }
+      
+      break;
+    }
     case Function:{
       h_.f = new CFunction(x.h_.f->f);
       
@@ -569,10 +682,32 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       new CHeadSequence(new nvar(*x.h_.hs->h, Copy),
                         new nvar(*x.h_.hs->s, Copy));
       break;
+    case Set:{
+      h_.set = new nset;
+      nset& s = *h_.set;
+      const nset& xs = *x.h_.set;
+      
+      for(auto& itr : xs){
+        s.emplace(nvar(*itr, Copy));
+      }
+      
+      break;
+    }
     case Map:{
       h_.m = new nmap;
       nmap& m = *h_.m;
       const nmap& xm = *x.h_.m;
+      
+      for(auto& itr : xm){
+        m.emplace(nvar(itr.first, Copy), nvar(itr.second, Copy));
+      }
+      
+      break;
+    }
+    case HashMap:{
+      h_.h = new nhmap;
+      nhmap& m = *h_.h;
+      const nhmap& xm = *x.h_.h;
       
       for(auto& itr : xm){
         m.emplace(nvar(itr.first, Copy), nvar(itr.second, Copy));
@@ -643,6 +778,9 @@ nvar::~nvar(){
     case List:
       delete h_.l;
       break;
+    case Queue:
+      delete h_.q;
+      break;
     case Function:
       delete h_.f;
       break;
@@ -650,8 +788,14 @@ nvar::~nvar(){
       h_.hs->dealloc();
       delete h_.hs;
       break;
+    case Set:
+      delete h_.set;
+      break;
     case Map:
       delete h_.m;
+      break;
+    case HashMap:
+      delete h_.h;
       break;
     case Multimap:
       delete h_.mm;
@@ -810,12 +954,37 @@ void nvar::pushBack(const nvar& x){
     case List:
       h_.l->push_back(x);
       break;
+    case Queue:
+      h_.q->push_back(x);
+      break;
     case Function:
       h_.f->v.push_back(x);
       break;
     case HeadSequence:
       h_.hs->s->pushBack(x);
       break;
+    case Set:{
+      Head hv;
+      hv.v = new nvec(1, x);
+      
+      Head hm;
+      hm.set = h_.set;
+      
+      h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Set, hm));
+      t_ = SequenceMap;
+      break;
+    }
+    case HashMap:{
+      Head hv;
+      hv.v = new nvec(1, x);
+      
+      Head hm;
+      hm.h = h_.h;
+      
+      h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashMap, hm));
+      t_ = SequenceMap;
+      break;
+    }
     case Map:{
       Head hv;
       hv.v = new nvec(1, x);
@@ -883,12 +1052,37 @@ void nvar::pushFront(const nvar& x){
     case List:
       h_.l->push_front(x);
       break;
+    case Queue:
+      h_.q->push_front(x);
+      break;
     case Function:
       h_.f->v.pushFront(x);
       break;
     case HeadSequence:
       h_.hs->s->pushFront(x);
       break;
+    case Set:{
+      Head hv;
+      hv.v = new nvec(1, x);
+      
+      Head hm;
+      hm.set = h_.set;
+      
+      h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Set, hm));
+      t_ = SequenceMap;
+      break;
+    }
+    case HashMap:{
+      Head hv;
+      hv.v = new nvec(1, x);
+      
+      Head hm;
+      hm.h = h_.h;
+      
+      h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashMap, hm));
+      t_ = SequenceMap;
+      break;
+    }
     case Map:{
       Head hv;
       hv.v = new nvec(1, x);
@@ -949,6 +1143,8 @@ nvar nvar::popBack(){
       return h_.v->popBack();
     case List:
       return h_.l->popBack();
+    case Queue:
+      return h_.q->popBack();
     case Function:
       return h_.f->v.popBack();
     case HeadSequence:
@@ -972,6 +1168,8 @@ nvar nvar::popFront(){
       return h_.v->popFront();
     case List:
       return h_.l->popFront();
+    case Queue:
+      return h_.q->popFront();
     case Function:
       return h_.f->v.popFront();
     case HeadSequence:
@@ -993,8 +1191,12 @@ bool nvar::hasKey(const nvar& key) const{
   switch(t_){
     case Function:
       return h_.f->m && h_.f->m->hasKey(key);
+    case Set:
+      return h_.set->hasKey(key);
     case Map:
       return h_.m->hasKey(key);
+    case HashMap:
+      return h_.h->hasKey(key);
     case Multimap:
       return h_.mm->count(key) > 0;
     case HeadMap:
@@ -1016,8 +1218,12 @@ size_t nvar::numKeys(const nvar& key){
   switch(t_){
     case Function:
       return h_.f->m && h_.f->m->hasKey(key) ? 1 : 0;
+    case Set:
+      return h_.set->hasKey(key) ? 1 : 0;
     case Map:
       return h_.m->hasKey(key) ? 1 : 0;
+    case HashMap:
+      return h_.h->hasKey(key) ? 1 : 0;
     case Multimap:
       return h_.mm->count(key);
     case HeadMap:
@@ -1055,6 +1261,15 @@ void nvar::insert(size_t pos, const nvar& x){
       h_.l->insert(itr, x);
       break;
     }
+    case Queue:{
+      if(pos > h_.q->size()){
+        NERROR("invalid position");
+      }
+      auto itr = h_.q->begin();
+      advance(itr, pos);
+      h_.q->insert(itr, x);
+      break;
+    }
     case Function:{
       auto itr = h_.f->v.begin();
       advance(itr, pos);
@@ -1089,6 +1304,9 @@ void nvar::clear(){
     case List:
       h_.l->clear();
       break;
+    case Queue:
+      h_.q->clear();
+      break;
     case Function:
       h_.f->v.clear();
       if(h_.f->m){
@@ -1099,8 +1317,14 @@ void nvar::clear(){
     case HeadSequence:
       h_.hs->s->clear();
       break;
+    case Set:
+      h_.set->clear();
+      break;
     case Map:
       h_.m->clear();
+      break;
+    case HashMap:
+      h_.h->clear();
       break;
     case Multimap:
       h_.mm->clear();
@@ -1133,6 +1357,8 @@ size_t nvar::size() const{
       return h_.v->size();
     case List:
       return h_.l->size();
+    case Queue:
+      return h_.q->size();
     case Function:
       return h_.f->v.size();
     case HeadSequence:
@@ -1152,8 +1378,12 @@ size_t nvar::size() const{
 
 size_t nvar::numKeys() const{
   switch(t_){
+    case Set:
+      return h_.set->size();
     case Map:
       return h_.m->size();
+    case HashMap:
+      return h_.h->size();
     case Multimap:
       return h_.mm->size();
     case HeadMap:
@@ -1203,13 +1433,28 @@ nvar& nvar::operator=(nlonglong x){
       t_ = Integer;
       h_.i = x;
       return *this;
+    case Queue:
+      delete h_.q;
+      t_ = Integer;
+      h_.i = x;
+      return *this;
     case Function:
       delete h_.f;
       t_ = Integer;
       h_.i = x;
       return *this;
+    case Set:
+      delete h_.set;
+      t_ = Integer;
+      h_.i = x;
+      return *this;
     case Map:
       delete h_.m;
+      t_ = Integer;
+      h_.i = x;
+      return *this;
+    case HashMap:
+      delete h_.h;
       t_ = Integer;
       h_.i = x;
       return *this;
@@ -1288,13 +1533,28 @@ nvar& nvar::operator=(const char* x){
       t_ = String;
       h_.s = new nstr(x);
       return *this;
+    case Queue:
+      delete h_.q;
+      t_ = String;
+      h_.s = new nstr(x);
+      return *this;
     case Function:
       delete h_.f;
       t_ = String;
       h_.s = new nstr(x);
       return *this;
+    case Set:
+      delete h_.set;
+      t_ = String;
+      h_.s = new nstr(x);
+      return *this;
     case Map:
       delete h_.m;
+      t_ = String;
+      h_.s = new nstr(x);
+      return *this;
+    case HashMap:
+      delete h_.h;
       t_ = String;
       h_.s = new nstr(x);
       return *this;
@@ -1374,13 +1634,28 @@ nvar& nvar::operator=(void* p){
       t_ = Pointer;
       h_.p = p;
       return *this;
+    case Queue:
+      delete h_.q;
+      t_ = Pointer;
+      h_.p = p;
+      return *this;
     case Function:
       delete h_.f;
       t_ = Pointer;
       h_.p = p;
       return *this;
+    case Set:
+      delete h_.set;
+      t_ = Pointer;
+      h_.p = p;
+      return *this;
     case Map:
       delete h_.m;
+      t_ = Pointer;
+      h_.p = p;
+      return *this;
+    case HashMap:
+      delete h_.h;
       t_ = Pointer;
       h_.p = p;
       return *this;
@@ -1463,13 +1738,28 @@ nvar& nvar::operator=(double x){
       t_ = Float;
       h_.d = x;
       return *this;
+    case Queue:
+      delete h_.q;
+      t_ = Float;
+      h_.d = x;
+      return *this;
     case Function:
       delete h_.f;
       t_ = Float;
       h_.d = x;
       return *this;
+    case Set:
+      delete h_.set;
+      t_ = Float;
+      h_.d = x;
+      return *this;
     case Map:
       delete h_.m;
+      t_ = Float;
+      h_.d = x;
+      return *this;
+    case HashMap:
+      delete h_.h;
       t_ = Float;
       h_.d = x;
       return *this;
@@ -1544,12 +1834,24 @@ nvar& nvar::operator=(bool x){
       delete h_.l;
       t_ = x ? True : False;
       return *this;
+    case Queue:
+      delete h_.q;
+      t_ = x ? True : False;
+      return *this;
     case Function:
       delete h_.f;
       t_ = x ? True : False;
       return *this;
+    case Set:
+      delete h_.set;
+      t_ = x ? True : False;
+      return *this;
     case Map:
       delete h_.m;
+      t_ = x ? True : False;
+      return *this;
+    case HashMap:
+      delete h_.h;
       t_ = x ? True : False;
       return *this;
     case Multimap:

@@ -423,6 +423,7 @@ namespace neu{
       }
       
       void insertRecord(const R& record){
+        /*
         auto itr = pageMap_.lower_bound(record.value);
         IndexPage* page = itr->second;
         
@@ -436,6 +437,7 @@ namespace neu{
           pageMap_.erase(itr);
           pageMap_.insert({page->maxValue(), page});
         }
+         */
       }
       
       void pushRecord(const R& record){

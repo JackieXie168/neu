@@ -403,7 +403,7 @@ namespace neu{
   std::ostream& operator<<(std::ostream& ostr,
                            const NHashMap<Key, T, Hash, Pred, Alloc>& m){
     typename NHashMap<Key, T, Hash, Pred, Alloc>::const_iterator itr = m.begin();
-    ostr << "[= ";
+    ostr << "[=";
     bool first = true;
     while(itr != m.end()){
       if(first){
