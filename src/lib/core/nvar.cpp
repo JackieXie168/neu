@@ -1943,6 +1943,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -1951,9 +1955,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2026,6 +2038,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2034,9 +2050,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2109,6 +2133,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2117,9 +2145,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2192,6 +2228,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2200,9 +2240,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2279,6 +2327,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2287,9 +2339,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2372,6 +2432,11 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          delete h_.r;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           delete h_.r;
           t_ = Function;
@@ -2382,10 +2447,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.r;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.r;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.r;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.r;
@@ -2468,6 +2543,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2476,9 +2555,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2561,6 +2648,11 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          delete h_.x;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           delete h_.x;
           t_ = Function;
@@ -2571,10 +2663,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.x;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.x;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.x;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.x;
@@ -2665,6 +2767,11 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          delete h_.s;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           delete h_.s;
           t_ = Function;
@@ -2675,10 +2782,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.s;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.s;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.s;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.s;
@@ -2758,6 +2875,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2766,9 +2887,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2845,6 +2974,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2853,9 +2986,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -2932,6 +3073,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -2940,9 +3085,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -3025,6 +3178,11 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          delete h_.v;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           delete h_.v;
           t_ = Function;
@@ -3035,10 +3193,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.v;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.v;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.v;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.v;
@@ -3127,6 +3295,11 @@ nvar& nvar::operator=(const nvar& x){
         case List:
           *h_.l = *x.h_.l;
           return *this;
+        case Queue:
+          delete h_.l;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           delete h_.l;
           t_ = Function;
@@ -3137,10 +3310,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.l;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.l;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.l;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.l;
@@ -3170,6 +3353,124 @@ nvar& nvar::operator=(const nvar& x){
           return *this;
         default:
           delete h_.l;
+          t_ = x.t_;
+          h_.i = x.h_.i;
+          return *this;
+      }
+      return *this;
+    case Queue:
+      switch(x.t_){
+        case None:
+          delete h_.q;
+          t_ = None;
+          return *this;
+        case Undefined:
+          delete h_.q;
+          t_ = Undefined;
+          return *this;
+        case False:
+          delete h_.q;
+          t_ = False;
+          return *this;
+        case True:
+          delete h_.q;
+          t_ = True;
+          return *this;
+        case Rational:
+          delete h_.q;
+          t_ = Rational;
+          h_.r = new nrat(*x.h_.r);
+          return *this;
+        case Real:
+          delete h_.q;
+          t_ = Real;
+          h_.x = new nreal(*x.h_.x);
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          delete h_.q;
+          t_ = x.t_;
+          h_.s = new nstr(*x.h_.s);
+          return *this;
+        case LocalObject:
+          delete h_.q;
+          t_ = LocalObject;
+          h_.o = x.h_.o->clone();
+          return *this;
+        case SharedObject:
+          delete h_.q;
+          t_ = SharedObject;
+          h_.o = x.h_.o;
+          h_.o->ref();
+          return *this;
+        case Vector:
+          delete h_.q;
+          t_ = Vector;
+          h_.v = new nvec(*x.h_.v);
+          return *this;
+        case List:
+          delete h_.q;
+          t_ = List;
+          h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          t_ = Queue;
+          *h_.q = *x.h_.q;
+          return *this;
+        case Function:
+          delete h_.q;
+          t_ = Function;
+          h_.f = x.h_.f->clone();
+          return *this;
+        case HeadSequence:
+          delete h_.q;
+          t_ = HeadSequence;
+          h_.hs = x.h_.hs->clone();
+          return *this;
+        case Set:
+          delete h_.q;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
+        case Map:
+          delete h_.q;
+          t_ = Map;
+          h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.q;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
+          return *this;
+        case Multimap:
+          delete h_.q;
+          t_ = Multimap;
+          h_.mm = new nmmap(*x.h_.mm);
+          return *this;
+        case HeadMap:
+          delete h_.q;
+          t_ = HeadMap;
+          h_.hm = x.h_.hm->clone();
+          return *this;
+        case SequenceMap:
+          delete h_.q;
+          t_ = SequenceMap;
+          h_.sm = x.h_.sm->clone();
+          return *this;
+        case HeadSequenceMap:
+          delete h_.q;
+          t_ = HeadSequenceMap;
+          h_.hsm = x.h_.hsm->clone();
+          return *this;
+        case Reference:
+          delete h_.q;
+          t_ = Reference;
+          h_.ref = x.h_.ref;
+          h_.ref->ref();
+          return *this;
+        default:
+          delete h_.q;
           t_ = x.t_;
           h_.i = x.h_.i;
           return *this;
@@ -3231,6 +3532,11 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          delete h_.f;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           h_.f->f = x.h_.f->f;
           h_.f->v = x.h_.f->v;
@@ -3240,10 +3546,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.f;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.f;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.f;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.f;
@@ -3273,6 +3589,123 @@ nvar& nvar::operator=(const nvar& x){
           return *this;
         default:
           delete h_.f;
+          t_ = x.t_;
+          h_.i = x.h_.i;
+          return *this;
+      }
+      return *this;
+    case Set:
+      switch(x.t_){
+        case None:
+          delete h_.set;
+          t_ = None;
+          return *this;
+        case Undefined:
+          delete h_.set;
+          t_ = Undefined;
+          return *this;
+        case False:
+          delete h_.set;
+          t_ = False;
+          return *this;
+        case True:
+          delete h_.set;
+          t_ = True;
+          return *this;
+        case Rational:
+          delete h_.set;
+          t_ = Rational;
+          h_.r = new nrat(*x.h_.r);
+          return *this;
+        case Real:
+          delete h_.set;
+          t_ = Real;
+          h_.x = new nreal(*x.h_.x);
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          delete h_.set;
+          t_ = x.t_;
+          h_.s = new nstr(*x.h_.s);
+          return *this;
+        case LocalObject:
+          delete h_.set;
+          t_ = LocalObject;
+          h_.o = x.h_.o->clone();
+          return *this;
+        case SharedObject:
+          delete h_.set;
+          t_ = SharedObject;
+          h_.o = x.h_.o;
+          h_.o->ref();
+          return *this;
+        case Vector:
+          delete h_.set;
+          t_ = Vector;
+          h_.v = new nvec(*x.h_.v);
+          return *this;
+        case List:
+          delete h_.set;
+          t_ = List;
+          h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          delete h_.set;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
+        case Function:
+          delete h_.set;
+          t_ = Function;
+          h_.f = x.h_.f->clone();
+          return *this;
+        case HeadSequence:
+          delete h_.set;
+          t_ = HeadSequence;
+          h_.hs = x.h_.hs->clone();
+          return *this;
+        case Set:
+          *h_.set = *x.h_.set;
+          return *this;
+        case Map:
+          delete h_.set;
+          t_ = Map;
+          h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.set;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
+          return *this;
+        case Multimap:
+          delete h_.set;
+          t_ = Multimap;
+          h_.mm = new nmmap(*x.h_.mm);
+          return *this;
+        case HeadMap:
+          delete h_.set;
+          t_ = HeadMap;
+          h_.hm = x.h_.hm->clone();
+          return *this;
+        case SequenceMap:
+          delete h_.set;
+          t_ = SequenceMap;
+          h_.sm = x.h_.sm->clone();
+          return *this;
+        case HeadSequenceMap:
+          delete h_.set;
+          t_ = HeadSequenceMap;
+          h_.hsm = x.h_.hsm->clone();
+          return *this;
+        case Reference:
+          delete h_.set;
+          t_ = Reference;
+          h_.ref = x.h_.ref;
+          h_.ref->ref();
+          return *this;
+        default:
+          delete h_.set;
           t_ = x.t_;
           h_.i = x.h_.i;
           return *this;
@@ -3330,9 +3763,14 @@ nvar& nvar::operator=(const nvar& x){
           h_.v = new nvec(*x.h_.v);
           return *this;
         case List:
-          delete h_.l;
+          delete h_.m;
           t_ = List;
           h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          delete h_.m;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
           return *this;
         case Function:
           delete h_.m;
@@ -3344,8 +3782,18 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.m;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           *h_.m = *x.h_.m;
+          return *this;
+        case HashMap:
+          delete h_.m;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           delete h_.m;
@@ -3375,6 +3823,123 @@ nvar& nvar::operator=(const nvar& x){
           return *this;
         default:
           delete h_.m;
+          t_ = x.t_;
+          h_.i = x.h_.i;
+          return *this;
+      }
+      return *this;
+    case HashMap:
+      switch(x.t_){
+        case None:
+          delete h_.h;
+          t_ = None;
+          return *this;
+        case Undefined:
+          delete h_.h;
+          t_ = Undefined;
+          return *this;
+        case False:
+          delete h_.h;
+          t_ = False;
+          return *this;
+        case True:
+          delete h_.h;
+          t_ = True;
+          return *this;
+        case Rational:
+          delete h_.h;
+          t_ = Rational;
+          h_.r = new nrat(*x.h_.r);
+          return *this;
+        case Real:
+          delete h_.h;
+          t_ = Real;
+          h_.x = new nreal(*x.h_.x);
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          delete h_.h;
+          t_ = x.t_;
+          h_.s = new nstr(*x.h_.s);
+          return *this;
+        case LocalObject:
+          delete h_.h;
+          t_ = LocalObject;
+          h_.o = x.h_.o->clone();
+          return *this;
+        case SharedObject:
+          delete h_.h;
+          t_ = SharedObject;
+          h_.o = x.h_.o;
+          h_.o->ref();
+          return *this;
+        case Vector:
+          delete h_.h;
+          t_ = Vector;
+          h_.v = new nvec(*x.h_.v);
+          return *this;
+        case List:
+          delete h_.h;
+          t_ = List;
+          h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          delete h_.h;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
+        case Function:
+          delete h_.h;
+          t_ = Function;
+          h_.f = x.h_.f->clone();
+          return *this;
+        case HeadSequence:
+          delete h_.h;
+          t_ = HeadSequence;
+          h_.hs = x.h_.hs->clone();
+          return *this;
+        case Set:
+          delete h_.h;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
+        case Map:
+          delete h_.h;
+          t_ = Map;
+          h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          *h_.h = *x.h_.h;
+          return *this;
+        case Multimap:
+          delete h_.h;
+          t_ = Multimap;
+          h_.mm = new nmmap(*x.h_.mm);
+          return *this;
+        case HeadMap:
+          delete h_.h;
+          t_ = HeadMap;
+          h_.hm = x.h_.hm->clone();
+          return *this;
+        case SequenceMap:
+          delete h_.h;
+          t_ = SequenceMap;
+          h_.sm = x.h_.sm->clone();
+          return *this;
+        case HeadSequenceMap:
+          delete h_.h;
+          t_ = HeadSequenceMap;
+          h_.hsm = x.h_.hsm->clone();
+          return *this;
+        case Reference:
+          delete h_.h;
+          t_ = Reference;
+          h_.ref = x.h_.ref;
+          h_.ref->ref();
+          return *this;
+        default:
+          delete h_.h;
           t_ = x.t_;
           h_.i = x.h_.i;
           return *this;
@@ -3432,9 +3997,14 @@ nvar& nvar::operator=(const nvar& x){
           h_.v = new nvec(*x.h_.v);
           return *this;
         case List:
-          delete h_.l;
+          delete h_.mm;
           t_ = List;
           h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          delete h_.mm;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
           return *this;
         case Function:
           delete h_.mm;
@@ -3446,10 +4016,20 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          delete h_.mm;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           delete h_.mm;
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.mm;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           *h_.mm = *x.h_.mm;
@@ -3560,6 +4140,13 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           if(h_.ref->deref()){
             delete h_.ref;
@@ -3574,12 +4161,26 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           if(h_.ref->deref()){
             delete h_.ref;
           }
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           if(h_.ref->deref()){
@@ -3670,6 +4271,10 @@ nvar& nvar::operator=(const nvar& x){
           t_ = List;
           h_.l = new nlist(*x.h_.l);
           return *this;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
         case Function:
           t_ = Function;
           h_.f = x.h_.f->clone();
@@ -3678,9 +4283,17 @@ nvar& nvar::operator=(const nvar& x){
           t_ = HeadSequence;
           h_.hs = x.h_.hs->clone();
           return *this;
+        case Set:
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
           return *this;
         case Multimap:
           t_ = Multimap;
@@ -3770,14 +4383,23 @@ nvar& nvar::operator=(const nvar& x){
     case List:
       h_.l = new nlist(*x.h_.l);
       return *this;
+    case Queue:
+      h_.q = new nqueue(*x.h_.q);
+      return *this;
     case Function:
       h_.f = x.h_.f->clone();
       return *this;
     case HeadSequence:
       h_.hs = x.h_.hs->clone();
       return *this;
+    case Set:
+      h_.set = new nset(*x.h_.set);
+      return *this;
     case Map:
       h_.m = new nmap(*x.h_.m);
+      return *this;
+    case HashMap:
+      h_.h = new nhmap(*x.h_.h);
       return *this;
     case Multimap:
       h_.mm = new nmmap(*x.h_.mm);
