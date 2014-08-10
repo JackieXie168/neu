@@ -71,6 +71,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NList.h>
 #include <neu/NMap.h>
 #include <neu/NMultimap.h>
+#include <neu/NHashMap.h>
+#include <neu/NSet.h>
+#include <neu/NQueue.h>
 #include <neu/NObjectBase.h>
 #include <neu/NError.h>
 
@@ -91,10 +94,17 @@ namespace neu{
   extern const class nvar none;
   extern const class nvar undef;
   
-  template <class T>
+  template<class T>
   struct nvarLess{
     bool operator()(const T& x, const T& y) const{
       return x.less(y);
+    }
+  };
+  
+  template<class T>
+  struct nvarHash{
+    size_t operator()(const T& k) const{
+      return k.hash();
     }
   };
   
@@ -102,6 +112,9 @@ namespace neu{
   typedef NList<nvar> nlist;
   typedef NMap<nvar, nvar, nvarLess<nvar>> nmap;
   typedef NMultimap<nvar, nvar, nvarLess<nvar>> nmmap;
+  typedef NHashMap<nvar, nvar, nvarHash<nvar>> nhmap;
+  typedef NSet<nvar, nvarLess<nvar>> nset;
+  typedef NQueue<nvar> nqueue;
   
   extern const nvec _emptyVec;
   

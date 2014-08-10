@@ -318,11 +318,11 @@ namespace neu{
       q_.clear();
     }
     
-    Queue& NQueue(){
+    Queue& queue(){
       return q_;
     }
     
-    const Queue& NQueue() const{
+    const Queue& queue() const{
       return q_;
     }
     

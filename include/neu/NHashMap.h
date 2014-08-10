@@ -24,12 +24,12 @@ namespace neu{
     typedef std::pair<const key_type, mapped_type> value_type;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-    typedef typename HashMap_::iterator iterator;
-    typedef typename HashMap_::const_iterator const_iterator;
-    typedef typename HashMap_::local_iterator local_iterator;
-    typedef typename HashMap_::const_local_iterator const_local_iterator;
-    typedef typename HashMap_::size_type size_type;
-    typedef typename HashMap_::difference_type difference_type;
+    typedef typename HashMap::iterator iterator;
+    typedef typename HashMap::const_iterator const_iterator;
+    typedef typename HashMap::local_iterator local_iterator;
+    typedef typename HashMap::const_local_iterator const_local_iterator;
+    typedef typename HashMap::size_type size_type;
+    typedef typename HashMap::difference_type difference_type;
     
     NHashMap()
     noexcept(std::is_nothrow_default_constructible<hasher>::value &&
@@ -378,7 +378,7 @@ namespace neu{
     }
     
   private:
-    HashMap_ m_;
+    HashMap m_;
   };
   
   template <class Key, class T, class Hash, class Pred, class Alloc>
