@@ -140,15 +140,18 @@ namespace neu{
     static const Type SharedObject =            20;
     static const Type Vector =                  21;
     static const Type List =                    22;
-    static const Type Function =                23;
-    static const Type HeadSequence =            24;
-    static const Type Map =                     25;
-    static const Type Multimap =                26;
-    static const Type HeadMap =                 27;
-    static const Type SequenceMap =             28;
-    static const Type HeadSequenceMap =         29;
-    static const Type Pointer =                 30;
-    static const Type Reference =               31;
+    static const Type Queue =                   23;
+    static const Type Function =                24;
+    static const Type HeadSequence =            25;
+    static const Type Set =                     26;
+    static const Type Map =                     27;
+    static const Type HashMap =                 28;
+    static const Type Multimap =                29;
+    static const Type HeadMap =                 30;
+    static const Type SequenceMap =             31;
+    static const Type HeadSequenceMap =         32;
+    static const Type Pointer =                 33;
+    static const Type Reference =               34;
     
     class CFunction{
     public:
