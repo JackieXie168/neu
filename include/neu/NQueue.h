@@ -332,38 +332,38 @@ namespace neu{
   
   template <class T, class Allocator>
   bool operator==(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() == y.NQueue();
+    return x.queue() == y.queue();
   }
   
   template <class T, class Allocator>
   bool operator<(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() < y.NQueue();
+    return x.queue() < y.queue();
   }
   
   template <class T, class Allocator>
   bool operator!=(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() != y.NQueue();
+    return x.queue() != y.queue();
   }
   
   template <class T, class Allocator>
   bool operator>(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() > y.NQueue();
+    return x.queue() > y.queue();
   }
   
   template <class T, class Allocator>
   bool operator>=(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() >= y.NQueue();
+    return x.queue() >= y.queue();
   }
   
   template <class T, class Allocator>
   bool operator<=(const NQueue<T,Allocator>& x, const NQueue<T,Allocator>& y){
-    return x.NQueue() <= y.NQueue();
+    return x.queue() <= y.queue();
   }
   
   template <class T, class Allocator>
   void swap(NQueue<T,Allocator>& x, NQueue<T,Allocator>& y)
   noexcept(noexcept(x.swap(y))){
-    return swap(x.NQueue(), y.NQueue());
+    return swap(x.queue(), y.queue());
   }
   
   template <class T, class Allocator>
