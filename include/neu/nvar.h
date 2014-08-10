@@ -3752,6 +3752,83 @@ namespace neu{
     
     void foldLeft();
     
+    size_t hash() const{
+      switch(t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+          return std::numeric_limits<size_t>::max() - t_;
+        case Integer:
+          return h_.i;
+        case Rational:
+          return std::hash<int64_t>()(h_.r->numerator()) ^
+          std::hash<int64_t>()(h_.r->denominator());
+        case Float:
+          return std::hash<double>()(h_.d);
+        case Real:
+          return std::hash<std::string>()(h_.x->toStr().str());
+        case Symbol:
+        case String:
+        case StringPointer:
+        case Binary:
+          return std::hash<std::string>()(*h_.s) + t_;
+        case RawPointer:
+          return size_t(h_.p);
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return size_t(h_.o);
+        case Vector:
+        case List:{
+          size_t h = 0;
+          size_t size = h_.v->size();
+          for(size_t i = 0; i < size; ++i){
+            h ^= (*h_.v)[i].hash();
+          }
+          return h + t_;
+        }
+        case Function:{
+          size_t h = std::hash<std::string>()(h_.f->f.str());
+          size_t size = h_.f->v.size();
+          for(size_t i = 0; i < size; ++i){
+            h ^= h_.f->v[i].hash();
+          }
+          return h + t_;
+        }
+        case HeadSequence:
+          return head().hash() ^ h_.hs->s->hash();
+        case Map:{
+          size_t h = 0;
+          for(auto& itr : *h_.m){
+            h ^= itr.first.hash();
+            h ^= itr.second.hash();
+          }
+          return h + t_;
+        }
+        case Multimap:{
+          size_t h = 0;
+          for(auto& itr : *h_.mm){
+            h ^= itr.first.hash();
+            h ^= itr.second.hash();
+          }
+          return h + t_;
+        }
+        case HeadMap:
+          return head().hash() ^ h_.hm->m->hash() + t_;
+        case SequenceMap:
+          return h_.sm->s->hash() ^ h_.sm->m->hash() + t_;
+        case HeadSequenceMap:
+          return head().hash() ^ h_.hsm->s->hash() ^ h_.hsm->m->hash() + t_;
+        case Pointer:
+          return h_.vp->hash() + t_;
+        case Reference:
+          return h_.ref->v->hash() + t_;
+        default:
+          assert(false && "unhandled case");
+      }
+    }
+    
     static nvar parseFuncSpec(const char* fs){
       nvar ret;
       
