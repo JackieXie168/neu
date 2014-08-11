@@ -63,8 +63,8 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 65536;
-  static const size_t MAX_CHUNKS = 1024;
+  static const size_t MAX_CHUNK_SIZE = 10;
+  static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
@@ -250,7 +250,8 @@ namespace neu{
           return Remap;
         }
 
-        auto itr = chunkMap_.lower_bound(record.value);
+        auto itr = findChunk(record.value);
+        
         Chunk* chunk = itr->second;
         Action action = chunk->insert(record);
         
@@ -284,6 +285,7 @@ namespace neu{
         
         chunkMap_.erase(itr);
         chunkMap_.insert({chunk->max(), chunk});
+        
         return None;
       }
       
@@ -359,6 +361,12 @@ namespace neu{
       bool loaded_;
       ChunkMap_ chunkMap_;
       Chunk* lastChunk_;
+      
+      typename ChunkMap_::iterator findChunk(const V& v){
+        assert(!chunkMap_.empty());
+        auto itr = chunkMap_.upper_bound(v);
+        return itr == chunkMap_.end() ? --itr : itr;
+      }
     };
     
     class IndexBase{
@@ -401,7 +409,6 @@ namespace neu{
         assert(itr != pageMap_.end());
         
         IndexPage* page = itr->second;
-        
         Action action = page->insert(record);
         
         if(action & Split){
