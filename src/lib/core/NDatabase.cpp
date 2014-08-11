@@ -268,6 +268,7 @@ namespace neu{
         auto itr = findChunk(record.value);
         
         Chunk* chunk = itr->second;
+        
         Action action = chunk->insert(record);
         
         if(action & Remap && chunk == firstChunk_){
@@ -376,7 +377,7 @@ namespace neu{
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
-        return itr == chunkMap_.end() ? --itr : itr;
+        return itr == chunkMap_.begin() ? itr : --itr;
       }
     };
     
@@ -469,7 +470,7 @@ namespace neu{
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
-        return itr == pageMap_.end() ? --itr : itr;
+        return itr == pageMap_.begin() ? itr : --itr;
       }
     };
 
