@@ -90,6 +90,34 @@ namespace{
 
 namespace neu{
   
+  class NTable_;
+  
+  class NDatabase_{
+  public:
+    NDatabase_(NDatabase* o, const nstr& path, bool create)
+    : o_(o),
+    path_(path),
+    nextRowId_(1){
+      
+    }
+    
+    NTable* addTable(const nstr& tableName);
+    
+    NTable* getTable(const nstr& tableName);
+
+    RowId nextRowId(){
+      return nextRowId_++;
+    }
+    
+  private:
+    typedef NMap<nstr, NTable_*> TableMap_;
+    
+    NDatabase* o_;
+    nstr path_;
+    RowId nextRowId_;
+    TableMap_ tableMap_;
+  };
+  
   class NTable_{
   public:
     
@@ -556,6 +584,16 @@ namespace neu{
         }
       }
       
+      bool update(RowId rowId, RowId newRowId){
+        DataRecord* record = getRecord(rowId);
+        if(record){
+          record->update(newRowId);
+          return true;
+        }
+        
+        return false;
+      }
+      
     private:
       DataRecord record_;
     };
@@ -826,9 +864,9 @@ namespace neu{
       uint64_t id_;
     };
     
-    NTable_(NTable* o)
+    NTable_(NTable* o, NDatabase_* d)
     : o_(o),
-    nextRowId_(1),
+    d_(d),
     nextDataId_(0),
     lastData_(0){
       
@@ -882,8 +920,8 @@ namespace neu{
       indexMap_.insert({indexName, index});
     }
     
-    uint64_t insert(const nvar& row){
-      RowId rowId = nextRowId_++;
+    uint64_t insert(nvar& row){
+      RowId rowId = d_->nextRowId();
       
       const nmap& m = row;
       for(auto& itr : m){
@@ -943,6 +981,8 @@ namespace neu{
         }
       }
       
+      row("id") = rowId;
+      
       uint32_t size;
       char* buf = row.pack(size);
       
@@ -977,8 +1017,14 @@ namespace neu{
       return rowId;
     }
     
-    void update(const nvar& row){
+    void update(nvar& row){
+      RowId rowId = row["id"];
+
+      RowId newRowId = d_->nextRowId();
       
+      if(!dataIndex_.update(rowId, newRowId)){
+        NERROR("invalid row id: " + nvar(rowId));
+      }
     }
     
     bool get(RowId rowId, nvar& row){
@@ -1026,70 +1072,54 @@ namespace neu{
     typedef NMap<uint64_t, Data*> DataMap_;
     
     NTable* o_;
+    NDatabase_* d_;
     nstr name_;
     IndexMap_ indexMap_;
-    uint64_t nextRowId_;
     uint32_t nextDataId_;
     DataMap_ dataMap_;
     Data* lastData_;
     DataIndex dataIndex_;
   };
   
-  class NDatabase_{
-  public:
-    NDatabase_(NDatabase* o, const nstr& path, bool create)
-    : o_(o),
-    path_(path){
-      
+  NTable* NDatabase_::addTable(const nstr& tableName){
+    auto itr = tableMap_.find(tableName);
+    if(itr != tableMap_.end()){
+      NERROR("table exists: " + tableName);
     }
     
-    NTable* addTable(const nstr& tableName){
-      auto itr = tableMap_.find(tableName);
-      if(itr != tableMap_.end()){
-        NERROR("table exists: " + tableName);
-      }
-      
-      NTable* table = new NTable;
-      NTable_* t = table->x_;
-      t->setName(tableName);
-      
-      tableMap_.insert({tableName, t});
-      
-      return table;
+    NTable* table = new NTable(this);
+    NTable_* t = table->x_;
+    t->setName(tableName);
+    
+    tableMap_.insert({tableName, t});
+    
+    return table;
+  }
+  
+  NTable* NDatabase_::getTable(const nstr& tableName){
+    auto itr = tableMap_.find(tableName);
+    if(itr == tableMap_.end()){
+      NERROR("invalid table: " + tableName);
     }
     
-    NTable* getTable(const nstr& tableName){
-      auto itr = tableMap_.find(tableName);
-      if(itr == tableMap_.end()){
-        NERROR("invalid table: " + tableName);
-      }
-      
-      return itr->second->outer();
-    }
-    
-  private:
-    typedef NMap<nstr, NTable_*> TableMap_;
-    
-    NDatabase* o_;
-    nstr path_;
-    TableMap_ tableMap_;
-  };
+    return itr->second->outer();
+  }
   
 } // end namespace neu
 
-NTable::NTable(){
-  x_ = new NTable_(this);
+NTable::NTable(NDatabase_* d){
+  x_ = new NTable_(this, d);
 }
 
 void NTable::addIndex(const nstr& indexName, IndexType indexType){
   x_->addIndex(indexName, indexType);
 }
 
-uint64_t NTable::insert(const nvar& row){
+uint64_t NTable::insert(nvar& row){
   return x_->insert(row);
 }
 
-void NTable::update(const nvar& row){
+void NTable::update(nvar& row){
   x_->update(row);
 }
 

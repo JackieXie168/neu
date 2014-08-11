@@ -79,9 +79,9 @@ namespace neu{
     
     void addIndex(const nstr& indexName, IndexType indexType);
     
-    RowId insert(const nvar& row);
+    RowId insert(nvar& row);
     
-    void update(const nvar& row);
+    void update(nvar& row);
     
     bool get(RowId rowId, nvar& row);
     
@@ -94,7 +94,7 @@ namespace neu{
     friend class NDatabase_;
     
   private:
-    NTable();
+    NTable(class NDatabase_*);
     
     class NTable_* x_;
   };
