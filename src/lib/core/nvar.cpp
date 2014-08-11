@@ -200,11 +200,17 @@ namespace{
   static const nvar::Type PackLongVector =    144;
   static const nvar::Type PackShortList =     143;
   static const nvar::Type PackLongList =      142;
-  static const nvar::Type PackLongFunction =  141;
-  static const nvar::Type PackShortMap =      140;
-  static const nvar::Type PackLongMap =       139;
-  static const nvar::Type PackShortMultimap = 138;
-  static const nvar::Type PackLongMultimap =  137;
+  static const nvar::Type PackShortQueue =    141;
+  static const nvar::Type PackLongQueue =     140;
+  static const nvar::Type PackLongFunction =  139;
+  static const nvar::Type PackShortSet =      138;
+  static const nvar::Type PackLongSet =       137;
+  static const nvar::Type PackShortMap =      136;
+  static const nvar::Type PackLongMap =       135;
+  static const nvar::Type PackShortHashMap =  134;
+  static const nvar::Type PackLongHashMap =   133;
+  static const nvar::Type PackShortMultimap = 132;
+  static const nvar::Type PackLongMultimap =  131;
 
 } // end namespace  
 
@@ -21405,6 +21411,44 @@ void nvar::merge(const nvar& x){
           break;
       }
       break;
+    case HashMap:
+      switch(x.t_){
+        case Set:
+          for(auto& itr : *x.h_.set){
+            h_.h->insert({*itr, true});
+          }
+          break;
+        case Map:
+          h_.h->insert(x.h_.m->begin(), x.h_.m->end());
+          break;
+        case HashMap:
+          h_.h->merge(*x.h_.h);
+          break;
+        case Multimap:
+          touchMultimap();
+          h_.mm->merge(*x.h_.mm);
+          break;
+        case Function:
+          if(x.h_.f->m){
+            h_.h->insert(x.h_.f->m->begin(), x.h_.f->m->end());
+          }
+          break;
+        case HeadMap:
+          merge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          merge(*x.h_.hsm->m);
+          break;
+        case Reference:
+          merge(*x.h_.ref->v);
+          break;
+        case Pointer:
+          merge(*x.h_.vp);
+          break;
+        default:
+          break;
+      }
+      break;
     case Multimap:
       switch(x.t_){
         case Set:
@@ -21444,6 +21488,23 @@ void nvar::merge(const nvar& x){
       break;
     case Function:
       switch(x.t_){
+        case Set:{
+          nmap* m;
+          
+          if(h_.f->m){
+            m = h_.f->m;
+          }
+          else{
+            h_.f->m = new nmap;
+            m = h_.f->m;
+          }
+          
+          for(auto& itr : *x.h_.set){
+            m->insert({*itr, true});
+          }
+          
+          break;
+        }
         case Map:
           if(h_.f->m){
             h_.f->m->merge(*x.h_.m);
@@ -21452,6 +21513,20 @@ void nvar::merge(const nvar& x){
             h_.f->m = new nmap(*x.h_.m);
           }
           break;
+        case HashMap:{
+          nmap* m;
+          
+          if(h_.f->m){
+            m = h_.f->m;
+          }
+          else{
+            h_.f->m = new nmap;
+            m = h_.f->m;
+          }
+          
+          m->insert(x.h_.h->begin(), x.h_.h->end());
+          break;
+        }
         case Multimap:
           NERROR("right operand is invalid");
         case Function:
@@ -21913,6 +21988,32 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       }
       break;
     }
+    case Queue:{
+      const nqueue& q = *h_.q;
+      
+      uint32_t len = q.size();
+      if(len <= 255){
+        buf[pos++] = PackShortQueue;
+        buf[pos++] = len;
+      }
+      else if(len <= 65535){
+        buf[pos++] = Queue;
+        uint16_t plen = len;
+        memcpy(buf + pos, &plen, 2);
+        pos += 2;
+      }
+      else{
+        buf[pos++] = PackLongQueue;
+        memcpy(buf + pos, &len, 4);
+        pos += 4;
+      }
+      
+      for(size_t i = 0; i < len; ++i){
+        buf = q[i].pack_(buf, size, pos);
+      }
+      
+      break;
+    }
     case Function:{
       const nvec& v = h_.f->v;
       
@@ -21994,6 +22095,30 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       buf = h_.hs->s->pack_(buf, size, pos);
       break;
     }
+    case Set:{
+      uint32_t len = h_.set->size();
+      if(len <= 255){
+        buf[pos++] = PackShortSet;
+        buf[pos++] = len;
+      }
+      else if(len <= 65535){
+        buf[pos++] = Set;
+        uint16_t plen = len;
+        memcpy(buf + pos, &plen, 2);
+        pos += 2;
+      }
+      else{
+        buf[pos++] = PackLongSet;
+        memcpy(buf + pos, &len, 4);
+        pos += 4;
+      }
+      
+      for(auto& itr : *h_.set){
+        buf = (*itr).pack_(buf, size, pos);
+      }
+
+      break;
+    }
     case Map:{
       uint32_t len = h_.m->size();
       if(len <= 255){
@@ -22017,6 +22142,30 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         buf = itr.second.pack_(buf, size, pos);
       }
       break;    
+    }
+    case HashMap:{
+      uint32_t len = h_.h->size();
+      if(len <= 255){
+        buf[pos++] = PackShortHashMap;
+        buf[pos++] = len;
+      }
+      else if(len <= 65535){
+        buf[pos++] = HashMap;
+        uint16_t plen = len;
+        memcpy(buf + pos, &plen, 2);
+        pos += 2;
+      }
+      else{
+        buf[pos++] = PackLongHashMap;
+        memcpy(buf + pos, &len, 4);
+        pos += 4;
+      }
+      
+      for(auto& itr : *h_.h){
+        buf = itr.first.pack_(buf, size, pos);
+        buf = itr.second.pack_(buf, size, pos);
+      }
+      break;
     }
     case Multimap:{
       uint32_t len = h_.mm->size();
