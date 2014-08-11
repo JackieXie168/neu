@@ -112,6 +112,8 @@ namespace neu{
       return nextRowId_++;
     }
     
+    void compact();
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -1088,9 +1090,11 @@ namespace neu{
       dataIndex_.erase(rowId);
     }
     
-    void compact(){
-      RowSet rs;
-      
+    void mapCompact(RowSet& rs, UpdateMap& um){
+
+    }
+
+    void compact(const RowSet& rs, const UpdateMap& um){
       
     }
     
@@ -1143,6 +1147,19 @@ namespace neu{
     return itr->second->outer();
   }
   
+  void NDatabase_::compact(){
+    RowSet rs;
+    UpdateMap um;
+    
+    for(auto& itr : tableMap_){
+      itr.second->mapCompact(rs, um);
+    }
+    
+    for(auto& itr : tableMap_){
+      itr.second->compact(rs, um);
+    }
+  }
+  
 } // end namespace neu
 
 NTable::NTable(NDatabase_* d){
@@ -1169,10 +1186,6 @@ void NTable::erase(RowId rowId){
   x_->erase(rowId);
 }
 
-void NTable::compact(){
-  x_->compact();
-}
-
 void NTable::dump(){
   x_->dump();
 }
@@ -1196,4 +1209,8 @@ NDatabase* NDatabase::create(const nstr& path){
   db->x_ = new NDatabase_(db, path, true);
   
   return db;
+}
+
+void NDatabase::compact(){
+  x_->compact();
 }

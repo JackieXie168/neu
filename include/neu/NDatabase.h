@@ -87,8 +87,6 @@ namespace neu{
     
     void erase(RowId rowId);
     
-    void compact();
-    
     void dump();
     
     friend class NDatabase_;
@@ -108,6 +106,8 @@ namespace neu{
     NTable* getTable(const nstr& tableName);
     
     static NDatabase* create(const nstr& path);
+   
+    void compact();
     
   private:
     NDatabase();
