@@ -555,8 +555,9 @@ namespace neu{
     class DataIndex : public Index<DataRecord, RowId>{
     public:
       
-      DataIndex()
-      : Index(DataIndexType){
+      DataIndex(NDatabase_* d)
+      : Index(DataIndexType),
+      d_(d){
         
       }
       
@@ -584,10 +585,10 @@ namespace neu{
         }
       }
       
-      bool update(RowId rowId, RowId newRowId){
+      bool update(RowId rowId){
         DataRecord* record = getRecord(rowId);
         if(record){
-          record->update(newRowId);
+          record->update(d_->nextRowId());
           return true;
         }
         
@@ -596,6 +597,7 @@ namespace neu{
       
     private:
       DataRecord record_;
+      NDatabase_* d_;
     };
 
     struct Int64Record{
@@ -868,7 +870,8 @@ namespace neu{
     : o_(o),
     d_(d),
     nextDataId_(0),
-    lastData_(0){
+    lastData_(0),
+    dataIndex_(d_){
       
     }
     
@@ -909,9 +912,6 @@ namespace neu{
           break;
         case NTable::Hash:
           index = new HashIndex;
-          break;
-        case DataIndexType:
-          index = new DataIndex;
           break;
         default:
           NERROR("invalid index type");
@@ -1020,9 +1020,7 @@ namespace neu{
     void update(nvar& row){
       RowId rowId = row["id"];
 
-      RowId newRowId = d_->nextRowId();
-      
-      if(!dataIndex_.update(rowId, newRowId)){
+      if(!dataIndex_.update(rowId)){
         NERROR("invalid row id: " + nvar(rowId));
       }
     }
