@@ -585,14 +585,15 @@ namespace neu{
         }
       }
       
-      bool update(RowId rowId){
+      RowId update(RowId rowId){
         DataRecord* record = getRecord(rowId);
         if(record){
-          record->update(d_->nextRowId());
-          return true;
+          RowId newRowId = d_->nextRowId();
+          record->update(newRowId);
+          return newRowId;
         }
         
-        return false;
+        return 0;
       }
       
     private:
@@ -920,9 +921,13 @@ namespace neu{
       indexMap_.insert({indexName, index});
     }
     
-    uint64_t insert(nvar& row){
+    RowId insert(nvar& row){
       RowId rowId = d_->nextRowId();
-      
+      insert_(rowId, row);
+      return rowId;
+    }
+    
+    void insert_(RowId rowId, nvar& row){
       const nmap& m = row;
       for(auto& itr : m){
         const nvar& k = itr.first;
@@ -1013,16 +1018,18 @@ namespace neu{
       
       dataIndex_.insert(data->id(), offset, rowId);
       lastData_ = data;
-
-      return rowId;
     }
     
     void update(nvar& row){
       RowId rowId = row["id"];
-
-      if(!dataIndex_.update(rowId)){
+      RowId newRowId = dataIndex_.update(rowId);
+      
+      if(newRowId == 0){
         NERROR("invalid row id: " + nvar(rowId));
       }
+      
+      row["id"] = newRowId;
+      insert_(newRowId, row);
     }
     
     bool get(RowId rowId, nvar& row){
