@@ -22562,6 +22562,41 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       }
       break;
     }
+    case PackShortQueue:{
+      uint8_t len = *(uint8_t*)(buf + pos);
+      ++pos;
+      t_ = Queue;
+      h_.q = new nqueue(len);
+      nqueue& q = *h_.q;
+      for(size_t i = 0; i < len; ++i){
+        q[i].unpack_(buf, pos);
+      }
+      break;
+    }
+    case Queue:{
+      uint16_t len;
+      memcpy(&len, buf + pos, 2);
+      pos += 2;
+      t_ = Queue;
+      h_.q = new nqueue(len);
+      nqueue& q = *h_.q;
+      for(size_t i = 0; i < len; ++i){
+        q[i].unpack_(buf, pos);
+      }
+      break;
+    }
+    case PackLongQueue:{
+      uint32_t len;
+      memcpy(&len, buf + pos, 4);
+      pos += 4;
+      t_ = Queue;
+      h_.q = new nqueue(len);
+      nqueue& q = *h_.q;
+      for(size_t i = 0; i < len; ++i){
+        q[i].unpack_(buf, pos);
+      }
+      break;
+    }
     case Function:{
       uint8_t slen = *(uint8_t*)(buf + pos);
       ++pos;
@@ -22654,6 +22689,56 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       h_.hs = new CHeadSequence(h, s);
       break;
     }
+    case PackShortSet:{
+      uint8_t len = *(uint8_t*)(buf + pos);
+      ++pos;
+      
+      t_ = Set;
+      h_.set = new nset;
+      nset& s = *h_.set;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
+    case Set:{
+      uint16_t len;
+      memcpy(&len, buf + pos, 2);
+      pos += 2;
+      
+      t_ = Set;
+      h_.set = new nset;
+      nset& s = *h_.set;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
+    case PackLongSet:{
+      uint32_t len;
+      memcpy(&len, buf + pos, 4);
+      pos += 4;
+      
+      t_ = Set;
+      h_.set = new nset;
+      nset& s = *h_.set;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
     case PackShortMap:{
       uint8_t len = *(uint8_t*)(buf + pos);
       ++pos;
@@ -22701,6 +22786,65 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = Map;
       h_.m = new nmap;
       nmap& m = *h_.m;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        nvar v;
+        v.unpack_(buf, pos);
+        
+        m.emplace(move(k), move(v));
+      }
+      break;
+    }
+    case PackShortHashMap:{
+      uint8_t len = *(uint8_t*)(buf + pos);
+      ++pos;
+      
+      t_ = HashMap;
+      h_.h = new nhmap;
+      nhmap& m = *h_.h;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        nvar v;
+        v.unpack_(buf, pos);
+        
+        m.emplace(move(k), move(v));
+      }
+      break;
+    }
+    case HashMap:{
+      uint16_t len;
+      memcpy(&len, buf + pos, 2);
+      pos += 2;
+      
+      t_ = HashMap;
+      h_.h = new nhmap;
+      nhmap& m = *h_.h;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        nvar v;
+        v.unpack_(buf, pos);
+        
+        m.emplace(move(k), move(v));
+      }
+      break;
+    }
+    case PackLongHashMap:{
+      uint32_t len;
+      memcpy(&len, buf + pos, 4);
+      pos += 4;
+      
+      t_ = HashMap;
+      h_.h = new nhmap;
+      nhmap& m = *h_.h;
       
       for(size_t i = 0; i < len; ++i){
         nvar k;
