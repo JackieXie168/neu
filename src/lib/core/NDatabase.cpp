@@ -283,10 +283,10 @@ namespace neu{
         int query(const V& start, QueryFunc f){
           size_t index;
           find(start, index);
+          
           R* r;
           RowId rowId;
           int s;
-          bool success;
           size_t end = chunk_.size() - 1;
           
           for(;;){
@@ -294,6 +294,7 @@ namespace neu{
             rowId = r->rowId;
             
             s = f(rowId);
+
             if(s < 0){
               if(index == 0){
                 return s;
@@ -464,6 +465,7 @@ namespace neu{
         
         for(;;){
           int s = itr->second->query(start, f);
+          
           if(s > 0){
             ++itr;
             if(itr == chunkMap_.end()){
@@ -616,21 +618,20 @@ namespace neu{
         
         for(;;){
           int s = itr->second->query(start, f);
+          
           if(s > 0){
+            ++itr;
+
             if(itr == pageMap_.end()){
               break;
-            }
-            else{
-              ++itr;
             }
           }
           else if(s < 0){
             if(itr == pageMap_.begin()){
               break;
             }
-            else{
-              --itr;
-            }
+
+            --itr;
           }
           else{
             break;
