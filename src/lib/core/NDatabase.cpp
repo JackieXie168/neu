@@ -137,12 +137,12 @@ namespace neu{
     template<class R, class V>
     class Page{
     public:
-      typedef void (*TraverseFunc)(R& record);
+      typedef function<void(R& r)> TraverseFunc;
       
       class Chunk{
       public:
         
-        typedef void (*TraverseFunc)(R& record);
+        typedef function<void(R& r)> TraverseFunc;
         
         Action findInsert(const V& value, size_t& index){
           index = 0;
@@ -289,6 +289,12 @@ namespace neu{
       loaded_(true),
       firstChunk_(0){
 
+      }
+      
+      ~Page(){
+        for(auto& itr : chunkMap_){
+          delete itr.second;
+        }
       }
       
       bool handleFirst(const R& record){
@@ -455,7 +461,7 @@ namespace neu{
     public:
       typedef Page<R, V> IndexPage;
       
-      typedef void (*TraverseFunc)(R& record);
+      typedef function<void(R& r)> TraverseFunc;
       
       Index(uint8_t type)
       : IndexBase(type),
@@ -467,7 +473,9 @@ namespace neu{
       }
       
       virtual ~Index(){
-        
+        for(auto& itr : pageMap_){
+          delete itr.second;
+        }
       }
       
       void insertRecord(const R& record){
@@ -624,6 +632,20 @@ namespace neu{
         }
         
         return 0;
+      }
+      
+      void mapCompact(DataIndex& ni, RowSet& rs, UpdateMap& um){
+        traverse([&](DataRecord& r){
+          if(r.remap){
+            rs.insert(r.value);
+            if(r.data != 0){
+              um.insert({r.value, RowId(r.data)});
+            }
+          }
+          else{
+            ni.pushRecord(r);
+          }
+        });
       }
       
     private:
@@ -905,7 +927,7 @@ namespace neu{
     d_(d),
     nextDataId_(0),
     lastData_(0),
-    dataIndex_(d_){
+    dataIndex_(new DataIndex(d_)){
       
     }
     
@@ -1049,13 +1071,13 @@ namespace neu{
       uint32_t offset = data->insert(rowId, buf, size);
       free(buf);
       
-      dataIndex_.insert(data->id(), offset, rowId);
+      dataIndex_->insert(data->id(), offset, rowId);
       lastData_ = data;
     }
     
     void update(nvar& row){
       RowId rowId = row["id"];
-      RowId newRowId = dataIndex_.update(rowId);
+      RowId newRowId = dataIndex_->update(rowId);
       
       if(newRowId == 0){
         NERROR("invalid row id: " + nvar(rowId));
@@ -1069,7 +1091,7 @@ namespace neu{
       uint32_t dataId;
       uint32_t offset;
       
-      if(!dataIndex_.get(rowId, dataId, offset)){
+      if(!dataIndex_->get(rowId, dataId, offset)){
         return false;
       }
       
@@ -1087,11 +1109,14 @@ namespace neu{
     }
     
     void erase(RowId rowId){
-      dataIndex_.erase(rowId);
+      dataIndex_->erase(rowId);
     }
     
     void mapCompact(RowSet& rs, UpdateMap& um){
-
+      DataIndex* newDataIndex = new DataIndex(d_);
+      dataIndex_->mapCompact(*newDataIndex, rs, um);
+      delete dataIndex_;
+      dataIndex_ = newDataIndex;
     }
 
     void compact(const RowSet& rs, const UpdateMap& um){
@@ -1106,7 +1131,7 @@ namespace neu{
         itr.second->dump();
       }
       
-      dataIndex_.dump();
+      dataIndex_->dump();
     }
     
   private:
@@ -1120,7 +1145,7 @@ namespace neu{
     uint32_t nextDataId_;
     DataMap_ dataMap_;
     Data* lastData_;
-    DataIndex dataIndex_;
+    DataIndex* dataIndex_;
   };
   
   NTable* NDatabase_::addTable(const nstr& tableName){
