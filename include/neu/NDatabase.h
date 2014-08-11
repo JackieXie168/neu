@@ -73,6 +73,7 @@ namespace neu{
       Int64,
       Float,
       Double,
+      Row,
       Hash
     };
     

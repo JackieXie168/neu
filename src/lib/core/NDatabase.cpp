@@ -559,6 +559,33 @@ namespace neu{
       UInt64Record record_;
     };
     
+    struct RowRecord{
+      uint64_t value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class RowIndex : public Index<RowRecord, uint64_t>{
+    public:
+      RowIndex()
+      : Index(NTable::Row){
+        
+      }
+      
+      void insert(uint64_t rowId, uint64_t value){
+        record_.value = value;
+        record_.rowId = rowId;
+        
+        insertRecord(record_);
+      }
+      
+    private:
+      RowRecord record_;
+    };
+    
     struct Int32Record{
       int32_t value;
       uint64_t rowId;
@@ -784,6 +811,9 @@ namespace neu{
         case NTable::Double:
           index = new DoubleIndex;
           break;
+        case NTable::Row:
+          index = new RowIndex;
+          break;
         case NTable::Hash:
           index = new HashIndex;
           break;
@@ -841,6 +871,11 @@ namespace neu{
               }
               case NTable::Double:{
                 DoubleIndex* i = static_cast<DoubleIndex*>(index);
+                i->insert(rowId, v);
+                break;
+              }
+              case NTable::Row:{
+                RowIndex* i = static_cast<RowIndex*>(index);
                 i->insert(rowId, v);
                 break;
               }
