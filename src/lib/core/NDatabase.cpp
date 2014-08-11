@@ -63,8 +63,8 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 65536/4;
-  static const size_t MAX_CHUNKS = 1048*4;
+  static const size_t MAX_CHUNK_SIZE = 65536;
+  static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
@@ -80,20 +80,8 @@ namespace{
     m = numeric_limits<double>::infinity();
   }
   
-  struct Hash{
-    bool operator<(const Hash& h2) const{
-      return h2.h[0] < h[0] &&
-      h2.h[1] < h[1] &&
-      h2.h[2] < h[2] &&
-      h2.h[3] < h[3];
-    }
-    
-    uint64_t h[4];
-  };
-  
-  void max(Hash& m){
-    uint64_t mi = numeric_limits<uint64_t>::max();
-    m = {mi, mi, mi, mi};
+  void max(float& m){
+    m = numeric_limits<float>::infinity();
   }
   
 } // end namespace
@@ -115,10 +103,6 @@ namespace neu{
     public:
       class Chunk{
       public:
-        
-        Chunk(){
-          
-        }
         
         Action findInsert(const V& value, size_t& index){
           index = 0;
@@ -146,7 +130,7 @@ namespace neu{
           
           index = after ? index + 1 : index;
 
-          Action action;
+          Action action = None;
           
           if(length == SPLIT_CHUNK_SIZE){
             action |= Split;
@@ -187,18 +171,21 @@ namespace neu{
         
         Action insert(const R& record){
           size_t index;
-          if(findInsert(record.value, index) == Remap){
+          Action action = findInsert(record.value, index);
+
+          if(findInsert(record.value, index) & Remap){
             chunk_.push_back(record);
-            return Remap;
           }
           else{
             chunk_.insert(chunk_.begin() + index, record);
-            return None;
           }
+          
+          return action;
         }
 
-        void push(const R& record){
+        Action push(const R& record){
           chunk_.push_back(record);
+          return chunk_.size() >= MAX_CHUNK_SIZE ? Split : Remap;
         }
         
         size_t size(){
@@ -218,7 +205,8 @@ namespace neu{
           return c;
         }
         
-        const V& maxValue() const{
+        const V& max() const{
+          assert(!chunk_.empty());
           return chunk_.back().value;
         }
         
@@ -230,7 +218,7 @@ namespace neu{
         }
         
       private:
-        typedef vector<R> Chunk_;
+        typedef NVector<R> Chunk_;
         
         Chunk_ chunk_;
       };
@@ -262,34 +250,41 @@ namespace neu{
           return Remap;
         }
 
-        bool last;
         auto itr = chunkMap_.lower_bound(record.value);
         Chunk* chunk = itr->second;
         Action action = chunk->insert(record);
         
-        if(chunk->size() >= MAX_CHUNK_SIZE){
+        if(action & Split){
           if(chunkMap_.size() >= MAX_CHUNKS){
-            if(action == Remap){
+            if(action & Remap){
               chunkMap_.erase(itr);
-              chunkMap_.insert({chunk->maxValue(), chunk});
+              chunkMap_.insert({chunk->max(), chunk});
             }
             return Split;
           }
           else{
             Chunk* c = chunk->split();
-            chunkMap_.erase(itr);
-            chunkMap_.insert({chunk->maxValue(), chunk});
-            chunkMap_.insert({c->maxValue(), c});
-            return last ? Remap : None;
+            
+            if(chunk == lastChunk_){
+              chunkMap_.insert({c->max(), c});
+              return Remap;
+            }
+            else{
+              chunkMap_.erase(itr);
+              chunkMap_.insert({chunk->max(), chunk});
+              chunkMap_.insert({c->max(), c});
+              return None;
+            }
           }
         }
         
-        if(action == Remap){
-          chunkMap_.erase(itr);
-          chunkMap_.insert({chunk->maxValue(), chunk});
+        if(chunk == lastChunk_){
+          return Remap;
         }
-
-        return last ? Remap : None;
+        
+        chunkMap_.erase(itr);
+        chunkMap_.insert({chunk->max(), chunk});
+        return None;
       }
       
       Action push(const R& record){
@@ -297,32 +292,20 @@ namespace neu{
           return Remap;
         }
 
-        Chunk* chunk;
+        Action action = lastChunk_->push(record);
         
-        if(chunkMap_.empty()){
-          chunk = new Chunk;
-          chunk->push(record);
-          chunkMap_.insert({record.value, chunk});
-          return None;
-        }
-        
-        auto itr = chunkMap_.end();
-        --itr;
-        
-        lastChunk_->push(record);
-        
-        if(lastChunk_->size() >= MAX_CHUNK_SIZE){
+        if(action & Split){
           if(chunkMap_.size() >= MAX_CHUNKS){
             return Split;
           }
           else{
-            Chunk* c = chunk->split();
-            chunkMap_.insert({c->maxValue(), c});
+            Chunk* c = lastChunk_->split();
+            chunkMap_.insert({c->max(), c});
             return None;
           }
         }
         
-        return None;
+        return Remap;
       }
       
       R* get(const V& value){
@@ -330,16 +313,7 @@ namespace neu{
           load();
         }
         
-        if(chunkMap_.empty()){
-          return 0;
-        }
-        
-        auto itr = chunkMap_.lower_bound(value);
-        if(itr == chunkMap_.end()){
-          --itr;
-        }
-        
-        return itr->second->get(value);
+        return chunkMap_.lower_bound(value)->second->get(value);
       }
       
       Page* split(uint64_t id){
@@ -364,11 +338,11 @@ namespace neu{
         loaded_ = true;
       }
       
-      const V& maxValue(){
+      const V& max(){
         auto itr = chunkMap_.rbegin();
         assert(itr != chunkMap_.rend());
         
-        return itr->second->maxValue();
+        return itr->second->max();
       }
       
       void dump(){
@@ -423,34 +397,36 @@ namespace neu{
       }
       
       void insertRecord(const R& record){
-        /*
         auto itr = pageMap_.lower_bound(record.value);
+        assert(itr != pageMap_.end());
+        
         IndexPage* page = itr->second;
         
         Action action = page->insert(record);
         
-        if(action == Split){
+        if(action & Split){
           IndexPage* p = page->split(nextPageId_++);
-          pageMap_.insert({p->maxValue(), p});
+          pageMap_.insert({p->max(), p});
         }
-        else if(action == Remap && itr.first != max_){
+        else if(action & Remap && itr->first != max_){
           pageMap_.erase(itr);
-          pageMap_.insert({page->maxValue(), page});
+          pageMap_.insert({page->max(), page});
         }
-         */
       }
       
       void pushRecord(const R& record){
         Action action = lastPage_->push(record);
         
-        if(action == Split){
+        if(action & Split){
           IndexPage* p = lastPage_->split(nextPageId_++);
-          pageMap_.insert({p->maxValue(), p});
+          pageMap_.insert({p->max(), p});
         }
       }
       
       R* getRecord(const V& value){
         auto itr = pageMap_.lower_bound(value);
+        assert(itr != pageMap_.end());
+        
         return itr->second->get(value);
       }
       
@@ -522,7 +498,7 @@ namespace neu{
       DataRecord record_;
     };
 
-    struct IntegerRecord{
+    struct Int64Record{
       int64_t value;
       uint64_t rowId;
       
@@ -531,10 +507,10 @@ namespace neu{
       }
     };
     
-    class IntegerIndex : public Index<IntegerRecord, int64_t>{
+    class Int64Index : public Index<Int64Record, int64_t>{
     public:
-      IntegerIndex()
-      : Index(NTable::Integer){
+      Int64Index()
+      : Index(NTable::Int64){
         
       }
       
@@ -546,11 +522,119 @@ namespace neu{
       }
       
     private:
-      IntegerRecord record_;
+      Int64Record record_;
+    };
+    
+    struct UInt64Record{
+      uint64_t value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class UInt64Index : public Index<UInt64Record, uint64_t>{
+    public:
+      UInt64Index()
+      : Index(NTable::UInt64){
+        
+      }
+      
+      void insert(uint64_t rowId, uint64_t value){
+        record_.value = value;
+        record_.rowId = rowId;
+        
+        insertRecord(record_);
+      }
+      
+    private:
+      UInt64Record record_;
+    };
+    
+    struct Int32Record{
+      int32_t value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class Int32Index : public Index<Int32Record, int32_t>{
+    public:
+      Int32Index()
+      : Index(NTable::Int32){
+        
+      }
+      
+      void insert(uint64_t rowId, int32_t value){
+        record_.value = value;
+        record_.rowId = rowId;
+        
+        insertRecord(record_);
+      }
+      
+    private:
+      Int32Record record_;
+    };
+    
+    struct UInt32Record{
+      uint32_t value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class UInt32Index : public Index<UInt32Record, uint32_t>{
+    public:
+      UInt32Index()
+      : Index(NTable::UInt32){
+        
+      }
+      
+      void insert(uint64_t rowId, uint32_t value){
+        record_.value = value;
+        record_.rowId = rowId;
+        
+        insertRecord(record_);
+      }
+      
+    private:
+      UInt32Record record_;
     };
 
-    struct FloatRecord{
+    struct DoubleRecord{
       double value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class DoubleIndex : public Index<DoubleRecord, double>{
+    public:
+      DoubleIndex()
+      : Index(NTable::Double){
+        
+      }
+      
+      void insert(uint64_t rowId, double value){
+        record_.value = value;
+        record_.rowId = rowId;
+        
+        insertRecord(record_);
+      }
+      
+    private:
+      DoubleRecord record_;
+    };
+    
+    struct FloatRecord{
+      float value;
       uint64_t rowId;
       
       void dump() const{
@@ -565,7 +649,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, double value){
+      void insert(uint64_t rowId, float value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -576,67 +660,32 @@ namespace neu{
       FloatRecord record_;
     };
     
-    /*
-    class HashIndex : public Index{
+    struct HashRecord{
+      uint64_t value;
+      uint64_t rowId;
+      
+      void dump() const{
+        cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+    };
+    
+    class HashIndex : public Index<HashRecord, uint64_t>{
     public:
-      struct Record{
-        Hash value;
-        uint64_t rowId;
+      HashIndex()
+      : Index(NTable::Hash){
         
-        void dump() const{
-          cout << "<<hash>>";
-        }
-      };
+      }
       
-      typedef Page<Record, Hash> HashPage;
-      
-      void insert(uint64_t rowId, const nvar& v){
-        nvar h;
-        NEncoder::sha256(v.toStr(), h);
-        
-        Hash value;
-        value.h[0] = h[0];
-        value.h[1] = h[1];
-        value.h[2] = h[2];
-        value.h[3] = h[3];
-        
-        HashPage* page;
-        
-        bool erase;
-        auto itr = findSlot(pageMap_, value);
-        if(itr == pageMap_.end()){
-          page = new HashPage(nextPageId_++);
-          erase = false;
-        }
-        else{
-          page = itr->second;
-          erase = true;
-        }
-        
-        record_.rowId = rowId;
+      void insert(uint64_t rowId, uint64_t value){
         record_.value = value;
+        record_.rowId = rowId;
         
-        if(page->insert(record_)){
-          HashPage* p = page->split(nextPageId_++);
-          p->insert(record_);
-          pageMap_.insert({p->maxValue(), p});
-        }
-        
-        if(erase){
-          pageMap_.erase(itr);
-        }
-        
-        pageMap_.insert({page->maxValue(), page});
+        insertRecord(record_);
       }
       
     private:
-      typedef NMap<Hash, HashPage*> PageMap_;
-      
-      uint64_t nextPageId_;
-      PageMap_ pageMap_;
-      Record record_;
+      HashRecord record_;
     };
-     */
     
     class Data{
     public:
@@ -710,17 +759,27 @@ namespace neu{
       IndexBase* index;
       
       switch(indexType){
-        case NTable::Integer:
-          index = new IntegerIndex;
+        case NTable::Int32:
+          index = new Int32Index;
+          break;
+        case NTable::UInt32:
+          index = new UInt32Index;
+          break;
+        case NTable::Int64:
+          index = new Int64Index;
+          break;
+        case NTable::UInt64:
+          index = new UInt64Index;
           break;
         case NTable::Float:
           index = new FloatIndex;
           break;
-          /*
+        case NTable::Double:
+          index = new DoubleIndex;
+          break;
         case NTable::Hash:
           index = new HashIndex;
           break;
-           */
         case DataIndexType:
           index = new DataIndex;
           break;
@@ -748,14 +807,39 @@ namespace neu{
             IndexBase* index = iitr->second;
             
             switch(index->type()){
-              case NTable::Integer:{
-                IntegerIndex* i = static_cast<IntegerIndex*>(index);
+              case NTable::Int32:{
+                Int32Index* i = static_cast<Int32Index*>(index);
+                i->insert(rowId, v);
+                break;
+              }
+              case NTable::UInt32:{
+                UInt32Index* i = static_cast<UInt32Index*>(index);
+                i->insert(rowId, v);
+                break;
+              }
+              case NTable::Int64:{
+                Int64Index* i = static_cast<Int64Index*>(index);
+                i->insert(rowId, v);
+                break;
+              }
+              case NTable::UInt64:{
+                UInt64Index* i = static_cast<UInt64Index*>(index);
                 i->insert(rowId, v);
                 break;
               }
               case NTable::Float:{
                 FloatIndex* i = static_cast<FloatIndex*>(index);
                 i->insert(rowId, v);
+                break;
+              }
+              case NTable::Double:{
+                DoubleIndex* i = static_cast<DoubleIndex*>(index);
+                i->insert(rowId, v);
+                break;
+              }
+              case NTable::Hash:{
+                HashIndex* i = static_cast<HashIndex*>(index);
+                i->insert(rowId, v.hash());
                 break;
               }
               default:

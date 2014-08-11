@@ -57,69 +57,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/nvar.h>
 
-#include <set>
-#include <algorithm>
-
 namespace neu{
   
   class NTable{
   public:
-    
-    class RowSet{
 
-      void insert(uint64_t rowId){
-        set_.insert(rowId);
-      }
-      
-      void unite(const RowSet& s){
-        Set_ r;
-        
-        std::set_union(set_.begin(), set_.end(),
-                       s.set_.begin(), s.set_.end(),
-                       std::inserter(r, r.begin()));
-        
-        set_ = std::move(r);
-      }
-      
-      void intersect(const RowSet& s){
-        Set_ r;
-        
-        std::set_intersection(set_.begin(), set_.end(),
-                              s.set_.begin(), s.set_.end(),
-                              std::inserter(r, r.begin()));
-        
-        set_ = std::move(r);
-      }
-      
-      void complement(const RowSet& s){
-        Set_ r;
-        
-        std::set_difference(set_.begin(), set_.end(),
-                            s.set_.begin(), s.set_.end(),
-                            std::inserter(r, r.begin()));
-        
-        set_ = std::move(r);
-      }
-      
-    private:
-      typedef std::set<uint64_t> Set_;
-      
-      Set_ set_;
+    typedef uint64_t RowId;
+    
+    typedef NSet<RowId> RowSet;
+    
+    enum IndexType{
+      UInt32,
+      Int32,
+      UInt64,
+      Int64,
+      Float,
+      Double,
+      Hash
     };
-    
-    typedef uint8_t IndexType;
-    
-    static const IndexType Integer =    0;
-    static const IndexType Float =      1;
-    static const IndexType Hash =       2;
     
     void addIndex(const nstr& indexName, IndexType indexType);
     
-    uint64_t insert(const nvar& row);
+    RowId insert(const nvar& row);
     
     void update(const nvar& row);
     
-    bool get(uint64_t rowId, nvar& row);
+    bool get(RowId rowId, nvar& row);
     
     void find(const nstr& indexName, const nvar& value, nvar& row);
     
@@ -127,7 +90,7 @@ namespace neu{
     
     void back(nvar& row);
     
-    void erase(uint64_t rowId);
+    void erase(RowId rowId);
     
     void compact();
     
