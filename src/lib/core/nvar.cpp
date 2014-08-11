@@ -17858,6 +17858,20 @@ nvar nvar::operator==(const nvar& x) const{
         default:
           return false;
       }
+    case Queue:
+      switch(x.t_){
+        case Queue:
+          return *h_.q == *x.h_.q;
+        case Symbol:
+        case Function:
+          return nfunc("EQ") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this == *x.h_.ref->v;
+        case Pointer:
+          return *this == *x.h_.vp;
+        default:
+          return false;
+      }
     case Symbol:
     case Function:
       return nfunc("EQ") << new nvar(*this, Copy) << nvar(x, Copy);
@@ -17875,10 +17889,38 @@ nvar nvar::operator==(const nvar& x) const{
         default:
           return false;
       }
+    case Set:
+      switch(x.t_){
+        case Set:
+          return *h_.set == *x.h_.set;
+        case Symbol:
+        case Function:
+          return nfunc("EQ") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this == *x.h_.ref->v;
+        case Pointer:
+          return *this == *x.h_.vp;
+        default:
+          return false;
+      }
     case Map:
       switch(x.t_){
         case Map:
           return *h_.m == *x.h_.m;
+        case Symbol:
+        case Function:
+          return nfunc("EQ") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this == *x.h_.ref->v;
+        case Pointer:
+          return *this == *x.h_.vp;
+        default:
+          return false;
+      }
+    case HashMap:
+      switch(x.t_){
+        case HashMap:
+          return *h_.h == *x.h_.h;
         case Symbol:
         case Function:
           return nfunc("EQ") << *this << new nvar(x, Copy);
@@ -18218,6 +18260,20 @@ nvar nvar::operator!=(const nvar& x) const{
         default:
           return true;
       }
+    case Queue:
+      switch(x.t_){
+        case Queue:
+          return *h_.q != *x.h_.q;
+        case Symbol:
+        case Function:
+          return nfunc("NE") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this != *x.h_.ref->v;
+        case Pointer:
+          return *this != *x.h_.vp;
+        default:
+          return true;
+      }
     case Symbol:
     case Function:
       return nfunc("NE") << new nvar(*this, Copy) << nvar(x, Copy);
@@ -18235,10 +18291,38 @@ nvar nvar::operator!=(const nvar& x) const{
         default:
           return true;
       }
+    case Set:
+      switch(x.t_){
+        case Map:
+          return *h_.set != *x.h_.set;
+        case Symbol:
+        case Function:
+          return nfunc("NE") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this != *x.h_.ref->v;
+        case Pointer:
+          return *this != *x.h_.vp;
+        default:
+          return true;
+      }
     case Map:
       switch(x.t_){
         case Map:
           return *h_.m != *x.h_.m;
+        case Symbol:
+        case Function:
+          return nfunc("NE") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this != *x.h_.ref->v;
+        case Pointer:
+          return *this != *x.h_.vp;
+        default:
+          return true;
+      }
+    case HashMap:
+      switch(x.t_){
+        case Map:
+          return *h_.h != *x.h_.h;
         case Symbol:
         case Function:
           return nfunc("NE") << *this << new nvar(x, Copy);
@@ -19406,6 +19490,13 @@ nvar& nvar::operator[](const nvar& key){
           }
           return (*h_.l)[k];
         }
+        case Queue:{
+          size_t k = key.asLong();
+          if(k >= h_.q->size()){
+            NERROR("index out of range: " + key);
+          }
+          return (*h_.q)[k];
+        }
         case Function:{
           size_t k = key.asLong();
           if(k >= h_.f->v.size()){
@@ -19418,6 +19509,13 @@ nvar& nvar::operator[](const nvar& key){
         case Map:{
           auto itr = h_.m->find(key);
           if(itr == h_.m->end()){
+            NERROR("invalid key: " + key);
+          }
+          return itr->second;
+        }
+        case HashMap:{
+          auto itr = h_.h->find(key);
+          if(itr == h_.h->end()){
             NERROR("invalid key: " + key);
           }
           return itr->second;
@@ -19456,7 +19554,13 @@ nvar& nvar::operator[](const nvar& key){
             NERROR("invalid key: " + key);
           }
           return itr->second;
-          break;
+        }
+        case HashMap:{
+          auto itr = h_.h->find(key);
+          if(itr == h_.h->end()){
+            NERROR("invalid key: " + key);
+          }
+          return itr->second;
         }
         case HeadMap:
           return (*h_.hm->m)[key];
@@ -19486,6 +19590,11 @@ nvar& nvar::operator[](int k){
         NERROR("index out of range: " + nstr::toStr(k));
       }
       return (*h_.l)[k];
+    case Queue:
+      if(k >= h_.q->size()){
+        NERROR("index out of range: " + nstr::toStr(k));
+      }
+      return (*h_.q)[k];
     case Function:
       if(k >= h_.f->v.size()){
         NERROR("index out of range: " + nstr::toStr(k));
@@ -19496,6 +19605,13 @@ nvar& nvar::operator[](int k){
     case Map:{
       auto itr = h_.m->find(k);
       if(itr == h_.m->end()){
+        NERROR("invalid key: " + nstr::toStr(k));
+      }
+      return itr->second;
+    }
+    case HashMap:{
+      auto itr = h_.h->find(k);
+      if(itr == h_.h->end()){
         NERROR("invalid key: " + nstr::toStr(k));
       }
       return itr->second;
@@ -19520,6 +19636,13 @@ nvar& nvar::operator[](const char* key){
     case Map:{
       auto itr = h_.m->find(key);
       if(itr == h_.m->end()){
+        NERROR("invalid key: " + nstr::toStr(key));
+      }
+      return itr->second;
+    }
+    case HashMap:{
+      auto itr = h_.h->find(key);
+      if(itr == h_.h->end()){
         NERROR("invalid key: " + nstr::toStr(key));
       }
       return itr->second;
@@ -19565,7 +19688,13 @@ nvar& nvar::get(const nvar& key){
         NERROR("invalid key: " + key);
       }
       return itr->second;
-      break;
+    }
+    case HashMap:{
+      auto itr = h_.h->find(key);
+      if(itr == h_.h->end()){
+        NERROR("invalid key: " + key);
+      }
+      return itr->second;
     }
     case HeadMap:
       return (*h_.hm->m)[key];
@@ -19588,6 +19717,8 @@ const nvar& nvar::get(const nvar& key, const nvar& def) const{
       return h_.f->m ? h_.f->m->get(key, def) : def;
     case Map:
       return h_.m->get(key, def);
+    case HashMap:
+      return h_.h->get(key, def);
     case HeadMap:
       return h_.hm->m->get(key, def);
     case SequenceMap:
@@ -19609,6 +19740,8 @@ nvar& nvar::get(const nvar& key, nvar& def){
       return h_.f->m ? h_.f->m->get(key, def) : def;
     case Map:
       return h_.m->get(key, def);
+    case HashMap:
+      return h_.h->get(key, def);
     case HeadMap:
       return h_.hm->m->get(key, def);
     case SequenceMap:
@@ -19640,7 +19773,8 @@ nvar& nvar::operator()(const nvar& key){
       h_.m = new nmap;
       return (*h_.m)[key];
     case Vector:
-    case List:{
+    case List:
+    case Queue:{
       Head h;
       h.m = new nmap;
       h_.sm = new CSequenceMap(new nvar(t_, h_), new nvar(Map, h));
@@ -19665,6 +19799,8 @@ nvar& nvar::operator()(const nvar& key){
     }
     case Map:
       return (*h_.m)[key];
+    case HashMap:
+      return (*h_.h)[key];
     case Multimap:{
       auto itr = h_.mm->insert({key, nvar()});
       return itr->second;
@@ -19698,6 +19834,9 @@ void nvar::erase(const nvar& key){
       break;
     case Map:
       h_.m->erase(key);
+      break;
+    case HashMap:
+      h_.h->erase(key);
       break;
     case Multimap:
       h_.mm->erase(key);
@@ -19769,10 +19908,19 @@ void nvar::touchVector(){
       t_ = Vector;
       break;
     }
+    case Queue:{
+      nvec* v = new nvec(h_.q->begin(), h_.q->end());
+      delete h_.q;
+      h_.v = v;
+      t_ = Vector;
+      break;
+    }
     case HeadSequence:
       h_.hs->s->touchVector();
       break;
+    case Set:
     case Map:
+    case HashMap:
     case Multimap:{
       Head h;
       h.v = new nvec;
@@ -19834,7 +19982,9 @@ void nvar::touchVector(size_t size, const nvar& v){
       t_ = HeadSequence;
       break;
     }
+    case Set:
     case Map:
+    case HashMap:
     case Multimap:{
       Head h;
       h.v = new nvec(size, v);
@@ -19899,10 +20049,19 @@ void nvar::touchList(){
     }
     case List:
       break;
+    case Queue:{
+      nlist* l = new nlist(h_.q->begin(), h_.q->end());
+      delete h_.q;
+      h_.l = l;
+      t_ = List;
+      break;
+    }
     case HeadSequence:
       h_.hs->s->touchList();
       break;
+    case Set:
     case Map:
+    case HashMap:
     case Multimap:{
       Head h;
       h.l = new nlist;
@@ -19965,7 +20124,8 @@ void nvar::touchMap(){
       break;
     }
     case Vector:
-    case List:{
+    case List:
+    case Queue:{
       Head h;
       h.m = new nmap;
       h_.sm = new CSequenceMap(new nvar(t_, h_), new nvar(Map, h));
@@ -19985,6 +20145,26 @@ void nvar::touchMap(){
       h_.hsm = new CHeadSequenceMap(hs->h, hs->s, new nvar(Map, h));
       t_ = HeadSequenceMap;
       delete hs;
+      break;
+    }
+    case Set:{
+      nmap* m = new nmap;
+      
+      for(auto& itr : *h_.set){
+        m->insert({*itr, true});
+      }
+      
+      delete h_.set;
+      t_ = Map;
+      h_.m = m;
+      break;
+    }
+    case HashMap:{
+      nmap* m = new nmap(h_.h->begin(), h_.h->end());
+      
+      delete h_.h;
+      t_ = Map;
+      h_.m = m;
       break;
     }
     case Map:
@@ -20054,7 +20234,8 @@ void nvar::touchMultimap(){
       break;
     }
     case Vector:
-    case List:{
+    case List:
+    case Queue:{
       Head h;
       h.mm = new nmmap;
       h_.sm = new CSequenceMap(new nvar(t_, h_), new nvar(Multimap, h));
@@ -20071,10 +20252,30 @@ void nvar::touchMultimap(){
       delete hs;
       break;
     }
+    case Set:{
+      nmmap* m = new nmmap;
+      
+      for(auto& itr : *h_.set){
+        m->insert({*itr, true});
+      }
+      
+      delete h_.set;
+      t_ = Multimap;
+      h_.mm = m;
+      break;
+    }
     case Map:{
       const nmap& m = *h_.m;
       h_.mm = new nmmap(m.begin(), m.end());
       t_ = Multimap;
+      break;
+    }
+    case HashMap:{
+      nmmap* m = new nmmap(h_.h->begin(), h_.h->end());
+      
+      delete h_.h;
+      t_ = Multimap;
+      h_.mm = m;
       break;
     }
     case Multimap:
@@ -20110,6 +20311,10 @@ void nvar::append(const nvar& x){
         case List:
           t_ = List;
           h_.l = new nlist(*x.h_.l);
+          break;
+        case Queue:
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
           break;
         case Function:
           t_ = Function;
@@ -20158,6 +20363,13 @@ void nvar::append(const nvar& x){
           Head h;
           h.l = new nlist(*x.h_.l);
           h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(List, h));
+          t_ = HeadSequence;
+          break;
+        }
+        case Queue:{
+          Head h;
+          h.q = new nqueue(*x.h_.q);
+          h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Queue, h));
           t_ = HeadSequence;
           break;
         }
@@ -20241,6 +20453,37 @@ void nvar::append(const nvar& x){
           break;
       }
       break;
+    case Queue:
+      switch(x.t_){
+        case Vector:
+          h_.q->insert(h_.q->begin(), x.h_.v->begin(), x.h_.v->end());
+          break;
+        case List:
+          h_.q->insert(h_.q->begin(), x.h_.l->begin(), x.h_.l->end());
+          break;
+        case Queue:
+          h_.q->append(*x.h_.q);
+          break;
+        case Function:
+          h_.q->insert(h_.q->begin(), x.h_.f->v.begin(), x.h_.f->v.end());
+          break;
+        case HeadSequence:
+          append(*x.h_.hs->s);
+          break;
+        case SequenceMap:
+          append(*x.h_.sm->s);
+          break;
+        case HeadSequenceMap:
+          append(*x.h_.hsm->s);
+          break;
+        case Reference:
+          append(*x.h_.ref->v);
+          break;
+        case Pointer:
+          append(*x.h_.vp);
+          break;
+      }
+      break;
     case Function:
       switch(x.t_){
         case Vector:
@@ -20248,6 +20491,9 @@ void nvar::append(const nvar& x){
           break;
         case List:
           h_.f->v.insert(h_.v->begin(), x.h_.l->begin(), x.h_.l->end());
+          break;
+        case Queue:
+          h_.f->v.insert(h_.v->begin(), x.h_.q->begin(), x.h_.q->end());
           break;
         case Function:
           h_.f->v.append(x.h_.f->v);
@@ -20272,7 +20518,9 @@ void nvar::append(const nvar& x){
     case HeadSequence:
       h_.hs->s->append(x);
       break;
+    case Set:
     case Map:
+    case HashMap:
       switch(x.t_){
         case Vector:{
           Head hv;
@@ -20281,7 +20529,7 @@ void nvar::append(const nvar& x){
           Head hm;
           hm.m = h_.m;
           
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, hm));
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(t_, hm));
           t_ = SequenceMap;
           break;
         }
@@ -20292,7 +20540,18 @@ void nvar::append(const nvar& x){
           Head hm;
           hm.m = h_.m;
           
-          h_.sm = new CSequenceMap(new nvar(List, hl), new nvar(Map, hm));
+          h_.sm = new CSequenceMap(new nvar(List, hl), new nvar(t_, hm));
+          t_ = SequenceMap;
+          break;
+        }
+        case Queue:{
+          Head hq;
+          hq.q = new nqueue(*x.h_.q);
+          
+          Head hm;
+          hm.m = h_.m;
+          
+          h_.sm = new CSequenceMap(new nvar(Queue, hq), new nvar(t_, hm));
           t_ = SequenceMap;
           break;
         }
@@ -20304,58 +20563,6 @@ void nvar::append(const nvar& x){
           hm.m = h_.m;
           
           h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, hm));
-          t_ = SequenceMap;
-          break;
-        }
-        case HeadSequence:
-          append(*x.h_.hs->s);
-          break;
-        case SequenceMap:
-          append(*x.h_.sm->s);
-          break;
-        case HeadSequenceMap:
-          append(*x.h_.hsm->s);
-          break;
-        case Reference:
-          append(*x.h_.ref->v);
-          break;
-        case Pointer:
-          append(*x.h_.vp);
-          break;
-      }
-      break;
-    case Multimap:
-      switch(x.t_){
-        case Vector:{
-          Head hv;
-          hv.v = new nvec(*x.h_.v);
-          
-          Head hm;
-          hm.mm = h_.mm;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Multimap, hm));
-          t_ = SequenceMap;
-          break;
-        }
-        case List:{
-          Head hl;
-          hl.l = new nlist(*x.h_.l);
-          
-          Head hm;
-          hm.mm = h_.mm;
-          
-          h_.sm = new CSequenceMap(new nvar(List, hl), new nvar(Multimap, hm));
-          t_ = SequenceMap;
-          break;
-        }
-        case Function:{
-          Head hv;
-          hv.v = new nvec(x.h_.f->v);
-          
-          Head hm;
-          hm.mm = h_.mm;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Multimap, hm));
           t_ = SequenceMap;
           break;
         }
@@ -20393,6 +20600,15 @@ void nvar::append(const nvar& x){
           
           h_.hsm =
           new CHeadSequenceMap(h_.hm->h, new nvar(List, hl), h_.hm->m);
+          t_ = HeadSequenceMap;
+          break;
+        }
+        case Queue:{
+          Head hq;
+          hq.q = new nqueue(*x.h_.q);
+          
+          h_.hsm =
+          new CHeadSequenceMap(h_.hm->h, new nvar(Queue, hq), h_.hm->m);
           t_ = HeadSequenceMap;
           break;
         }
@@ -20909,6 +21125,17 @@ void nvar::setHead(const nvar& x){
       h_.hs = new CHeadSequence(h, new nvar(List, hl));
       break;
     }
+    case Queue:{
+      nvar* h = new nvar;
+      h->setHead(x);
+      
+      Head hq;
+      hq.q = h_.q;
+      
+      t_ = HeadSequence;
+      h_.hs = new CHeadSequence(h, new nvar(Queue, hq));
+      break;
+    }
     case Function:
       switch(x.t_){
         case Rational:
@@ -20975,6 +21202,17 @@ void nvar::setHead(const nvar& x){
     case HeadSequence:
       h_.hs->h->setHead(x);
       break;
+    case Set:{
+      nvar* h = new nvar;
+      h->setHead(x);
+      
+      Head hs;
+      hs.set = h_.set;
+      
+      t_ = HeadMap;
+      h_.hm = new CHeadMap(h, new nvar(Set, hs));
+      break;
+    }
     case Map:{
       nvar* h = new nvar;
       h->setHead(x);
@@ -20984,6 +21222,17 @@ void nvar::setHead(const nvar& x){
       
       t_ = HeadMap;
       h_.hm = new CHeadMap(h, new nvar(Map, hm));
+      break;
+    }
+    case HashMap:{
+      nvar* h = new nvar;
+      h->setHead(x);
+      
+      Head hm;
+      hm.h = h_.h;
+      
+      t_ = HeadMap;
+      h_.hm = new CHeadMap(h, new nvar(HashMap, hm));
       break;
     }
     case Multimap:{
@@ -21077,10 +21326,59 @@ void nvar::setHead(const nvar& x){
 
 void nvar::merge(const nvar& x){
   switch(t_){
+    case Set:
+      switch(x.t_){
+        case Set:
+          h_.set->unite(*x.h_.set);
+          break;
+        case Map:
+          for(auto& itr : *x.h_.m){
+            h_.set->insert(itr.first);
+          }
+          break;
+        case HashMap:
+          for(auto& itr : *x.h_.h){
+            h_.set->insert(itr.first);
+          }
+          break;
+        case Multimap:
+          for(auto& itr : *x.h_.mm){
+            h_.set->insert(itr.first);
+          }
+          break;
+        case Function:
+          if(x.h_.f->m){
+            h_.m->merge(*x.h_.f->m);
+          }
+          break;
+        case HeadMap:
+          merge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          merge(*x.h_.hsm->m);
+          break;
+        case Reference:
+          merge(*x.h_.ref->v);
+          break;
+        case Pointer:
+          merge(*x.h_.vp);
+          break;
+        default:
+          break;
+      }
+      break;
     case Map:
       switch(x.t_){
+        case Set:
+          for(auto& itr : *x.h_.set){
+            h_.m->insert({*itr, true});
+          }
+          break;
         case Map:
           h_.m->merge(*x.h_.m);
+          break;
+        case HashMap:
+          h_.m->insert(x.h_.h->begin(), x.h_.h->end());
           break;
         case Multimap:
           touchMultimap();
@@ -21109,8 +21407,16 @@ void nvar::merge(const nvar& x){
       break;
     case Multimap:
       switch(x.t_){
+        case Set:
+          for(auto& itr : *x.h_.set){
+            h_.m->insert({*itr, true});
+          }
+          break;
         case Map:
           h_.mm->insert(x.h_.m->begin(), x.h_.m->end());
+          break;
+        case HashMap:
+          h_.mm->insert(x.h_.h->begin(), x.h_.h->end());
           break;
         case Multimap:
           h_.mm->merge(*x.h_.mm);

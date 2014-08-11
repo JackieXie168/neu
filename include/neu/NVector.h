@@ -218,15 +218,10 @@ namespace neu{
       vec_.insert(position, n, x);
     }
     
-    void append(const NVector<T> v){
+    void append(const NVector<T>& v){
       vec_.insert(vec_.end(), v.begin(), v.end());
     }
-    
-    template<class S>
-    void append(const NVector<S> v){
-      vec_.insert(vec_.end(), v.begin(), v.end());
-    }
-    
+        
     template<class InputIterator>
     void insert(iterator position, InputIterator first, InputIterator last){
       vec_.insert(position, first, last);

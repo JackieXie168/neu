@@ -292,6 +292,10 @@ namespace neu{
       return q_.insert(p, il);
     }
     
+    void append(const NQueue<T>& q){
+      q_.insert(q_.end(), q.begin(), q.end());
+    }
+    
     void pop_front(){
       q_.pop_front();
     }
