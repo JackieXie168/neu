@@ -909,6 +909,10 @@ namespace neu{
         
       }
       
+      ~Data(){
+        free(data_);
+      }
+      
       size_t size(){
         return size_;
       }
@@ -940,11 +944,32 @@ namespace neu{
       
       void get(uint32_t offset, nvar& v){
         RowId rowId;
-        memcpy(&rowId, data_ + offset, 4);
+        memcpy(&rowId, data_ + offset, 8);
+        offset += 8;
         
         uint32_t size;
-        memcpy(&size, data_ + offset + 8, 4);
-        v.unpack(data_ + offset + 12, size);
+        memcpy(&size, data_ + offset, 4);
+        offset += 4;
+        v.unpack(data_ + offset, size);
+      }
+      
+      void compact(Data* newData, const RowSet& rs){
+        RowId rowId;
+        uint32_t size;
+        uint32_t offset = 0;
+        
+        while(offset < size_){
+          memcpy(&rowId, data_ + offset, 8);
+          offset += 8;
+
+          memcpy(&size, data_ + offset, 4);
+          offset += 4;
+          
+          if(!rs.hasKey(rowId)){
+            newData->insert(rowId, data_ + offset, size);
+          }
+          offset += size;
+        }
       }
       
     private:
@@ -1223,6 +1248,17 @@ namespace neu{
       }
       
       indexMap_ = move(newIndexMap_);
+      
+      Data* newData;
+      Data* data;
+      
+      for(auto& itr : dataMap_){
+        newData = new Data(itr.first);
+        data = itr.second;
+        data->compact(newData, rs);
+        itr.second = newData;
+        delete data;
+      }
     }
     
     void dump(){
