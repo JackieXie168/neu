@@ -77,6 +77,8 @@ namespace neu{
       Hash
     };
     
+    typedef std::function<int(const nvar& r)> QueryFunc;
+    
     void addIndex(const nstr& indexName, IndexType indexType);
     
     RowId insert(nvar& row);
@@ -86,6 +88,23 @@ namespace neu{
     bool get(RowId rowId, nvar& row);
     
     void erase(RowId rowId);
+    
+    void query(const nstr& indexName,
+               const nvar& start,
+               QueryFunc f);
+    
+    void indexQuery(const nstr& indexName,
+                    const nvar& start,
+                    const nvar& end,
+                    RowSet& rs);
+    
+    void traverseStart(QueryFunc f);
+    
+    void traverseEnd(QueryFunc f);
+
+    void join(const nstr& indexName, const RowSet& js, RowSet& rs);
+
+    void get(const RowSet& rs, QueryFunc f);
     
     void dump();
     

@@ -87,6 +87,8 @@ namespace{
   
   typedef typename NTable::RowSet RowSet;
   
+  typedef typename NTable::QueryFunc QueryFunc;
+  
   typedef NHashMap<RowId, RowId> UpdateMap;
   
 } // end namespace
@@ -1184,59 +1186,59 @@ namespace neu{
         
         switch(oldIndex->type()){
           case NTable::Int32:{
-            Int32Index* index = new Int32Index;
+            Int32Index* ni = new Int32Index;
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::UInt32:{
-            UInt32Index* index = new UInt32Index;
+            UInt32Index* ni = new UInt32Index;
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::Int64:{
-            Int64Index* index = new Int64Index;
+            Int64Index* ni = new Int64Index;
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::UInt64:{
-            UInt64Index* index = new UInt64Index;
+            UInt64Index* ni = new UInt64Index;
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::Float:{
-            FloatIndex* index = new FloatIndex;
+            FloatIndex* ni = new FloatIndex;
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::Double:{
-            DoubleIndex* index = new DoubleIndex;
+            DoubleIndex* ni = new DoubleIndex;
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           case NTable::Row:{
-            RowIndex* index = new RowIndex;
+            RowIndex* ni = new RowIndex;
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
-            oi->compact(*index, rs, um);
-            newIndex = index;
+            oi->compact(*ni, rs, um);
+            newIndex = ni;
             break;
           }
           case NTable::Hash:{
-            HashIndex* index = new HashIndex;
+            HashIndex* ni = new HashIndex;
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
-            oi->compact(*index, rs);
-            newIndex = index;
+            oi->compact(*ni, rs);
+            newIndex = ni;
             break;
           }
           default:
@@ -1259,6 +1261,35 @@ namespace neu{
         itr.second = newData;
         delete data;
       }
+    }
+    
+    void query(const nstr& indexName,
+               const nvar& start,
+               QueryFunc f){
+
+    }
+    
+    void indexQuery(const nstr& indexName,
+                    const nvar& start,
+                    const nvar& end,
+                    RowSet& rs){
+
+    }
+    
+    void traverseStart(QueryFunc f){
+
+    }
+    
+    void traverseEnd(QueryFunc f){
+
+    }
+    
+    void join(const nstr& indexName, const RowSet& js, RowSet& rs){
+
+    }
+    
+    void get(const RowSet& rs, QueryFunc f){
+
     }
     
     void dump(){
@@ -1347,6 +1378,35 @@ bool NTable::get(RowId rowId, nvar& row){
 
 void NTable::erase(RowId rowId){
   x_->erase(rowId);
+}
+
+void NTable::query(const nstr& indexName,
+                   const nvar& start,
+                   QueryFunc f){
+  x_->query(indexName, start, f);
+}
+
+void NTable::indexQuery(const nstr& indexName,
+                        const nvar& start,
+                        const nvar& end,
+                        RowSet& rs){
+  x_->indexQuery(indexName, start, end, rs);
+}
+
+void NTable::traverseStart(QueryFunc f){
+  x_->traverseStart(f);
+}
+
+void NTable::traverseEnd(QueryFunc f){
+  x_->traverseEnd(f);
+}
+
+void NTable::join(const nstr& indexName, const RowSet& js, RowSet& rs){
+  x_->join(indexName, js, rs);
+}
+
+void NTable::get(const RowSet& rs, QueryFunc f){
+  x_->get(rs, f);
 }
 
 void NTable::dump(){
