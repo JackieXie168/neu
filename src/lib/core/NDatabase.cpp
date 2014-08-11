@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NDatabase.h>
 
 #include <neu/NEncoder.h>
+#include <neu/NHashMap.h>
 
 using namespace std;
 using namespace neu;
@@ -85,6 +86,8 @@ namespace{
   typedef typename NTable::RowId RowId;
   
   typedef typename NTable::RowSet RowSet;
+  
+  typedef NHashMap<RowId, RowId> UpdateMap;
   
 } // end namespace
 
@@ -132,8 +135,12 @@ namespace neu{
     template<class R, class V>
     class Page{
     public:
+      typedef void (*TraverseFunc)(R& record);
+      
       class Chunk{
       public:
+        
+        typedef void (*TraverseFunc)(R& record);
         
         Action findInsert(const V& value, size_t& index){
           index = 0;
@@ -253,6 +260,13 @@ namespace neu{
           assert(!chunk_.empty());
          
           return chunk_.front().value;
+        }
+        
+        void traverse(TraverseFunc f){
+          size_t size = chunk_.size();
+          for(size_t i = 0; i < size; ++i){
+            f(chunk_[i]);
+          }
         }
         
         void dump(){
@@ -390,6 +404,12 @@ namespace neu{
         return itr->second->min();
       }
       
+      void traverse(TraverseFunc f){
+        for(auto& itr : chunkMap_){
+          itr.second->traverse(f);
+        }
+      }
+      
       void dump(){
         for(auto& itr : chunkMap_){
           cout << "@@@ CHUNK LOWER: " << itr.first << endl;
@@ -432,6 +452,8 @@ namespace neu{
     class Index : public IndexBase{
     public:
       typedef Page<R, V> IndexPage;
+      
+      typedef void (*TraverseFunc)(R& record);
       
       Index(uint8_t type)
       : IndexBase(type),
@@ -481,6 +503,12 @@ namespace neu{
       
       R* getRecord(const V& value){
         return findPage(value)->second->get(value);
+      }
+      
+      void traverse(TraverseFunc f){
+        for(auto& itr : pageMap_){
+          itr.second->traverse(f);
+        }
       }
       
       void dump(){
@@ -1061,7 +1089,9 @@ namespace neu{
     }
     
     void compact(){
-      NTable::RowSet rs;
+      RowSet rs;
+      
+      
     }
     
     void dump(){
