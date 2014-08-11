@@ -63,13 +63,11 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 10;
-  static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 65536;
+  static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
-  
-  static const uint64_t ErasedFlag = 0x1;
   
   template<typename T>
   void min(T& m){
@@ -83,6 +81,10 @@ namespace{
   void min(float& m){
     m = -numeric_limits<float>::infinity();
   }
+  
+  typedef typename NTable::RowId RowId;
+  
+  typedef typename NTable::RowSet RowSet;
   
 } // end namespace
 
@@ -474,19 +476,55 @@ namespace neu{
       }
     };
 
-    struct DataRecord{
-      uint64_t value;
-      uint32_t dataId : 31;
-      uint32_t flags : 1;
-      uint32_t offset;
+    class DataRecord{
+    public:
+      
+      void set(RowId rowId, uint32_t dataId, uint32_t offset){
+        remap = 0;
+        value = rowId;
+        data = (uint64_t(dataId) << 32) | uint64_t(offset);
+      }
+      
+      void erase(){
+        remap = 1;
+        data = 0;
+      }
+      
+      void update(uint64_t newRowId){
+        remap = 1;
+        data = newRowId;
+      }
+      
+      RowId value;
+      uint64_t data : 63;
+      uint64_t remap : 1;
+      
+      uint32_t offset() const{
+        return data & 0xffffffff;
+      }
+      
+      uint32_t dataId() const{
+        return data >> 32;
+      }
       
       void dump() const{
-        cout << "value: " << value << "; dataId: " << dataId <<
-        "; offset: " << offset << endl;
+        if(remap){
+          if(data == 0){
+            cout << "deleted: " << value << endl;
+          }
+          else{
+            cout << "updated: " << data << endl;
+          }
+        }
+        else{
+          
+        }
+        cout << "rowId: " << value << "; dataId: " << dataId() <<
+        "; offset: " << offset() << endl;
       }
     };
     
-    class DataIndex : public Index<DataRecord, uint64_t>{
+    class DataIndex : public Index<DataRecord, RowId>{
     public:
       
       DataIndex()
@@ -494,31 +532,27 @@ namespace neu{
         
       }
       
-      void insert(uint32_t dataId, uint32_t offset, uint64_t rowId){
-        record_.dataId = dataId;
-        record_.offset = offset;
-        record_.value = rowId;
-        record_.flags = 0;
-        
+      void insert(uint32_t dataId, uint32_t offset, RowId rowId){
+        record_.set(rowId, dataId, offset);
         pushRecord(record_);
       }
 
-      bool get(uint64_t rowId, uint32_t& dataId, uint32_t& offset){
+      bool get(RowId rowId, uint32_t& dataId, uint32_t& offset){
         DataRecord* record = getRecord(rowId);
         if(record){
-          dataId = record->dataId;
-          offset = record->offset;
+          dataId = record->dataId();
+          offset = record->offset();
           return true;
         }
         
         return false;
       }
       
-      void erase(uint64_t rowId){
+      void erase(RowId rowId){
         DataRecord* record = getRecord(rowId);
         
         if(record){
-          record->flags = ErasedFlag;
+          record->erase();
         }
       }
       
@@ -528,7 +562,7 @@ namespace neu{
 
     struct Int64Record{
       int64_t value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -542,7 +576,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, int64_t value){
+      void insert(RowId rowId, int64_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -555,7 +589,7 @@ namespace neu{
     
     struct UInt64Record{
       uint64_t value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -569,7 +603,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, uint64_t value){
+      void insert(RowId rowId, uint64_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -581,22 +615,22 @@ namespace neu{
     };
     
     struct RowRecord{
-      uint64_t value;
-      uint64_t rowId;
+      RowId value;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
     };
     
-    class RowIndex : public Index<RowRecord, uint64_t>{
+    class RowIndex : public Index<RowRecord, RowId>{
     public:
       RowIndex()
       : Index(NTable::Row){
         
       }
       
-      void insert(uint64_t rowId, uint64_t value){
+      void insert(RowId rowId, uint64_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -609,7 +643,7 @@ namespace neu{
     
     struct Int32Record{
       int32_t value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -623,7 +657,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, int32_t value){
+      void insert(RowId rowId, int32_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -636,7 +670,7 @@ namespace neu{
     
     struct UInt32Record{
       uint32_t value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -650,7 +684,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, uint32_t value){
+      void insert(RowId rowId, uint32_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -663,7 +697,7 @@ namespace neu{
 
     struct DoubleRecord{
       double value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -677,7 +711,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, double value){
+      void insert(RowId rowId, double value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -690,7 +724,7 @@ namespace neu{
     
     struct FloatRecord{
       float value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -704,7 +738,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, float value){
+      void insert(RowId rowId, float value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -717,7 +751,7 @@ namespace neu{
     
     struct HashRecord{
       uint64_t value;
-      uint64_t rowId;
+      RowId rowId;
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
@@ -731,7 +765,7 @@ namespace neu{
         
       }
       
-      void insert(uint64_t rowId, uint64_t value){
+      void insert(RowId rowId, uint64_t value){
         record_.value = value;
         record_.rowId = rowId;
         
@@ -849,7 +883,7 @@ namespace neu{
     }
     
     uint64_t insert(const nvar& row){
-      uint64_t rowId = nextRowId_++;
+      RowId rowId = nextRowId_++;
       
       const nmap& m = row;
       for(auto& itr : m){
@@ -947,15 +981,7 @@ namespace neu{
       
     }
     
-    void find(const nstr& indexName, const nvar& value, nvar& row){
-      auto itr = indexMap_.find(indexName);
-      
-      if(itr == indexMap_.end()){
-        NERROR("invalid index: " + indexName);
-      }
-    }
-    
-    bool get(uint64_t rowId, nvar& row){
+    bool get(RowId rowId, nvar& row){
       uint32_t dataId;
       uint32_t offset;
       
@@ -972,19 +998,11 @@ namespace neu{
       return true;
     }
     
-    void forward(nvar& row){
-      
-    }
-    
-    void back(nvar& row){
-      
-    }
-    
     NTable* outer(){
       return o_;
     }
     
-    void erase(uint64_t rowId){
+    void erase(RowId rowId){
       dataIndex_.erase(rowId);
     }
     
@@ -1075,23 +1093,11 @@ void NTable::update(const nvar& row){
   x_->update(row);
 }
 
-void NTable::find(const nstr& indexName, const nvar& value, nvar& row){
-  x_->find(indexName, value, row);
-}
-
-bool NTable::get(uint64_t rowId, nvar& row){
+bool NTable::get(RowId rowId, nvar& row){
   return x_->get(rowId, row);
 }
 
-void NTable::forward(nvar& row){
-  x_->forward(row);
-}
-
-void NTable::back(nvar& row){
-  x_->back(row);
-}
-
-void NTable::erase(uint64_t rowId){
+void NTable::erase(RowId rowId){
   x_->erase(rowId);
 }
 

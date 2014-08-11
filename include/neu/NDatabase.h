@@ -85,12 +85,6 @@ namespace neu{
     
     bool get(RowId rowId, nvar& row);
     
-    void find(const nstr& indexName, const nvar& value, nvar& row);
-    
-    void forward(nvar& row);
-    
-    void back(nvar& row);
-    
     void erase(RowId rowId);
     
     void compact();
