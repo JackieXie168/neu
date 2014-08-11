@@ -205,8 +205,9 @@ namespace neu{
           return c;
         }
         
-        const V& max() const{
+        V max() const{
           assert(!chunk_.empty());
+         
           return chunk_.back().value;
         }
         
@@ -247,7 +248,7 @@ namespace neu{
         }
        
         if(handleFirst(record)){
-          return Remap;
+          return None;
         }
 
         auto itr = findChunk(record.value);
@@ -266,25 +267,27 @@ namespace neu{
           else{
             Chunk* c = chunk->split();
             
+            chunkMap_.erase(itr);
+            chunkMap_.insert({chunk->max(), chunk});
+            chunkMap_.insert({c->max(), c});
+            
             if(chunk == lastChunk_){
-              chunkMap_.insert({c->max(), c});
               return Remap;
             }
             else{
-              chunkMap_.erase(itr);
-              chunkMap_.insert({chunk->max(), chunk});
-              chunkMap_.insert({c->max(), c});
               return None;
             }
           }
         }
         
-        if(chunk == lastChunk_){
-          return Remap;
+        if(action & Remap){
+          chunkMap_.erase(itr);
+          chunkMap_.insert({chunk->max(), chunk});
+          
+          if(chunk == lastChunk_){
+            return Remap;
+          }
         }
-        
-        chunkMap_.erase(itr);
-        chunkMap_.insert({chunk->max(), chunk});
         
         return None;
       }
@@ -340,7 +343,7 @@ namespace neu{
         loaded_ = true;
       }
       
-      const V& max(){
+      V max(){
         auto itr = chunkMap_.rbegin();
         assert(itr != chunkMap_.rend());
         
@@ -364,7 +367,7 @@ namespace neu{
       
       typename ChunkMap_::iterator findChunk(const V& v){
         assert(!chunkMap_.empty());
-        auto itr = chunkMap_.upper_bound(v);
+        auto itr = chunkMap_.lower_bound(v);
         return itr == chunkMap_.end() ? --itr : itr;
       }
     };
@@ -415,7 +418,7 @@ namespace neu{
           IndexPage* p = page->split(nextPageId_++);
           pageMap_.insert({p->max(), p});
         }
-        else if(action & Remap && itr->first != max_){
+        else if(action & Remap && itr->first <= max_){
           pageMap_.erase(itr);
           pageMap_.insert({page->max(), page});
         }
