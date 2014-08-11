@@ -520,7 +520,38 @@ namespace neu{
           itr.second->traverse(f);
         }
       }
+
+      void compact(Index& ni, const RowSet& rs){
+        traverse([&](R& r){
+          if(rs.hasKey(r.rowId)){
+            return;
+          }
+          
+          ni.pushRecord(r);
+        });
+      }
       
+      void compact(Index& ni, const RowSet& rs, const UpdateMap& um){
+        traverse([&](R& r){
+          if(rs.hasKey(r.rowId)){
+            return;
+          }
+          
+          RowId rowId = r.value;
+          if(rs.hasKey(rowId)){
+            auto itr = um.find(rowId);
+            if(itr != um.end()){
+              r.value = itr->second;
+            }
+            else{
+              return;
+            }
+          }
+          
+          ni.pushRecord(r);
+        });
+      }
+
       void dump(){
         for(auto& itr : pageMap_){
           cout << "@@@@@@@ PAGE: " << itr.first << endl;
@@ -1120,7 +1151,78 @@ namespace neu{
     }
 
     void compact(const RowSet& rs, const UpdateMap& um){
+      IndexMap_ newIndexMap_;
       
+      for(auto& itr : indexMap_){
+        IndexBase* oldIndex = itr.second;
+        IndexBase* newIndex;
+        
+        switch(oldIndex->type()){
+          case NTable::Int32:{
+            Int32Index* index = new Int32Index;
+            Int32Index* oi = static_cast<Int32Index*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::UInt32:{
+            UInt32Index* index = new UInt32Index;
+            UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::Int64:{
+            Int64Index* index = new Int64Index;
+            Int64Index* oi = static_cast<Int64Index*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::UInt64:{
+            UInt64Index* index = new UInt64Index;
+            UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::Float:{
+            FloatIndex* index = new FloatIndex;
+            FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::Double:{
+            DoubleIndex* index = new DoubleIndex;
+            DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          case NTable::Row:{
+            RowIndex* index = new RowIndex;
+            RowIndex* oi = static_cast<RowIndex*>(oldIndex);
+            oi->compact(*index, rs, um);
+            newIndex = index;
+            break;
+          }
+          case NTable::Hash:{
+            HashIndex* index = new HashIndex;
+            HashIndex* oi = static_cast<HashIndex*>(oldIndex);
+            oi->compact(*index, rs);
+            newIndex = index;
+            break;
+          }
+          default:
+            NERROR("invalid index type");
+        }
+
+        delete oldIndex;
+        newIndexMap_.insert({itr.first, newIndex});
+      }
+      
+      indexMap_ = move(newIndexMap_);
     }
     
     void dump(){
