@@ -72,16 +72,16 @@ namespace{
   static const uint64_t ErasedFlag = 0x1;
   
   template<typename T>
-  void max(T& m){
-    m = numeric_limits<T>::max();
+  void min(T& m){
+    m = numeric_limits<T>::min();
   }
   
-  void max(double& m){
-    m = numeric_limits<double>::infinity();
+  void min(double& m){
+    m = -numeric_limits<double>::infinity();
   }
   
-  void max(float& m){
-    m = numeric_limits<float>::infinity();
+  void min(float& m){
+    m = -numeric_limits<float>::infinity();
   }
   
 } // end namespace
@@ -97,6 +97,7 @@ namespace neu{
     static const Action Remap = 0x1;
     static const Action Split = 0x2;
     static const Action RemapSplit = 0x3;
+    static const Action Append = 0x4;
     
     template<class R, class V>
     class Page{
@@ -137,6 +138,9 @@ namespace neu{
           }
 
           if(index == length){
+            action |= Append;
+          }
+          else if(index == 0){
             action |= Remap;
           }
 
@@ -173,7 +177,7 @@ namespace neu{
           size_t index;
           Action action = findInsert(record.value, index);
 
-          if(findInsert(record.value, index) & Remap){
+          if(findInsert(record.value, index) & Append){
             chunk_.push_back(record);
           }
           else{
@@ -185,7 +189,18 @@ namespace neu{
 
         Action push(const R& record){
           chunk_.push_back(record);
-          return chunk_.size() >= MAX_CHUNK_SIZE ? Split : Remap;
+          Action action = Append;
+          
+          size_t size = chunk_.size();
+          
+          if(size >= MAX_CHUNK_SIZE){
+            action |= Split;
+          }
+          else if(size == 1){
+            action |= Remap;
+          }
+          
+          return action;
         }
         
         size_t size(){
@@ -198,17 +213,16 @@ namespace neu{
           auto itr = chunk_.begin();
           itr += chunk_.size()/2;
           
-          c->chunk_.insert(c->chunk_.begin(), itr, chunk_.end());
-
+          c->chunk_.insert(c->chunk_.end(), itr, chunk_.end());
           chunk_.erase(itr, chunk_.end());
           
           return c;
         }
         
-        V max() const{
+        V min() const{
           assert(!chunk_.empty());
          
-          return chunk_.back().value;
+          return chunk_.front().value;
         }
         
         void dump(){
@@ -227,18 +241,18 @@ namespace neu{
       Page(uint64_t id)
       : id_(id),
       loaded_(true),
-      lastChunk_(0){
+      firstChunk_(0){
 
       }
       
       bool handleFirst(const R& record){
-        if(lastChunk_){
+        if(firstChunk_){
           return false;
         }
         
-        lastChunk_ = new Chunk;
-        lastChunk_->push(record);
-        chunkMap_.insert({record.value, lastChunk_});
+        firstChunk_ = new Chunk;
+        firstChunk_->push(record);
+        chunkMap_.insert({record.value, firstChunk_});
         return true;
       }
       
@@ -248,7 +262,7 @@ namespace neu{
         }
        
         if(handleFirst(record)){
-          return None;
+          return Remap;
         }
 
         auto itr = findChunk(record.value);
@@ -256,61 +270,52 @@ namespace neu{
         Chunk* chunk = itr->second;
         Action action = chunk->insert(record);
         
+        if(action & Remap && chunk == firstChunk_){
+          chunkMap_.erase(itr);
+          chunkMap_.insert({record.value, chunk});
+        }
+        
         if(action & Split){
           if(chunkMap_.size() >= MAX_CHUNKS){
-            if(action & Remap){
-              chunkMap_.erase(itr);
-              chunkMap_.insert({chunk->max(), chunk});
-            }
             return Split;
           }
           else{
             Chunk* c = chunk->split();
-            
-            chunkMap_.erase(itr);
-            chunkMap_.insert({chunk->max(), chunk});
-            chunkMap_.insert({c->max(), c});
-            
-            if(chunk == lastChunk_){
-              return Remap;
-            }
-            else{
-              return None;
-            }
+            chunkMap_.insert({c->min(), c});
+            return None;
           }
         }
-        
-        if(action & Remap){
-          chunkMap_.erase(itr);
-          chunkMap_.insert({chunk->max(), chunk});
-          
-          if(chunk == lastChunk_){
-            return Remap;
-          }
-        }
-        
+
         return None;
       }
       
       Action push(const R& record){
+        if(!loaded_){
+          load();
+        }
+        
         if(handleFirst(record)){
           return Remap;
         }
 
-        Action action = lastChunk_->push(record);
+        auto itr = chunkMap_.end();
+        --itr;
+        Chunk* chunk = itr->second;
         
+        Action action = chunk->push(record);
+
         if(action & Split){
           if(chunkMap_.size() >= MAX_CHUNKS){
             return Split;
           }
           else{
-            Chunk* c = lastChunk_->split();
-            chunkMap_.insert({c->max(), c});
+            Chunk* c = chunk->split();
+            chunkMap_.insert({c->min(), c});
             return None;
           }
         }
         
-        return Remap;
+        return None;
       }
       
       R* get(const V& value){
@@ -318,18 +323,22 @@ namespace neu{
           load();
         }
         
-        return chunkMap_.lower_bound(value)->second->get(value);
+        auto itr = findChunk(value);
+        if(itr == chunkMap_.end()){
+          return 0;
+        }
+        
+        return itr->second->get(value);
       }
       
       Page* split(uint64_t id){
         Page* p = new Page(id);
         
-        size_t i = 0;
-        size_t end = MAX_CHUNKS/2;
-        
-        while(i < end){
-          auto itr = chunkMap_.begin();
-          assert(itr != chunkMap_.end());
+        typename ChunkMap_::iterator itr;
+
+        for(size_t i = 0; i < MAX_CHUNKS/2; ++i){
+          itr = chunkMap_.end();
+          --itr;
           
           p->chunkMap_.insert({itr->first, itr->second});
           chunkMap_.erase(itr);
@@ -343,16 +352,16 @@ namespace neu{
         loaded_ = true;
       }
       
-      V max(){
-        auto itr = chunkMap_.rbegin();
-        assert(itr != chunkMap_.rend());
+      V min(){
+        auto itr = chunkMap_.begin();
+        assert(itr != chunkMap_.end());
         
-        return itr->second->max();
+        return itr->second->min();
       }
       
       void dump(){
         for(auto& itr : chunkMap_){
-          cout << "@@@ CHUNK UPPER: " << itr.first << endl;
+          cout << "@@@ CHUNK LOWER: " << itr.first << endl;
           itr.second->dump();
         }
       }
@@ -363,11 +372,10 @@ namespace neu{
       uint64_t id_;
       bool loaded_;
       ChunkMap_ chunkMap_;
-      Chunk* lastChunk_;
+      Chunk* firstChunk_;
       
       typename ChunkMap_::iterator findChunk(const V& v){
-        assert(!chunkMap_.empty());
-        auto itr = chunkMap_.lower_bound(v);
+        auto itr = chunkMap_.upper_bound(v);
         return itr == chunkMap_.end() ? --itr : itr;
       }
     };
@@ -397,10 +405,10 @@ namespace neu{
       Index(uint8_t type)
       : IndexBase(type),
       nextPageId_(0){
-        max(max_);
+        min(min_);
         
-        lastPage_ = new IndexPage(nextPageId_++);
-        pageMap_.insert({max_, lastPage_});
+        firstPage_ = new IndexPage(nextPageId_++);
+        pageMap_.insert({min_, firstPage_});
       }
       
       virtual ~Index(){
@@ -408,36 +416,40 @@ namespace neu{
       }
       
       void insertRecord(const R& record){
-        auto itr = pageMap_.lower_bound(record.value);
-        assert(itr != pageMap_.end());
+        auto itr = findPage(record.value);
         
         IndexPage* page = itr->second;
         Action action = page->insert(record);
         
         if(action & Split){
           IndexPage* p = page->split(nextPageId_++);
-          pageMap_.insert({p->max(), p});
+          pageMap_.insert({p->min(), p});
         }
-        else if(action & Remap && itr->first <= max_){
+        else if(action & Remap && page != firstPage_){
           pageMap_.erase(itr);
-          pageMap_.insert({page->max(), page});
+          pageMap_.insert({page->min(), page});
         }
       }
       
       void pushRecord(const R& record){
-        Action action = lastPage_->push(record);
+        auto itr = pageMap_.end();
+        --itr;
+        IndexPage* page = itr->second;
+        
+        Action action = page->push(record);
         
         if(action & Split){
-          IndexPage* p = lastPage_->split(nextPageId_++);
-          pageMap_.insert({p->max(), p});
+          IndexPage* p = page->split(nextPageId_++);
+          pageMap_.insert({p->min(), p});
+        }
+        else if(action & Remap && page != firstPage_){
+          pageMap_.erase(itr);
+          pageMap_.insert({page->min(), page});
         }
       }
       
       R* getRecord(const V& value){
-        auto itr = pageMap_.lower_bound(value);
-        assert(itr != pageMap_.end());
-        
-        return itr->second->get(value);
+        return findPage(value)->second->get(value);
       }
       
       void dump(){
@@ -450,10 +462,15 @@ namespace neu{
     private:
       typedef NMap<V, IndexPage*> PageMap_;
       
-      V max_;
+      V min_;
       uint64_t nextPageId_;
       PageMap_ pageMap_;
-      IndexPage* lastPage_;
+      IndexPage* firstPage_;
+      
+      typename PageMap_::iterator findPage(const V& v){
+        auto itr = pageMap_.upper_bound(v);
+        return itr == pageMap_.end() ? --itr : itr;
+      }
     };
 
     struct DataRecord{
@@ -833,9 +850,6 @@ namespace neu{
     uint64_t insert(const nvar& row){
       uint64_t rowId = nextRowId_++;
       
-      uint32_t size;
-      char* buf = row.pack(size);
-      
       const nmap& m = row;
       for(auto& itr : m){
         const nvar& k = itr.first;
@@ -893,6 +907,9 @@ namespace neu{
           }
         }
       }
+      
+      uint32_t size;
+      char* buf = row.pack(size);
       
       Data* data;
       
