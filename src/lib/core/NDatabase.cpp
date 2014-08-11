@@ -834,19 +834,21 @@ namespace neu{
         return id_;
       }
       
-      uint32_t insert(char* buf, uint32_t size){
+      uint32_t insert(RowId rowId, char* buf, uint32_t size){
         uint32_t offset = size_;
         
         if(data_){
-          data_ = (char*)realloc(data_, size_ + size + 5);
+          data_ = (char*)realloc(data_, size_ + size + 12);
         }
         else{
-          data_ = (char*)malloc(size_ + size + 5);
+          data_ = (char*)malloc(size_ + size + 12);
         }
+        memcpy(data_ + size, &rowId, 8);
+        size_ += 8;
         
         memcpy(data_ + size_, &size, 4);
         size_ += 4;
-        data_[size_++] = 0;
+        
         memcpy(data_ + size_, buf, size);
         size_ += size;
         
@@ -854,11 +856,12 @@ namespace neu{
       }
       
       void get(uint32_t offset, nvar& v){
-        // need to load
+        RowId rowId;
+        memcpy(&rowId, data_ + offset, 4);
         
         uint32_t size;
-        memcpy(&size, data_ + offset, 4);
-        v.unpack(data_ + offset + 5, size);
+        memcpy(&size, data_ + offset + 8, 4);
+        v.unpack(data_ + offset + 12, size);
       }
       
     private:
@@ -1013,7 +1016,7 @@ namespace neu{
         }
       }
       
-      uint32_t offset = data->insert(buf, size);
+      uint32_t offset = data->insert(rowId, buf, size);
       free(buf);
       
       dataIndex_.insert(data->id(), offset, rowId);
