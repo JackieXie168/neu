@@ -87,9 +87,9 @@ namespace{
   
   typedef typename NTable::RowSet RowSet;
   
-  typedef typename NTable::QueryFunc QueryFunc;
-  
   typedef NHashMap<RowId, RowId> UpdateMap;
+  
+  typedef function<int(RowId)> QueryFunc;
   
 } // end namespace
 
@@ -280,7 +280,7 @@ namespace neu{
           }
         }
         
-        int query(NTable_* table, const V& start, QueryFunc f){
+        int query(const V& start, QueryFunc f){
           size_t index;
           find(start, index);
           R* r;
@@ -293,10 +293,7 @@ namespace neu{
             r = &chunk_[index];
             rowId = r->rowId;
             
-            nvar row;
-            success = table->get(rowId, row);
-            assert(success);
-            s = f(row);
+            s = f(rowId);
             if(s < 0){
               if(index == 0){
                 return s;
@@ -462,11 +459,11 @@ namespace neu{
         }
       }
       
-      int query(NTable_* table, const V& start, QueryFunc f){
+      int query(const V& start, QueryFunc f){
         auto itr = findChunk(start);
         
         for(;;){
-          int s = itr->second->query(table, start, f);
+          int s = itr->second->query(start, f);
           if(s > 0){
             ++itr;
             if(itr == chunkMap_.end()){
@@ -482,7 +479,7 @@ namespace neu{
             }
           }
           else{
-            break;
+            return 0;
           }
         }
       }
@@ -525,10 +522,9 @@ namespace neu{
       
       typedef function<void(R& r)> TraverseFunc;
       
-      Index(NTable_* table, uint8_t type)
+      Index(uint8_t type)
       : IndexBase(type),
-      nextPageId_(0),
-      table_(table){
+      nextPageId_(0){
         min(min_);
         
         firstPage_ = new IndexPage(nextPageId_++);
@@ -619,7 +615,7 @@ namespace neu{
         auto itr = findPage(start);
         
         for(;;){
-          int s = itr->second->query(table_, start, f);
+          int s = itr->second->query(start, f);
           if(s > 0){
             if(itr == pageMap_.end()){
               break;
@@ -656,7 +652,6 @@ namespace neu{
       uint64_t nextPageId_;
       PageMap_ pageMap_;
       IndexPage* firstPage_;
-      NTable_* table_;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -715,8 +710,8 @@ namespace neu{
     class DataIndex : public Index<DataRecord, RowId>{
     public:
       
-      DataIndex(NDatabase_* d, NTable_* table)
-      : Index(table, DataIndexType),
+      DataIndex(NDatabase_* d)
+      : Index(DataIndexType),
       d_(d){
         
       }
@@ -786,8 +781,8 @@ namespace neu{
     
     class Int64Index : public Index<Int64Record, int64_t>{
     public:
-      Int64Index(NTable_* table)
-      : Index(table, NTable::Int64){
+      Int64Index()
+      : Index(NTable::Int64){
         
       }
       
@@ -813,8 +808,8 @@ namespace neu{
     
     class UInt64Index : public Index<UInt64Record, uint64_t>{
     public:
-      UInt64Index(NTable_* table)
-      : Index(table, NTable::UInt64){
+      UInt64Index()
+      : Index(NTable::UInt64){
         
       }
       
@@ -840,8 +835,8 @@ namespace neu{
     
     class RowIndex : public Index<RowRecord, RowId>{
     public:
-      RowIndex(NTable_* table)
-      : Index(table, NTable::Row){
+      RowIndex()
+      : Index(NTable::Row){
         
       }
       
@@ -867,8 +862,8 @@ namespace neu{
     
     class Int32Index : public Index<Int32Record, int32_t>{
     public:
-      Int32Index(NTable_* table)
-      : Index(table, NTable::Int32){
+      Int32Index()
+      : Index(NTable::Int32){
         
       }
       
@@ -898,8 +893,8 @@ namespace neu{
     
     class UInt32Index : public Index<UInt32Record, uint32_t>{
     public:
-      UInt32Index(NTable_* table)
-      : Index(table, NTable::UInt32){
+      UInt32Index()
+      : Index(NTable::UInt32){
         
       }
       
@@ -925,8 +920,8 @@ namespace neu{
     
     class DoubleIndex : public Index<DoubleRecord, double>{
     public:
-      DoubleIndex(NTable_* table)
-      : Index(table, NTable::Double){
+      DoubleIndex()
+      : Index(NTable::Double){
         
       }
       
@@ -952,8 +947,8 @@ namespace neu{
     
     class FloatIndex : public Index<FloatRecord, double>{
     public:
-      FloatIndex(NTable_* table)
-      : Index(table, NTable::Float){
+      FloatIndex()
+      : Index(NTable::Float){
         
       }
       
@@ -979,8 +974,8 @@ namespace neu{
     
     class HashIndex : public Index<HashRecord, uint64_t>{
     public:
-      HashIndex(NTable_* table)
-      : Index(table, NTable::Hash){
+      HashIndex()
+      : Index(NTable::Hash){
         
       }
       
@@ -1078,7 +1073,7 @@ namespace neu{
     d_(d),
     nextDataId_(0),
     lastData_(0),
-    dataIndex_(new DataIndex(d_, this)){
+    dataIndex_(new DataIndex(d_)){
       
     }
     
@@ -1097,28 +1092,28 @@ namespace neu{
       
       switch(indexType){
         case NTable::Int32:
-          index = new Int32Index(this);
+          index = new Int32Index;
           break;
         case NTable::UInt32:
-          index = new UInt32Index(this);
+          index = new UInt32Index;
           break;
         case NTable::Int64:
-          index = new Int64Index(this);
+          index = new Int64Index;
           break;
         case NTable::UInt64:
-          index = new UInt64Index(this);
+          index = new UInt64Index;
           break;
         case NTable::Float:
-          index = new FloatIndex(this);
+          index = new FloatIndex;
           break;
         case NTable::Double:
-          index = new DoubleIndex(this);
+          index = new DoubleIndex;
           break;
         case NTable::Row:
-          index = new RowIndex(this);
+          index = new RowIndex;
           break;
         case NTable::Hash:
-          index = new HashIndex(this);
+          index = new HashIndex;
           break;
         default:
           NERROR("invalid index type");
@@ -1264,7 +1259,7 @@ namespace neu{
     }
     
     void mapCompact(RowSet& rs, UpdateMap& um){
-      DataIndex* newDataIndex = new DataIndex(d_, this);
+      DataIndex* newDataIndex = new DataIndex(d_);
       dataIndex_->mapCompact(*newDataIndex, rs, um);
       delete dataIndex_;
       dataIndex_ = newDataIndex;
@@ -1279,56 +1274,56 @@ namespace neu{
         
         switch(oldIndex->type()){
           case NTable::Int32:{
-            Int32Index* ni = new Int32Index(this);
+            Int32Index* ni = new Int32Index;
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt32:{
-            UInt32Index* ni = new UInt32Index(this);
+            UInt32Index* ni = new UInt32Index;
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Int64:{
-            Int64Index* ni = new Int64Index(this);
+            Int64Index* ni = new Int64Index;
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt64:{
-            UInt64Index* ni = new UInt64Index(this);
+            UInt64Index* ni = new UInt64Index;
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Float:{
-            FloatIndex* ni = new FloatIndex(this);
+            FloatIndex* ni = new FloatIndex;
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Double:{
-            DoubleIndex* ni = new DoubleIndex(this);
+            DoubleIndex* ni = new DoubleIndex;
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Row:{
-            RowIndex* ni = new RowIndex(this);
+            RowIndex* ni = new RowIndex;
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
             oi->compact(*ni, rs, um);
             newIndex = ni;
             break;
           }
           case NTable::Hash:{
-            HashIndex* ni = new HashIndex(this);
+            HashIndex* ni = new HashIndex;
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
@@ -1358,7 +1353,7 @@ namespace neu{
     
     void query(const nstr& indexName,
                const nvar& start,
-               QueryFunc f){
+               NTable::QueryFunc f){
       auto itr = indexMap_.find(indexName);
       if(itr == indexMap_.end()){
         NERROR("invalid index: " + indexName);
@@ -1366,45 +1361,52 @@ namespace neu{
       
       IndexBase* index = itr->second;
       
+      auto qf = [&](RowId rowId) -> int{
+        nvar row;
+        bool success = get(rowId, row);
+        assert(success);
+        return f(row);
+      };
+      
       switch(index->type()){
         case NTable::Int32:{
           Int32Index* i = static_cast<Int32Index*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::UInt32:{
           UInt32Index* i = static_cast<UInt32Index*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::Int64:{
           Int64Index* i = static_cast<Int64Index*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::UInt64:{
           UInt64Index* i = static_cast<UInt64Index*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::Float:{
           FloatIndex* i = static_cast<FloatIndex*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::Double:{
           DoubleIndex* i = static_cast<DoubleIndex*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::Row:{
           RowIndex* i = static_cast<RowIndex*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         case NTable::Hash:{
           HashIndex* i = static_cast<HashIndex*>(index);
-          i->query(start, f);
+          i->query(start, qf);
           break;
         }
         default:
