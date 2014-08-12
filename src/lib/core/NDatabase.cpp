@@ -71,6 +71,7 @@ namespace{
   static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
+  static const size_t MEMORY_CHECK_INTERVAL = 10000;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
   
@@ -145,9 +146,19 @@ namespace neu{
     const nstr& path(){
       return path_;
     }
-    
-    uint64_t tick(){
+
+    uint64_t read(){
       return tick_++;
+    }
+    
+    uint64_t write(){
+      tick_++;
+      
+      if(tick_ % MEMORY_CHECK_INTERVAL){
+        
+      }
+      
+      return tick_;
     }
 
     void setMemoryLimit(size_t limit){
@@ -434,8 +445,12 @@ namespace neu{
         }
       }
       
-      void access(){
-        tick_ = index_->table()->database()->tick();
+      void read(){
+        tick_ = index_->table()->database()->read();
+      }
+      
+      void write(){
+        tick_ = index_->table()->database()->read();
       }
       
       void init(){
@@ -543,7 +558,7 @@ namespace neu{
           load();
         }
        
-        access();
+        write();
         
         if(handleFirst(record)){
           return Remap;
@@ -580,7 +595,7 @@ namespace neu{
           load();
         }
         
-        access();
+        write();
         
         if(handleFirst(record)){
           return Remap;
@@ -612,7 +627,7 @@ namespace neu{
           load();
         }
         
-        access();
+        read();
         
         auto itr = findChunk(value);
         if(itr == chunkMap_.end()){
@@ -625,7 +640,7 @@ namespace neu{
       Page* split(uint64_t id){
         Page* p = new Page(index_, id);
         p->init();
-        p->access();
+        p->write();
         
         typename ChunkMap_::iterator itr;
 
@@ -654,7 +669,7 @@ namespace neu{
       }
       
       void traverse(TraverseFunc f){
-        access();
+        read();
         for(auto& itr : chunkMap_){
           itr.second->traverse(f);
         }
@@ -668,7 +683,7 @@ namespace neu{
       }
       
       int query(const V& start, QueryFunc_ f){
-        access();
+        read();
         
         auto itr = findChunk(start);
         
