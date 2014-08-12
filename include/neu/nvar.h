@@ -73,6 +73,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMultimap.h>
 #include <neu/NHashMap.h>
 #include <neu/NSet.h>
+#include <neu/NHashSet.h>
 #include <neu/NQueue.h>
 #include <neu/NObjectBase.h>
 #include <neu/NError.h>
@@ -114,6 +115,7 @@ namespace neu{
   typedef NMultimap<nvar, nvar, nvarLess<nvar>> nmmap;
   typedef NHashMap<nvar, nvar, nvarHash<nvar>> nhmap;
   typedef NSet<nvar, nvarLess<nvar>> nset;
+  typedef NHashSet<nvar, nvarHash<nvar>> nhset;
   typedef NQueue<nvar> nqueue;
   
   extern const nvec _emptyVec;
@@ -144,14 +146,15 @@ namespace neu{
     static const Type Function =                24;
     static const Type HeadSequence =            25;
     static const Type Set =                     26;
-    static const Type Map =                     27;
-    static const Type HashMap =                 28;
-    static const Type Multimap =                29;
-    static const Type HeadMap =                 30;
-    static const Type SequenceMap =             31;
-    static const Type HeadSequenceMap =         32;
-    static const Type Pointer =                 33;
-    static const Type Reference =               34;
+    static const Type HashSet =                 27;
+    static const Type Map =                     28;
+    static const Type HashMap =                 29;
+    static const Type Multimap =                30;
+    static const Type HeadMap =                 31;
+    static const Type SequenceMap =             32;
+    static const Type HeadSequenceMap =         33;
+    static const Type Pointer =                 34;
+    static const Type Reference =               35;
     
     class CFunction{
     public:
@@ -347,6 +350,7 @@ namespace neu{
       CFunction* f;
       CHeadSequence* hs;
       nset* set;
+      nhset* hset;
       nmap* m;
       nhmap* h;
       nmmap* mm;
@@ -494,6 +498,9 @@ namespace neu{
           break;
         case Set:
           h_.set = new nset(*x.h_.set);
+          break;
+        case HashSet:
+          h_.hset = new nhset(*x.h_.hset);
           break;
         case Map:
           h_.m = new nmap(*x.h_.m);
@@ -680,6 +687,11 @@ namespace neu{
       h_.set = new nset(s);
     }
     
+    nvar(const nhset& s)
+    : t_(HashSet){
+      h_.hset = new nhset(s);
+    }
+    
     nvar(const nmap& m)
     : t_(Map){
       h_.m = new nmap(m);
@@ -698,6 +710,11 @@ namespace neu{
     nvar(nset&& s)
     : t_(Set){
       h_.set = new nset(std::move(s));
+    }
+
+    nvar(nhset&& s)
+    : t_(HashSet){
+      h_.hset = new nhset(std::move(s));
     }
     
     nvar(nmap&& m)
