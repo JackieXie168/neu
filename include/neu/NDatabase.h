@@ -106,7 +106,7 @@ namespace neu{
 
     void get(const RowSet& rs, QueryFunc f);
     
-    bool get(const nstr& indexName, const nvar& value, nvar& row);
+    bool getFirst(const nstr& indexName, const nvar& value, nvar& row);
     
     void dump();
     

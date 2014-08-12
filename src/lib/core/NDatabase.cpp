@@ -83,13 +83,26 @@ namespace{
     m = -numeric_limits<float>::infinity();
   }
   
+  template<typename T>
+  void max(T& m){
+    m = numeric_limits<T>::max();
+  }
+  
+  void max(double& m){
+    m = numeric_limits<double>::infinity();
+  }
+  
+  void max(float& m){
+    m = numeric_limits<float>::infinity();
+  }
+  
   typedef typename NTable::RowId RowId;
   
   typedef typename NTable::RowSet RowSet;
   
   typedef NHashMap<RowId, RowId> UpdateMap;
   
-  typedef function<int(RowId)> QueryFunc;
+  typedef function<int(RowId, const nvar&)> QueryFunc_;
   
 } // end namespace
 
@@ -280,7 +293,7 @@ namespace neu{
           }
         }
         
-        int query(const V& start, QueryFunc f){
+        int query(const V& start, QueryFunc_ f){
           size_t index;
           find(start, index);
           
@@ -293,7 +306,7 @@ namespace neu{
             r = &chunk_[index];
             rowId = r->rowId;
             
-            s = f(rowId);
+            s = f(rowId, r->exists() ? nvar(r->value) : none);
 
             if(s < 0){
               if(index == 0){
@@ -460,7 +473,7 @@ namespace neu{
         }
       }
       
-      int query(const V& start, QueryFunc f){
+      int query(const V& start, QueryFunc_ f){
         auto itr = findChunk(start);
         
         for(;;){
@@ -613,7 +626,7 @@ namespace neu{
         });
       }
 
-      void query(const V& start, QueryFunc f){
+      void query(const V& start, QueryFunc_ f){
         auto itr = findPage(start);
         
         for(;;){
@@ -666,38 +679,42 @@ namespace neu{
       void set(RowId rowId, uint32_t dataId, uint32_t offset){
         remap = 0;
         value = rowId;
-        data = (uint64_t(dataId) << 32) | uint64_t(offset);
+        rowId = (uint64_t(dataId) << 32) | uint64_t(offset);
       }
       
       void erase(){
         remap = 1;
-        data = 0;
+        rowId = 0;
       }
       
       void update(uint64_t newRowId){
         remap = 1;
-        data = newRowId;
+        rowId = newRowId;
+      }
+      
+      bool exists(){
+        return !remap;
       }
       
       RowId value;
-      uint64_t data : 63;
+      uint64_t rowId : 63;
       uint64_t remap : 1;
       
       uint32_t offset() const{
-        return data & 0xffffffff;
+        return rowId & 0xffffffff;
       }
       
       uint32_t dataId() const{
-        return data >> 32;
+        return rowId >> 32;
       }
       
       void dump() const{
         if(remap){
-          if(data == 0){
+          if(rowId == 0){
             cout << "deleted: " << value << endl;
           }
           else{
-            cout << "updated: " << data << endl;
+            cout << "updated: " << rowId << endl;
           }
         }
         else{
@@ -733,6 +750,15 @@ namespace neu{
         return false;
       }
       
+      bool exists(RowId rowId){
+        DataRecord* record = getRecord(rowId);
+        if(record){
+          return record->exists();
+        }
+        
+        return false;
+      }
+      
       void erase(RowId rowId){
         DataRecord* record = getRecord(rowId);
         
@@ -756,8 +782,8 @@ namespace neu{
         traverse([&](DataRecord& r){
           if(r.remap){
             rs.insert(r.value);
-            if(r.data != 0){
-              um.insert({r.value, RowId(r.data)});
+            if(r.rowId != 0){
+              um.insert({r.value, RowId(r.rowId)});
             }
           }
           else{
@@ -777,6 +803,10 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+      
+      bool exists(){
+        return true;
       }
     };
     
@@ -805,6 +835,10 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
+      
+      bool exists(){
+        return true;
+      }
     };
     
     class UInt64Index : public Index<UInt64Record, uint64_t>{
@@ -832,6 +866,10 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
+      
+      bool exists(){
+        return true;
+      }
     };
     
     class RowIndex : public Index<RowRecord, RowId>{
@@ -858,6 +896,10 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+      
+      bool exists(){
+        return true;
       }
     };
     
@@ -890,6 +932,10 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
+      
+      bool exists(){
+        return true;
+      }
     };
     
     class UInt32Index : public Index<UInt32Record, uint32_t>{
@@ -916,6 +962,10 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+      
+      bool exists(){
+        return true;
       }
     };
     
@@ -944,6 +994,10 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
+      
+      bool exists(){
+        return true;
+      }
     };
     
     class FloatIndex : public Index<FloatRecord, double>{
@@ -970,6 +1024,10 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
+      }
+      
+      bool exists(){
+        return true;
       }
     };
     
@@ -1251,6 +1309,10 @@ namespace neu{
       return true;
     }
     
+    bool exists(RowId rowId){
+      return dataIndex_->exists(rowId);
+    }
+    
     NTable* outer(){
       return o_;
     }
@@ -1352,62 +1414,66 @@ namespace neu{
       }
     }
     
-    void query(const nstr& indexName,
-               const nvar& start,
-               NTable::QueryFunc f){
-      auto itr = indexMap_.find(indexName);
-      if(itr == indexMap_.end()){
-        NERROR("invalid index: " + indexName);
+    void query_(const nstr& indexName,
+                const nvar& start,
+                QueryFunc_ f){
+
+      IndexBase* index;
+      if(indexName == "__data"){
+        index = dataIndex_;
       }
-      
-      IndexBase* index = itr->second;
-      
-      auto qf = [&](RowId rowId) -> int{
-        nvar row;
-        bool success = get(rowId, row);
-        assert(success);
-        return f(row);
-      };
+      else{
+        auto itr = indexMap_.find(indexName);
+        if(itr == indexMap_.end()){
+          NERROR("invalid index: " + indexName);
+        }
+        index = itr->second;
+      }
       
       switch(index->type()){
         case NTable::Int32:{
           Int32Index* i = static_cast<Int32Index*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::UInt32:{
           UInt32Index* i = static_cast<UInt32Index*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::Int64:{
           Int64Index* i = static_cast<Int64Index*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::UInt64:{
           UInt64Index* i = static_cast<UInt64Index*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::Float:{
           FloatIndex* i = static_cast<FloatIndex*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::Double:{
           DoubleIndex* i = static_cast<DoubleIndex*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::Row:{
           RowIndex* i = static_cast<RowIndex*>(index);
-          i->query(start, qf);
+          i->query(start, f);
           break;
         }
         case NTable::Hash:{
           HashIndex* i = static_cast<HashIndex*>(index);
-          i->query(start, qf);
+          i->query(start, f);
+          break;
+        }
+        case DataIndexType:{
+          DataIndex* i = static_cast<DataIndex*>(index);
+          i->query(start, f);
           break;
         }
         default:
@@ -1415,32 +1481,128 @@ namespace neu{
       }
     }
     
+    void query(const nstr& indexName,
+               const nvar& start,
+               NTable::QueryFunc qf){
+      
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        nvar row;
+        bool success = get(rowId, row);
+        assert(success);
+        return qf(row);
+      };
+      
+      query_(indexName, start, f);
+    }
+    
     void indexQuery(const nstr& indexName,
                     const nvar& start,
                     const nvar& end,
                     RowSet& rs){
-
+      
+      if(start > end){
+        NERROR("invalid start/end");
+      }
+      
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        if(v > end){
+          return 0;
+        }
+        
+        if(exists(rowId)){
+          rs.insert(rowId);
+        }
+        
+        return 1;
+      };
+      
+      query_(indexName, start, f);
     }
     
-    void traverseStart(QueryFunc f){
-
+    void traverseStart(NTable::QueryFunc qf){
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        nvar row;
+        bool success = get(rowId, row);
+        assert(success);
+        return qf(row);
+      };
+      
+      query_("__data", 1, f);
     }
     
-    void traverseEnd(QueryFunc f){
+    void traverseEnd(NTable::QueryFunc qf){
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        nvar row;
+        bool success = get(rowId, row);
+        assert(success);
+        return qf(row);
+      };
 
+      RowId m;
+      max(m);
+      query_("__data", m, f);
     }
     
     void join(const nstr& indexName, const RowSet& js, RowSet& rs){
-
+      for(RowId findRowId : js){
+        auto f = [&](RowId rowId, const nvar& v) -> int{
+          RowId toRowId = v;
+          
+          if(toRowId != findRowId){
+            return 0;
+          }
+          
+          if(exists(rowId)){
+            rs.insert(rowId);
+          }
+          
+          return 1;
+        };
+        
+        query_(indexName, findRowId, f);
+      }
     }
     
-    void get(const RowSet& rs, QueryFunc f){
-
+    void get(const RowSet& rs, NTable::QueryFunc qf){
+      for(RowId findRowId : rs){
+        auto f = [&](RowId rowId, const nvar& v) -> int{
+          if(v.some()){
+            RowId toRowId = v;
+            
+            if(toRowId != findRowId){
+              return 0;
+            }
+            
+            nvar row;
+            bool success = get(rowId, row);
+            assert(success);
+            qf(row);
+          }
+          
+          return 0;
+        };
+        
+        query_("__data", findRowId, f);
+      }
     }
     
-    bool get(const nstr& indexName, const nvar& value, nvar& row){
-      // defined in terms of others
-      return false;
+    bool getFirst(const nstr& indexName, const nvar& value, nvar& row){
+      bool success = false;
+      
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        if(v != value){
+          return 0;
+        }
+        
+        nvar row;
+        success = get(rowId, row);
+        assert(success);
+        return 0;
+      };
+      
+      query_(indexName, value, f);
+      
+      return success;
     }
     
     void dump(){
@@ -1560,8 +1722,8 @@ void NTable::get(const RowSet& rs, QueryFunc f){
   x_->get(rs, f);
 }
 
-bool NTable::get(const nstr& indexName, const nvar& value, nvar& row){
-  return x_->get(indexName, value, row);
+bool NTable::getFirst(const nstr& indexName, const nvar& value, nvar& row){
+  return x_->getFirst(indexName, value, row);
 }
 
 void NTable::dump(){
