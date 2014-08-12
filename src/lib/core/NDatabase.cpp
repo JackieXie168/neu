@@ -71,7 +71,6 @@ namespace{
   static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
-  static const size_t MEMORY_CHECK_INTERVAL = 10000;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
   
@@ -122,7 +121,6 @@ namespace neu{
     path_(path),
     nextRowId_(1),
     tick_(0),
-    memoryUsage_(0),
     memoryLimit_(DEFAULT_MEMORY_LIMIT){
       if(create){
         if(NSys::exists(path)){
@@ -152,25 +150,11 @@ namespace neu{
     }
     
     uint64_t write(){
-      tick_++;
-      
-      if(tick_ % MEMORY_CHECK_INTERVAL){
-        
-      }
-      
-      return tick_;
+      return tick_++;
     }
 
     void setMemoryLimit(size_t limit){
       memoryLimit_ = limit;
-    }
-    
-    size_t memoryLimit(){
-      return memoryLimit_;
-    }
-    
-    void adjustMemoryUsage(int64_t dm){
-      memoryUsage_ += dm;
     }
     
   private:
@@ -182,7 +166,6 @@ namespace neu{
     TableMap_ tableMap_;
     atomic<uint64_t> tick_;
     size_t memoryLimit_;
-    size_t memoryUsage_;
   };
   
   class NTable_{
@@ -237,8 +220,15 @@ namespace neu{
       nstr path_;
     };
     
+    class Pageable{
+    public:
+      virtual size_t memoryUsage() = 0;
+
+      virtual void store() = 0;
+    };
+    
     template<class R, class V>
-    class Page{
+    class Page : public Pageable{
     public:
       typedef function<void(R& r)> TraverseFunc;
       
@@ -467,8 +457,21 @@ namespace neu{
         NSys::makeDir(path_);
       }
       
-      void memoryUsage(){
+      size_t memoryUsage(){
         return memoryUsage_;
+      }
+      
+      void store(){
+        save();
+        
+        for(auto& itr : chunkMap_){
+          delete itr.second;
+        }
+        
+        chunkMap_.clear();
+        
+        loaded_ = false;
+        memoryUsage_ = 0;
       }
       
       void save(){
@@ -543,6 +546,7 @@ namespace neu{
           
           chunkMap_.insert({chunk->min(), chunk});
         }
+        fclose(file);
         
         loaded_ = true;
       }
@@ -731,14 +735,12 @@ namespace neu{
       
       Index(uint8_t type)
       : IndexBase(type),
-      nextPageId_(0),
-      memoryUsage_(0){
+      nextPageId_(0){
         min(min_);
         
         firstPage_ = new IndexPage(this, nextPageId_++);
         pageMap_.insert({min_, firstPage_});
         firstPage_->init();
-        memoryUsage_ = sizeof(R);
       }
       
       virtual ~Index(){
@@ -761,8 +763,6 @@ namespace neu{
           pageMap_.erase(itr);
           pageMap_.insert({page->min(), page});
         }
-        
-        memoryUsage_ += sizeof(R);
       }
       
       void pushRecord(const R& record){
@@ -780,8 +780,6 @@ namespace neu{
           pageMap_.erase(itr);
           pageMap_.insert({page->min(), page});
         }
-        
-        memoryUsage_ += sizeof(R);
       }
       
       R* getRecord(const V& value){
@@ -794,22 +792,17 @@ namespace neu{
         }
       }
 
-      size_t compact(Index& ni, const RowSet& rs){
-        memoryUsage_ = 0;
+      void compact(Index& ni, const RowSet& rs){
         traverse([&](R& r){
           if(rs.hasKey(r.rowId)){
             return;
           }
           
           ni.pushRecord(r);
-          memoryUsage_ += sizeof(R);
         });
-        
-        return memoryUsage_;
       }
       
-      size_t compact(Index& ni, const RowSet& rs, const UpdateMap& um){
-        memoryUsage_ = 0;
+      void compact(Index& ni, const RowSet& rs, const UpdateMap& um){
         traverse([&](R& r){
           if(rs.hasKey(r.rowId)){
             return;
@@ -827,10 +820,7 @@ namespace neu{
           }
           
           ni.pushRecord(r);
-          memoryUsage_ += sizeof(R);
         });
-        
-        return memoryUsage_;
       }
 
       void query(const V& start, QueryFunc_ f){
@@ -858,6 +848,15 @@ namespace neu{
           }
         }
       }
+
+      size_t memoryUsage(){
+        size_t m = 0;
+        for(auto& itr : pageMap_){
+          m += itr.second->memoryUsage();
+        }
+        
+        return m;
+      }
       
       void dump(){
         for(auto& itr : pageMap_){
@@ -873,7 +872,6 @@ namespace neu{
       uint64_t nextPageId_;
       PageMap_ pageMap_;
       IndexPage* firstPage_;
-      size_t memoryUsage_;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -1257,13 +1255,14 @@ namespace neu{
       HashRecord record_;
     };
     
-    class Data{
+    class Data : public Pageable{
     public:
-      Data(uint64_t id)
-      : data_(0),
+      Data(NTable_* table, uint64_t id)
+      : table_(table),
+      data_(0),
       size_(0),
       id_(id){
-        
+        path_ = table_->path() + "/" + nvar(id);
       }
       
       ~Data(){
@@ -1274,10 +1273,53 @@ namespace neu{
         return size_;
       }
       
+      size_t memoryUsage(){
+        return size_;
+      }
+      
       uint64_t id(){
         return id_;
       }
+
+      void save(){
+        FILE* file = fopen(path_.c_str(), "wb");
+        
+        if(!file){
+          NERROR("failed to create data file: " + path_);
+        }
+        
+        uint32_t n = fwrite(data_, 1, size_, file);
+        if(n != size_){
+          NERROR("failed to write data file: " + path_);
+        }
+        
+        fclose(file);
+      }
+
+      void store(){
+        save();
+        free(data_);
+        data_ = 0;
+      }
       
+      void load(){
+        FILE* file = fopen(path_.c_str(), "rb");
+        
+        if(!file){
+          NERROR("failed to open data file: " + path_);
+        }
+        
+        data_ = (char*)malloc(size_);
+        
+        uint32_t n = fread(data_, 1, size_, file);
+        
+        if(n != size_){
+          NERROR("failed to read data file : " + path_);
+        }
+        
+        fclose(file);
+      }
+
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
         uint32_t offset = size_;
         
@@ -1332,9 +1374,11 @@ namespace neu{
       }
       
     private:
+      NTable_* table_;
       uint32_t size_;
       char* data_;
       uint64_t id_;
+      nstr path_;
     };
     
     NTable_(NTable* o, NDatabase_* d)
@@ -1342,8 +1386,7 @@ namespace neu{
     d_(d),
     nextDataId_(0),
     lastData_(0),
-    dataIndex_(new DataIndex(d_)),
-    memoryUsage_(0){
+    dataIndex_(new DataIndex(d_)){
       
     }
     
@@ -1356,6 +1399,10 @@ namespace neu{
       }
       
       NSys::makeDir(path_);
+    }
+    
+    const nstr& path(){
+      return path_;
     }
     
     const nstr& name(){
@@ -1427,49 +1474,41 @@ namespace neu{
               case NTable::Int32:{
                 Int32Index* i = static_cast<Int32Index*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(Int32Record);
                 break;
               }
               case NTable::UInt32:{
                 UInt32Index* i = static_cast<UInt32Index*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(UInt32Record);
                 break;
               }
               case NTable::Int64:{
                 Int64Index* i = static_cast<Int64Index*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(Int64Record);
                 break;
               }
               case NTable::UInt64:{
                 UInt64Index* i = static_cast<UInt64Index*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(UInt32Record);
                 break;
               }
               case NTable::Float:{
                 FloatIndex* i = static_cast<FloatIndex*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(FloatRecord);
                 break;
               }
               case NTable::Double:{
                 DoubleIndex* i = static_cast<DoubleIndex*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(DoubleRecord);
                 break;
               }
               case NTable::Row:{
                 RowIndex* i = static_cast<RowIndex*>(index);
                 i->insert(rowId, v);
-                memoryUsage_ += sizeof(RowRecord);
                 break;
               }
               case NTable::Hash:{
                 HashIndex* i = static_cast<HashIndex*>(index);
                 i->insert(rowId, v.hash());
-                memoryUsage_ += sizeof(HashRecord);
                 break;
               }
               default:
@@ -1501,17 +1540,15 @@ namespace neu{
         
         if(!data){
           uint64_t id = nextDataId_++;
-          data = new Data(id);
+          data = new Data(this, id);
           dataMap_.insert({id, data});
         }
       }
       
       uint32_t offset = data->insert(rowId, buf, size);
       free(buf);
-      memoryUsage_ += size;
       
       dataIndex_->insert(data->id(), offset, rowId);
-      memoryUsage_ += sizeof(DataRecord);
       lastData_ = data;
     }
     
@@ -1563,9 +1600,7 @@ namespace neu{
       dataIndex_ = newDataIndex;
     }
 
-    size_t compact(const RowSet& rs, const UpdateMap& um){
-      memoryUsage_ = 0;
-      
+    void compact(const RowSet& rs, const UpdateMap& um){
       IndexMap_ newIndexMap_;
       
       for(auto& itr : indexMap_){
@@ -1576,56 +1611,56 @@ namespace neu{
           case NTable::Int32:{
             Int32Index* ni = new Int32Index;
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt32:{
             UInt32Index* ni = new UInt32Index;
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Int64:{
             Int64Index* ni = new Int64Index;
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt64:{
             UInt64Index* ni = new UInt64Index;
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Float:{
             FloatIndex* ni = new FloatIndex;
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Double:{
             DoubleIndex* ni = new DoubleIndex;
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Row:{
             RowIndex* ni = new RowIndex;
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs, um);
+            oi->compact(*ni, rs, um);
             newIndex = ni;
             break;
           }
           case NTable::Hash:{
             HashIndex* ni = new HashIndex;
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
-            memoryUsage_ += oi->compact(*ni, rs);
+            oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
@@ -1645,14 +1680,11 @@ namespace neu{
       Data* data;
       
       for(auto& itr : dataMap_){
-        newData = new Data(itr.first);
+        newData = new Data(this, itr.first);
         data = itr.second;
-        memoryUsage_ += data->compact(newData, rs);
         itr.second = newData;
         delete data;
       }
-      
-      return memoryUsage_;
     }
     
     void query_(const nstr& indexName,
@@ -1902,8 +1934,6 @@ namespace neu{
   }
   
   void NDatabase_::compact(){
-    memoryUsage_ = 0;
-    
     RowSet rs;
     UpdateMap um;
     
@@ -1912,7 +1942,7 @@ namespace neu{
     }
     
     for(auto& itr : tableMap_){
-      memoryUsage_ += itr.second->compact(rs, um);
+      itr.second->compact(rs, um);
     }
   }
   
