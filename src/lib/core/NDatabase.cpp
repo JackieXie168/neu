@@ -115,7 +115,7 @@ namespace{
     virtual void store() = 0;
   };
   
-  typedef NMap<uint64_t, Pageable*> PMap;
+  typedef NMap<uint64_t, pair<Pageable*, size_t>> PMap;
   
 } // end namespace
 
@@ -163,10 +163,12 @@ namespace neu{
     }
 
     void setMemoryLimit(size_t limit){
-      memoryLimit_ = limit;
+      memoryLimit_ = 1048576*limit;
     }
     
     size_t memoryUsage(PMap& pm);
+    
+    void checkMemory();
     
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
@@ -560,6 +562,8 @@ namespace neu{
         fclose(file);
         
         loaded_ = true;
+        
+        d_->checkMemory();
       }
       
       bool handleFirst(const R& record){
@@ -773,7 +777,7 @@ namespace neu{
           size_t mi = p->memoryUsage();
           
           if(mi > 0){
-            pm.insert({p->tick(), p});
+            pm.insert({p->tick(), {p, mi}});
             m += mi;
           }
         }
@@ -1374,6 +1378,8 @@ namespace neu{
         }
         
         fclose(file);
+        
+        d_->checkMemory();
       }
 
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
@@ -1759,7 +1765,7 @@ namespace neu{
         
         mi = data->memoryUsage();
         if(mi > 0){
-          pm.insert({data->tick(), data});
+          pm.insert({data->tick(), {data, mi}});
         }
       }
       
@@ -2032,6 +2038,24 @@ namespace neu{
     }
     
     return m;
+  }
+  
+  void NDatabase_::checkMemory(){
+    PMap pm;
+    int64_t m = memoryUsage(pm);
+    
+    while(m > memoryLimit_){
+      auto itr = pm.begin();
+      if(itr == pm.end()){
+        break;
+      }
+    
+      Pageable* p = itr->second.first;
+      p->store();
+      
+      size_t mi = itr->second.second;
+      m -= mi;
+    }
   }
   
 } // end namespace neu
