@@ -368,6 +368,10 @@ namespace neu{
           }
         }
         
+        R* data(){
+          return chunk_.data();
+        }
+        
       private:
         typedef NVector<R> Chunk_;
         
@@ -382,6 +386,12 @@ namespace neu{
         path_ = index->path() + "/" + nvar(id);
       }
       
+      ~Page(){
+        for(auto& itr : chunkMap_){
+          delete itr.second;
+        }
+      }
+      
       void init(){
         if(NSys::exists(path_)){
           NERROR("page path exists: " + path_);
@@ -390,10 +400,43 @@ namespace neu{
         NSys::makeDir(path_);
       }
       
-      ~Page(){
-        for(auto& itr : chunkMap_){
-          delete itr.second;
+      void save(){
+        FILE* file = fopen(path_.c_str(), "wb");
+        
+        if(!file){
+          NERROR("failed to create page file: " + path_);
         }
+
+        uint32_t numChunks = chunkMap_.size();
+        
+        uint32_t n = fwrite(&numChunks, 1, 4, file);
+        if(n != 4){
+          NERROR("failed to write to page file [1]: " + path_);
+        }
+
+        uint32_t chunkSize;
+        uint32_t dataSize;
+        for(auto& itr : chunkMap_){
+          Chunk* chunk = itr.second;
+
+          chunkSize = chunk->size();
+          n = fwrite(&chunkSize, 1, 4, file);
+          if(n != 4){
+            NERROR("failed to write to page file [2]: " + path_);
+          }
+          
+          dataSize = sizeof(R)*chunkSize;
+          n = fwrite(chunk->data(), 1, dataSize, file);
+          if(n != dataSize){
+            NERROR("failed to write to page file [3]: " + path_);
+          }
+        }
+        
+        fclose(file);
+      }
+      
+      void load(){
+        loaded_ = true;
       }
       
       bool handleFirst(const R& record){
@@ -499,10 +542,6 @@ namespace neu{
         }
         
         return p;
-      }
-      
-      void load(){
-        loaded_ = true;
       }
       
       V min(){
