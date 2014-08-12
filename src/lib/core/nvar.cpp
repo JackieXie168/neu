@@ -24318,7 +24318,8 @@ nvar nvar::pow(const nvar& x, NObject* o) const{
           return std::pow(h_.i, x.h_.i);
         case Rational:
           if(o){
-            return o->process(nfunc("Pow") << h_.i << *x.h_.r, NObject::Delegated);
+            return o->process(nfunc("Pow") << h_.i << *x.h_.r,
+                              NObject::Delegated);
           }
           
           return std::pow(h_.i, x.h_.r->toDouble());
@@ -24354,13 +24355,15 @@ nvar nvar::pow(const nvar& x, NObject* o) const{
           NERROR("right operand is undefined");
         case Integer:
           if(o){
-            return o->process(nfunc("Pow") << *h_.r << x.h_.i, NObject::Delegated);
+            return o->process(nfunc("Pow") << *h_.r << x.h_.i,
+                              NObject::Delegated);
           }
           
           return std::pow(h_.r->toDouble(), x.h_.i);
         case Rational:
           if(o){
-            return o->process(nfunc("Pow") << *h_.r << *x.h_.r, NObject::Delegated);
+            return o->process(nfunc("Pow") << *h_.r << *x.h_.r,
+                              NObject::Delegated);
           }
           
           return std::pow(h_.r->toDouble(), x.h_.r->toDouble());
