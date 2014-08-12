@@ -270,10 +270,12 @@ namespace neu{
       class Chunk{
       public:
         
-        Chunk(){}
+        Chunk(bool unique)
+        : unique_(unique){}
         
-        Chunk(R* data, size_t n)
-        : chunk_(data, data + n){}
+        Chunk(bool unique, R* data, size_t n)
+        : unique_(unique),
+        chunk_(data, data + n){}
         
         typedef function<void(R& r)> TraverseFunc;
         
@@ -349,6 +351,10 @@ namespace neu{
           size_t index;
           Action action = find(record.value, index);
 
+          if(unique_ && chunk_[index].value == record.value){
+            NERROR("non-unique value: " + nvar(record.value));
+          }
+          
           if(find(record.value, index) & Append){
             chunk_.push_back(record);
           }
@@ -360,6 +366,10 @@ namespace neu{
         }
 
         Action push(const R& record){
+          if(unique_ && chunk_.back().value == record.value){
+            NERROR("non-unique value: " + nvar(record.value));
+          }
+          
           chunk_.push_back(record);
           Action action = Append;
           
@@ -380,7 +390,7 @@ namespace neu{
         }
         
         Chunk* split(){
-          Chunk* c = new Chunk;
+          Chunk* c = new Chunk(unique_);
           
           auto itr = chunk_.begin();
           itr += chunk_.size()/2;
@@ -452,6 +462,7 @@ namespace neu{
         typedef NVector<R> Chunk_;
         
         Chunk_ chunk_;
+        bool unique_;
       };
       
       Page(IndexBase* index, uint64_t id)
@@ -577,7 +588,7 @@ namespace neu{
             NERROR("failed to read page file [3]: " + path_);
           }
           
-          Chunk* chunk = new Chunk(buf, chunkSize);
+          Chunk* chunk = new Chunk(index_->unique(), buf, chunkSize);
           if(!firstChunk_){
             firstChunk_ = chunk;
           }
@@ -596,7 +607,7 @@ namespace neu{
           return false;
         }
         
-        firstChunk_ = new Chunk;
+        firstChunk_ = new Chunk(index_->unique());
         firstChunk_->push(record);
         chunkMap_.insert({record.value, firstChunk_});
         memoryUsage_ += sizeof(R);
@@ -882,7 +893,11 @@ namespace neu{
               r.value = itr->second;
             }
             else{
-              return;
+              if(autoErase()){
+                return;
+              }
+              
+              r.value = 0;
             }
           }
           
