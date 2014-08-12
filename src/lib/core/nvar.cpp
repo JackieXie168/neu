@@ -13917,8 +13917,24 @@ bool nvar::less(const nvar& x) const{
         case Function:
         case HeadSequence:
           return false;
-        case HashSet:
-          return h_.hset->size() < x.h_.hset->size();
+        case HashSet:{
+          int y = h_.hset->size() - x.h_.hset->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          nvar m1(*this);
+          m1.touchSet();
+          
+          nvar m2(x);
+          m2.touchSet();
+          
+          return m1.less(m2);
+        }
         case Reference:
           return less(*x.h_.ref->v);
         case Pointer:
@@ -13998,8 +14014,24 @@ bool nvar::less(const nvar& x) const{
         case HashSet:
         case Map:
           return false;
-        case HashMap:
-          return x.h_.h->size() > h_.h->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+         
+          nvar m1(*this);
+          m1.touchMap();
+          
+          nvar m2(x);
+          m2.touchMap();
+          
+          return m1.less(m2);
+        }
         case Reference:
           return less(*x.h_.ref->v);
         case Pointer:
@@ -14663,8 +14695,24 @@ bool nvar::greater(const nvar& x) const{
         case Function:
         case HeadSequence:
           return true;
-        case HashSet:
-          return h_.hset->size() > x.h_.hset->size();
+        case HashSet:{
+          int y = h_.hset->size() - x.h_.hset->size();
+          
+          if(y > 0){
+            return true;
+          }
+          else if(y < 0){
+            return false;
+          }
+          
+          nvar m1(*this);
+          m1.touchSet();
+          
+          nvar m2(x);
+          m2.touchSet();
+          
+          return m1.greater(m2);
+        }
         case Reference:
           return greater(*x.h_.ref->v);
         case Pointer:
@@ -14742,8 +14790,24 @@ bool nvar::greater(const nvar& x) const{
         case HeadSequence:
         case Map:
           return true;
-        case HashMap:
-          return h_.m->size() < x.h_.m->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return false;
+          }
+          else if(y > 0){
+            return true;
+          }
+          
+          nvar m1(*this);
+          m1.touchMap();
+          
+          nvar m2(x);
+          m2.touchMap();
+          
+          return m1.greater(m2);
+        }
         case Reference:
           return greater(*x.h_.ref->v);
         case Pointer:
