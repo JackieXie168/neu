@@ -228,6 +228,22 @@ namespace neu{
         NSys::makeDir(path_);
       }
       
+      void setUnique(bool flag){
+        unique_ = flag;
+      }
+      
+      bool unique(){
+        return unique_;
+      }
+      
+      void setAutoErase(bool flag){
+        autoErase_ = flag;
+      }
+      
+      bool autoErase(){
+        return autoErase_;
+      }
+      
       const nstr& path(){
         return path_;
       }
@@ -242,6 +258,8 @@ namespace neu{
       NTable_* table_;
       uint8_t type_;
       nstr path_;
+      bool unique_;
+      bool autoErase_;
     };
         
     template<class R, class V>
@@ -1498,7 +1516,10 @@ namespace neu{
       mutex_.unlock();
     }
     
-    void addIndex(const nstr& indexName, uint8_t indexType){
+    void addIndex(const nstr& indexName,
+                  uint8_t indexType,
+                  bool unique,
+                  bool autoErase){
       NWriteGuard guard(mutex_);
       
       auto itr = indexMap_.find(indexName);
@@ -1538,6 +1559,8 @@ namespace neu{
           NERROR("invalid index type");
       }
       
+      index->setUnique(unique);
+      index->setAutoErase(autoErase);
       index->setTable(this);
       index->init(path_ + "/" + indexName);
       
@@ -1769,6 +1792,8 @@ namespace neu{
             NERROR("invalid index type");
         }
 
+        newIndex->setUnique(oldIndex->unique());
+        newIndex->setAutoErase(oldIndex->autoErase());
         newIndex->setTable(this);
         
         delete oldIndex;
@@ -2146,8 +2171,16 @@ NTable::NTable(NDatabase_* d){
   x_ = new NTable_(this, d);
 }
 
-void NTable::addIndex(const nstr& indexName, IndexType indexType){
-  x_->addIndex(indexName, indexType);
+void NTable::addIndex(const nstr& indexName,
+                      IndexType indexType,
+                      bool unique){
+  x_->addIndex(indexName, indexType, unique, false);
+}
+
+void NTable::addRowIndex(const nstr& indexName,
+                         bool unique,
+                         bool autoErase){
+  x_->addIndex(indexName, Row, unique, autoErase);
 }
 
 uint64_t NTable::insert(nvar& row){

@@ -79,7 +79,13 @@ namespace neu{
     
     typedef std::function<int(const nvar& r)> QueryFunc;
     
-    void addIndex(const nstr& indexName, IndexType indexType);
+    void addIndex(const nstr& indexName,
+                  IndexType indexType,
+                  bool unique=false);
+    
+    void addRowIndex(const nstr& indexName,
+                     bool unique=false,
+                     bool autoErase=false);
     
     RowId insert(nvar& row);
     
