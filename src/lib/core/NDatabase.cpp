@@ -446,10 +446,16 @@ namespace neu{
       }
       
       void read(){
+        if(!loaded_){
+          load();
+        }
         tick_ = index_->table()->database()->read();
       }
       
       void write(){
+        if(!loaded_){
+          load();
+        }
         tick_ = index_->table()->database()->read();
       }
       
@@ -554,10 +560,6 @@ namespace neu{
       }
       
       Action insert(const R& record){
-        if(!loaded_){
-          load();
-        }
-       
         write();
         
         if(handleFirst(record)){
@@ -591,10 +593,6 @@ namespace neu{
       }
       
       Action push(const R& record){
-        if(!loaded_){
-          load();
-        }
-        
         write();
         
         if(handleFirst(record)){
@@ -623,10 +621,6 @@ namespace neu{
       }
       
       R* get(const V& value){
-        if(!loaded_){
-          load();
-        }
-        
         read();
         
         auto itr = findChunk(value);
