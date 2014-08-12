@@ -831,6 +831,7 @@ namespace neu{
         case List:
         case Queue:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -1460,6 +1461,52 @@ namespace neu{
       return set();
     }
     
+    nhset& hset(){
+      switch(t_){
+        case HashSet:
+          return *h_.hset;
+        case HeadMap:
+          return h_.hm->m->hset();
+        case SequenceMap:
+          return h_.sm->m->hset();
+        case HeadSequenceMap:
+          return h_.hsm->m->hset();
+        case Reference:
+          return h_.ref->v->hset();
+        case Pointer:
+          return h_.vp->hset();
+        default:
+          NERROR("var does not hold a hash set");
+      }
+    }
+    
+    const nhset& hset() const{
+      switch(t_){
+        case HashSet:
+          return *h_.hset;
+        case HeadMap:
+          return h_.hm->m->hset();
+        case SequenceMap:
+          return h_.sm->m->hset();
+        case HeadSequenceMap:
+          return h_.hsm->m->hset();
+        case Reference:
+          return h_.ref->v->hset();
+        case Pointer:
+          return h_.vp->hset();
+        default:
+          NERROR("var does not hold a hash set");
+      }
+    }
+    
+    operator const nhset&() const{
+      return hset();
+    }
+    
+    operator nhset&(){
+      return hset();
+    }
+    
     nmap& map(){
       switch(t_){
         case Function:
@@ -1611,6 +1658,7 @@ namespace neu{
     const nvar& anyMap() const{
       switch(t_){
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -1633,6 +1681,7 @@ namespace neu{
     nvar& anyMap(){
       switch(t_){
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -2061,6 +2110,13 @@ namespace neu{
         case Set:
           if(h_.set->empty()){
             delete h_.set;
+            t_ = Undefined;
+            return true;
+          }
+          return false;
+        case HashSet:
+          if(h_.hset->empty()){
+            delete h_.hset;
             t_ = Undefined;
             return true;
           }
@@ -2567,23 +2623,16 @@ namespace neu{
         case Function:
           if(h_.f->m){
             auto itr = h_.f->m->find(key);
-            if(itr == h_.f->m->end()){
-              return false;
-            }
-            return itr->second.t_ == t;
+            return itr != h_.m->end() && itr->second.t_ == t;
           }
           return false;
-        case Set:{
-          auto itr = h_.m->find(key);
-          return itr->second.t_ == t;
-        }
         case Map:{
           auto itr = h_.m->find(key);
-          return itr->second.t_ == t;
+          return itr != h_.m->end() && itr->second.t_ == t;
         }
         case HashMap:{
           auto itr = h_.m->find(key);
-          return itr->second.t_ == t;
+          return itr != h_.m->end() && itr->second.t_ == t;
         }
         case Multimap:{
           auto p = h_.mm->equal_range(key);
@@ -2684,8 +2733,9 @@ namespace neu{
       }
     }
 
+    template<class S>
     static bool streamOutputSet_(std::ostream& ostr,
-                                 const nset& s,
+                                 const S& s,
                                  bool& first,
                                  bool concise){
       bool found = false;
@@ -2790,7 +2840,9 @@ namespace neu{
     bool mapEmpty() const{
       switch(t_){
         case Set:
-          return h_.s->empty();
+          return h_.set->empty();
+        case HashSet:
+          return h_.hset->empty();
         case Map:
           return h_.m->empty();
         case HashMap:
@@ -2823,7 +2875,9 @@ namespace neu{
         case Queue:
           return h_.q->empty();
         case Set:
-          return h_.s->empty();
+          return h_.set->empty();
+        case HashSet:
+          return h_.hset->empty();
         case Map:
           return h_.m->empty();
         case HashMap:
@@ -3024,6 +3078,25 @@ namespace neu{
           return false;
       }
     }
+
+    bool hasHashSet() const{
+      switch(t_){
+        case HashSet:
+          return true;
+        case HeadMap:
+          return h_.hm->m->hasHashSet();
+        case SequenceMap:
+          return h_.sm->m->hasHashSet();
+        case HeadSequenceMap:
+          return h_.hsm->m->hasHashSet();
+        case Reference:
+          return h_.ref->v->hasHashSet();
+        case Pointer:
+          return h_.vp->hasHashSet();
+        default:
+          return false;
+      }
+    }
     
     bool hasMap() const{
       switch(t_){
@@ -3111,6 +3184,9 @@ namespace neu{
           break;
         case Set:
           delete h_.set;
+          break;
+        case HashSet:
+          delete h_.hset;
           break;
         case Map:
           delete h_.m;
@@ -3620,6 +3696,17 @@ namespace neu{
             v.push_back(k);
           }
           break;
+        case HashSet:
+          for(const auto& itr : *h_.hset){
+            const nvar& k = *itr;
+            
+            if(k.isHidden()){
+              continue;
+            }
+            
+            v.push_back(k);
+          }
+          break;
         case Map:
           for(const auto& itr : *h_.m){
             const nvar& k = itr.first;
@@ -3693,6 +3780,15 @@ namespace neu{
             }
           }
           return false;
+        case HashSet:
+          for(const auto& itr : *h_.hset){
+            const nvar& k = *itr;
+            
+            if(!k.isHidden()){
+              return true;
+            }
+          }
+          return false;
         case Map:
           for(const auto& itr : *h_.m){
             const nvar& k = itr.first;
@@ -3749,6 +3845,11 @@ namespace neu{
           break;
         case Set:
           for(const auto& itr : *h_.set){
+            v.push_back(*itr);
+          }
+          break;
+        case HashSet:
+          for(const auto& itr : *h_.hset){
             v.push_back(*itr);
           }
           break;
@@ -4168,6 +4269,13 @@ namespace neu{
         case Set:{
           size_t h = 0;
           for(auto& itr : *h_.set){
+            h ^= (*itr).hash();
+          }
+          return h + t_;
+        }
+        case HashSet:{
+          size_t h = 0;
+          for(auto& itr : *h_.hset){
             h ^= (*itr).hash();
           }
           return h + t_;
