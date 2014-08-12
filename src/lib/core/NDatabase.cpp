@@ -108,6 +108,15 @@ namespace{
   
   typedef function<int(RowId, const nvar&)> QueryFunc_;
   
+  class Pageable{
+  public:
+    virtual size_t memoryUsage() = 0;
+    
+    virtual void store() = 0;
+  };
+  
+  typedef NMap<uint64_t, Pageable*> PMap;
+  
 } // end namespace
 
 namespace neu{
@@ -157,6 +166,8 @@ namespace neu{
       memoryLimit_ = limit;
     }
     
+    size_t memoryUsage(PMap& pm);
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -187,6 +198,8 @@ namespace neu{
         
       }
 
+      virtual ~IndexBase(){}
+      
       void setTable(NTable_* table){
         table_ = table;
       }
@@ -212,6 +225,8 @@ namespace neu{
         return path_;
       }
       
+      virtual size_t memoryUsage(PMap& pm) = 0;
+      
       virtual void dump(){}
       
     private:
@@ -219,14 +234,7 @@ namespace neu{
       uint8_t type_;
       nstr path_;
     };
-    
-    class Pageable{
-    public:
-      virtual size_t memoryUsage() = 0;
-
-      virtual void store() = 0;
-    };
-    
+        
     template<class R, class V>
     class Page : public Pageable{
     public:
@@ -421,6 +429,7 @@ namespace neu{
       
       Page(IndexBase* index, uint64_t id)
       : index_(index),
+      d_(index_->table()->database()),
       id_(id),
       loaded_(true),
       firstChunk_(0),
@@ -439,14 +448,16 @@ namespace neu{
         if(!loaded_){
           load();
         }
-        tick_ = index_->table()->database()->read();
+        
+        tick_ = d_->read();
       }
       
       void write(){
         if(!loaded_){
           load();
         }
-        tick_ = index_->table()->database()->read();
+        
+        tick_ = d_->write();
       }
       
       void init(){
@@ -708,10 +719,15 @@ namespace neu{
         }
       }
       
+      uint64_t tick(){
+        return tick_;
+      }
+      
     private:
       typedef NMap<V, Chunk*> ChunkMap_;
       
       IndexBase* index_;
+      NDatabase_* d_;
       uint64_t id_;
       bool loaded_;
       ChunkMap_ chunkMap_;
@@ -747,6 +763,22 @@ namespace neu{
         for(auto& itr : pageMap_){
           delete itr.second;
         }
+      }
+      
+      size_t memoryUsage(PMap& pm){
+        size_t m = 0;
+        for(auto& itr : pageMap_){
+          IndexPage* p = itr.second;
+          
+          size_t mi = p->memoryUsage();
+          
+          if(mi > 0){
+            pm.insert({p->tick(), p});
+            m += mi;
+          }
+        }
+        
+        return m;
       }
       
       void insertRecord(const R& record){
@@ -1259,14 +1291,18 @@ namespace neu{
     public:
       Data(NTable_* table, uint64_t id)
       : table_(table),
+      d_(table_->database()),
       data_(0),
       size_(0),
-      id_(id){
+      id_(id),
+      tick_(0){
         path_ = table_->path() + "/" + nvar(id);
       }
       
       ~Data(){
-        free(data_);
+        if(data_){
+          free(data_);
+        }
       }
       
       size_t size(){
@@ -1281,6 +1317,26 @@ namespace neu{
         return id_;
       }
 
+      uint64_t tick(){
+        return tick_;
+      }
+      
+      void read(){
+        if(!data_){
+          load();
+        }
+        
+        tick_ = d_->read();
+      }
+      
+      void write(){
+        if(!data_){
+          load();
+        }
+        
+        tick_ = d_->write();
+      }
+      
       void save(){
         FILE* file = fopen(path_.c_str(), "wb");
         
@@ -1321,14 +1377,12 @@ namespace neu{
       }
 
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
+        write();
+        
         uint32_t offset = size_;
         
-        if(data_){
-          data_ = (char*)realloc(data_, size_ + size + 12);
-        }
-        else{
-          data_ = (char*)malloc(size_ + size + 12);
-        }
+        data_ = (char*)realloc(data_, size_ + size + 12);
+
         memcpy(data_ + size, &rowId, 8);
         size_ += 8;
         
@@ -1342,6 +1396,8 @@ namespace neu{
       }
       
       void get(uint32_t offset, nvar& v){
+        read();
+        
         RowId rowId;
         memcpy(&rowId, data_ + offset, 8);
         offset += 8;
@@ -1375,10 +1431,12 @@ namespace neu{
       
     private:
       NTable_* table_;
+      NDatabase_* d_;
       uint32_t size_;
       char* data_;
       uint64_t id_;
       nstr path_;
+      size_t tick_;
     };
     
     NTable_(NTable* o, NDatabase_* d)
@@ -1687,6 +1745,27 @@ namespace neu{
       }
     }
     
+    size_t memoryUsage(PMap& pm){
+      size_t m = 0;
+      for(auto& itr : indexMap_){
+        m += itr.second->memoryUsage(pm);
+      }
+      
+      m += dataIndex_->memoryUsage(pm);
+      
+      size_t mi;
+      for(auto& itr : dataMap_){
+        Data* data = itr.second;
+        
+        mi = data->memoryUsage();
+        if(mi > 0){
+          pm.insert({data->tick(), data});
+        }
+      }
+      
+      return m;
+    }
+    
     void query_(const nstr& indexName,
                 const nvar& start,
                 QueryFunc_ f){
@@ -1944,6 +2023,15 @@ namespace neu{
     for(auto& itr : tableMap_){
       itr.second->compact(rs, um);
     }
+  }
+  
+  size_t NDatabase_::memoryUsage(PMap& pm){
+    size_t m = 0;
+    for(auto& itr : tableMap_){
+      m += itr.second->memoryUsage(pm);
+    }
+    
+    return m;
   }
   
 } // end namespace neu
