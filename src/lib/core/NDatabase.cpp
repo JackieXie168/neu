@@ -173,6 +173,8 @@ namespace neu{
     
     void checkMemory();
     
+    void save();
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -231,6 +233,8 @@ namespace neu{
       }
       
       virtual size_t memoryUsage(PMap& pm) = 0;
+      
+      virtual void save() = 0;
       
       virtual void dump(){}
       
@@ -786,6 +790,12 @@ namespace neu{
         }
         
         return m;
+      }
+      
+      void save(){
+        for(auto& itr : pageMap_){
+          itr.second->save();
+        }
       }
       
       void insertRecord(const R& record){
@@ -1801,6 +1811,18 @@ namespace neu{
       return m;
     }
     
+    void save(){
+      NReadGuard guard(mutex_);
+      
+      for(auto& itr : indexMap_){
+        itr.second->save();
+      }
+      
+      for(auto& itr : dataMap_){
+        itr.second->save();
+      }
+    }
+    
     void query_(const nstr& indexName,
                 const nvar& start,
                 QueryFunc_ f){
@@ -2112,6 +2134,12 @@ namespace neu{
     }
   }
   
+  void NDatabase_::save(){
+    for(auto& itr : tableMap_){
+      itr.second->save();
+    }
+  }
+  
 } // end namespace neu
 
 NTable::NTable(NDatabase_* d){
@@ -2175,6 +2203,10 @@ void NTable::dump(){
   x_->dump();
 }
 
+void NTable::save(){
+  x_->save();
+}
+
 NDatabase::NDatabase(){}
 
 NDatabase::NDatabase(const nstr& path){
@@ -2198,6 +2230,10 @@ NDatabase* NDatabase::create(const nstr& path){
 
 void NDatabase::compact(){
   x_->compact();
+}
+
+void NDatabase::save(){
+  x_->save();
 }
 
 void NDatabase::setMemoryLimit(size_t megabytes){

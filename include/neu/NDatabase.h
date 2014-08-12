@@ -108,6 +108,8 @@ namespace neu{
     
     bool getFirst(const nstr& indexName, const nvar& value, nvar& row);
     
+    void save();
+    
     void dump();
     
     friend class NDatabase_;
@@ -128,6 +130,8 @@ namespace neu{
     
     static NDatabase* create(const nstr& path);
    
+    void save();
+    
     void compact();
     
     void setMemoryLimit(size_t megabytes);
