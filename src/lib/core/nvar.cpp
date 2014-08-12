@@ -13891,6 +13891,41 @@ bool nvar::less(const nvar& x) const{
         default:
           return true;
       }
+    case HashSet:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Queue:
+        case Set:
+        case Map:
+        case Function:
+        case HeadSequence:
+          return false;
+        case HashSet:
+          return h_.hset->size() < x.h_.hset->size();
+        case Reference:
+          return less(*x.h_.ref->v);
+        case Pointer:
+          return less(*x.h_.vp);
+        default:
+          return true;
+      }
     case Map:
       switch(x.t_){
         case None:
@@ -13915,6 +13950,7 @@ bool nvar::less(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
           return false;
         case Map:{
           int y = h_.m->size() - x.h_.m->size();
@@ -13959,6 +13995,7 @@ bool nvar::less(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
           return false;
         case HashMap:
@@ -13994,6 +14031,7 @@ bool nvar::less(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
           return false;
@@ -14039,6 +14077,7 @@ bool nvar::less(const nvar& x) const{
         case Vector:
         case List:
         case Set:
+        case HashSet:
         case Function:
         case HeadSequence:
         case Map:
@@ -14599,6 +14638,40 @@ bool nvar::greater(const nvar& x) const{
         default:
           return false;
       }
+    case HashSet:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Queue:
+        case Set:
+        case Function:
+        case HeadSequence:
+          return true;
+        case HashSet:
+          return h_.hset->size() > x.h_.hset->size();
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
     case Map:
       switch(x.t_){
         case None:
@@ -14623,6 +14696,7 @@ bool nvar::greater(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
           return true;
         case Map:{
           int y = h_.m->size() - x.h_.m->size();
@@ -14701,6 +14775,7 @@ bool nvar::greater(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
           return true;
@@ -14749,6 +14824,7 @@ bool nvar::greater(const nvar& x) const{
         case Function:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -15052,6 +15128,36 @@ bool nvar::equal(const nvar& x) const{
             
             auto itr2 = x.h_.set->find(k);
             if(itr2 == x.h_.set->end()){
+              return false;
+            }
+            
+            const nvar& k2 = *itr2;
+            if(!k.equal(k2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HashSet:
+      switch(x.t_){
+        case HashSet:{
+          if(h_.hset->size() != x.h_.hset->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.hset){
+            const nvar& k = *itr;
+            
+            auto itr2 = x.h_.hset->find(k);
+            if(itr2 == x.h_.hset->end()){
               return false;
             }
             
@@ -15751,6 +15857,57 @@ nvar nvar::operator<(const nvar& x) const{
         default:
           return true;
       }
+    case HashSet:
+      switch(x.t_){
+        case None:
+        case Undefined:
+          NERROR("right operand is undefined");
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Queue:
+        case HeadSequence:
+        case Set:
+          return false;
+        case HashSet:{
+          int y = h_.hset->size() - x.h_.hset->size();
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          nvar s1(*this);
+          s1.touchSet();
+          
+          nvar s2(x);
+          s2.touchSet();
+          
+          return s1 < s2;
+        }
+        case Symbol:
+        case Function:
+          return nfunc("LT") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this < *x.h_.ref->v;
+        case Pointer:
+          return *this < *x.h_.vp;
+        default:
+          return true;
+      }
     case Map:
       switch(x.t_){
         case None:
@@ -15771,6 +15928,8 @@ nvar nvar::operator<(const nvar& x) const{
         case RawPointer:
         case Vector:
         case List:
+        case Set:
+        case HashSet:
         case HeadSequence:
           return false;
         case Map:{
@@ -15817,6 +15976,7 @@ nvar nvar::operator<(const nvar& x) const{
         case List:
         case Queue:
         case HeadSequence:
+        case Set:
         case Map:
           return false;
         case HashMap:
@@ -15854,6 +16014,7 @@ nvar nvar::operator<(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
           return false;
@@ -15902,6 +16063,8 @@ nvar nvar::operator<(const nvar& x) const{
         case Vector:
         case List:
         case HeadSequence:
+        case Set:
+        case HashSet:
         case Map:
         case Multimap:
         case HeadMap:
@@ -16478,6 +16641,59 @@ nvar nvar::operator<=(const nvar& x) const{
         default:
           return true;
       }
+    case HashSet:
+      switch(x.t_){
+        case None:
+        case Undefined:
+          NERROR("right operand is undefined");
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Queue:
+        case Set:
+        case HeadSequence:
+          return false;
+        case HashSet:{
+          int y = h_.set->size() - x.h_.set->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          nvar s1(*this);
+          s1.touchSet();
+          
+          nvar s2(x);
+          s2.touchSet();
+          
+          return s1 <= s2;
+        }
+        case Symbol:
+        case Function:
+          return nfunc("LE") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this <= *x.h_.ref->v;
+        case Pointer:
+          return *this <= *x.h_.vp;
+        default:
+          return true;
+      }
+      
     case Map:
       switch(x.t_){
         case None:
@@ -16501,6 +16717,7 @@ nvar nvar::operator<=(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
           return false;
         case Map:{
           int y = h_.m->size() - x.h_.m->size();
@@ -16547,6 +16764,7 @@ nvar nvar::operator<=(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
           return false;
         case HashMap:
@@ -16584,6 +16802,7 @@ nvar nvar::operator<=(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
           return false;
@@ -16634,6 +16853,7 @@ nvar nvar::operator<=(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -17211,6 +17431,58 @@ nvar nvar::operator>(const nvar& x) const{
         default:
           return false;
       }
+    case HashSet:
+      switch(x.t_){
+        case None:
+        case Undefined:
+          NERROR("right operand is undefined");
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Queue:
+        case HeadSequence:
+        case Set:
+          return true;
+        case HashSet:{
+          int y = h_.set->size() - x.h_.set->size();
+          
+          if(y > 0){
+            return false;
+          }
+          else if(y > 0){
+            return true;
+          }
+          
+          nvar s1(*this);
+          s1.touchSet();
+          
+          nvar s2(x);
+          s2.touchSet();
+          
+          return s1 > s2;
+        }
+        case Symbol:
+        case Function:
+          return nfunc("GT") << *this << new nvar(x, Copy);
+        case Reference:
+          return *this > *x.h_.ref->v;
+        case Pointer:
+          return *this > *x.h_.vp;
+        default:
+          return false;
+      }
     case Map:
       switch(x.t_){
         case None:
@@ -17233,6 +17505,7 @@ nvar nvar::operator>(const nvar& x) const{
         case List:
         case Queue:
         case Set:
+        case HashSet:
         case HeadSequence:
           return true;
         case Map:{
@@ -17279,6 +17552,7 @@ nvar nvar::operator>(const nvar& x) const{
         case List:
         case Queue:
         case Set:
+        case HashSet:
         case Map:
         case HeadSequence:
           return true;
@@ -17317,6 +17591,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
           return true;
@@ -17367,6 +17642,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Queue:
         case HeadSequence:
         case Set:
+        case HashSet:
         case Map:
         case HashMap:
         case Multimap:
@@ -20862,6 +21138,26 @@ void nvar::touchMultimap(){
     default:
       NERROR("invalid operand");
   }
+}
+
+void nvar::touchQueue(){
+  
+}
+
+void nvar::touchQueue(size_t size, const nvar& v){
+  
+}
+
+void nvar::touchSet(){
+  
+}
+
+void nvar::touchHashSet(){
+  
+}
+
+void nvar::touchHashMap(){
+  
 }
 
 void nvar::append(const nvar& x){

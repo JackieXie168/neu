@@ -3988,9 +3988,19 @@ namespace neu{
     
     void touchVector(size_t size, const nvar& v=undef);
     
+    void touchQueue();
+    
+    void touchQueue(size_t size, const nvar& v=undef);
+    
     void touchList();
     
+    void touchSet();
+    
+    void touchHashSet();
+    
     void touchMap();
+    
+    void touchHashMap();
     
     void touchMultimap();
     
