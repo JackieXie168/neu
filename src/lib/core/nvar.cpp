@@ -23185,6 +23185,30 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
 
       break;
     }
+    case HashSet:{
+      uint32_t len = h_.hset->size();
+      if(len <= 255){
+        buf[pos++] = PackShortHashSet;
+        buf[pos++] = len;
+      }
+      else if(len <= 65535){
+        buf[pos++] = HashSet;
+        uint16_t plen = len;
+        memcpy(buf + pos, &plen, 2);
+        pos += 2;
+      }
+      else{
+        buf[pos++] = PackLongHashSet;
+        memcpy(buf + pos, &len, 4);
+        pos += 4;
+      }
+      
+      for(auto& itr : *h_.hset){
+        buf = (*itr).pack_(buf, size, pos);
+      }
+      
+      break;
+    }
     case Map:{
       uint32_t len = h_.m->size();
       if(len <= 255){
@@ -23796,6 +23820,56 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = Set;
       h_.set = new nset;
       nset& s = *h_.set;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
+    case PackShortHashSet:{
+      uint8_t len = *(uint8_t*)(buf + pos);
+      ++pos;
+      
+      t_ = HashSet;
+      h_.hset = new nhset;
+      nhset& s = *h_.hset;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
+    case HashSet:{
+      uint16_t len;
+      memcpy(&len, buf + pos, 2);
+      pos += 2;
+      
+      t_ = HashSet;
+      h_.hset = new nhset;
+      nhset& s = *h_.hset;
+      
+      for(size_t i = 0; i < len; ++i){
+        nvar k;
+        k.unpack_(buf, pos);
+        
+        s.emplace(move(k));
+      }
+      break;
+    }
+    case PackLongHashSet:{
+      uint32_t len;
+      memcpy(&len, buf + pos, 4);
+      pos += 4;
+      
+      t_ = HashSet;
+      h_.hset = new nhset;
+      nhset& s = *h_.hset;
       
       for(size_t i = 0; i < len; ++i){
         nvar k;
