@@ -130,6 +130,8 @@ namespace neu{
    
     void compact();
     
+    void setMemoryLimit(size_t megabytes);
+    
   private:
     NDatabase();
     

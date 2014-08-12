@@ -54,6 +54,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NDatabase.h>
 
+#include <atomic>
+
 #include <neu/NEncoder.h>
 #include <neu/NHashMap.h>
 #include <neu/NSys.h>
@@ -68,6 +70,7 @@ namespace{
   static const size_t MAX_CHUNK_SIZE = 65536;
   static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
+  static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
   
@@ -116,7 +119,9 @@ namespace neu{
     NDatabase_(NDatabase* o, const nstr& path, bool create)
     : o_(o),
     path_(path),
-    nextRowId_(1){
+    nextRowId_(1),
+    tick_(0),
+    memoryLimit_(DEFAULT_MEMORY_LIMIT){
       if(create){
         if(NSys::exists(path)){
           NERROR("path exists: " + path);
@@ -140,6 +145,18 @@ namespace neu{
       return path_;
     }
     
+    uint64_t tick(){
+      return tick_++;
+    }
+
+    void setMemoryLimit(size_t limit){
+      memoryLimit_ = limit;
+    }
+    
+    size_t memoryLimit(){
+      return memoryLimit_;
+    }
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -147,6 +164,8 @@ namespace neu{
     nstr path_;
     RowId nextRowId_;
     TableMap_ tableMap_;
+    atomic<uint64_t> tick_;
+    size_t memoryLimit_;
   };
   
   class NTable_{
@@ -163,8 +182,17 @@ namespace neu{
     class IndexBase{
     public:
       IndexBase(uint8_t type)
-      : type_(type){
+      : type_(type),
+      table_(0){
         
+      }
+
+      void setTable(NTable_* table){
+        table_ = table;
+      }
+      
+      NTable_* table(){
+        return table_;
       }
       
       uint8_t type(){
@@ -187,6 +215,7 @@ namespace neu{
       virtual void dump(){}
       
     private:
+      NTable_* table_;
       uint8_t type_;
       nstr path_;
     };
@@ -387,8 +416,13 @@ namespace neu{
       : index_(index),
       id_(id),
       loaded_(true),
-      firstChunk_(0){
+      firstChunk_(0),
+      tick_(0){
         path_ = index->path() + "/" + nvar(id);
+      }
+      
+      void access(){
+        tick_ = index_->table()->database()->tick();
       }
       
       ~Page(){
@@ -495,6 +529,8 @@ namespace neu{
           load();
         }
        
+        access();
+        
         if(handleFirst(record)){
           return Remap;
         }
@@ -529,6 +565,8 @@ namespace neu{
           load();
         }
         
+        access();
+        
         if(handleFirst(record)){
           return Remap;
         }
@@ -558,6 +596,8 @@ namespace neu{
           load();
         }
         
+        access();
+        
         auto itr = findChunk(value);
         if(itr == chunkMap_.end()){
           return 0;
@@ -569,6 +609,7 @@ namespace neu{
       Page* split(uint64_t id){
         Page* p = new Page(index_, id);
         p->init();
+        p->access();
         
         typename ChunkMap_::iterator itr;
 
@@ -592,6 +633,7 @@ namespace neu{
       }
       
       void traverse(TraverseFunc f){
+        access();
         for(auto& itr : chunkMap_){
           itr.second->traverse(f);
         }
@@ -605,6 +647,8 @@ namespace neu{
       }
       
       int query(const V& start, QueryFunc_ f){
+        access();
+        
         auto itr = findChunk(start);
         
         for(;;){
@@ -639,6 +683,7 @@ namespace neu{
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
       nstr path_;
+      uint64_t tick_;
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
@@ -1306,6 +1351,7 @@ namespace neu{
           NERROR("invalid index type");
       }
       
+      index->setTable(this);
       index->init(path_ + "/" + indexName);
       
       indexMap_.insert({indexName, index});
@@ -1526,6 +1572,8 @@ namespace neu{
             NERROR("invalid index type");
         }
 
+        newIndex->setTable(this);
+        
         delete oldIndex;
         newIndexMap_.insert({itr.first, newIndex});
       }
@@ -1746,6 +1794,10 @@ namespace neu{
       dataIndex_->dump();
     }
     
+    NDatabase_* database(){
+      return d_;
+    }
+    
   private:
     typedef NMap<nstr, IndexBase*> IndexMap_;
     typedef NMap<uint64_t, Data*> DataMap_;
@@ -1884,4 +1936,8 @@ NDatabase* NDatabase::create(const nstr& path){
 
 void NDatabase::compact(){
   x_->compact();
+}
+
+void NDatabase::setMemoryLimit(size_t megabytes){
+  x_->setMemoryLimit(megabytes);
 }
