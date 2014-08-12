@@ -199,6 +199,11 @@ namespace neu{
       class Chunk{
       public:
         
+        Chunk(){}
+        
+        Chunk(R* data, size_t n)
+        : chunk_(data, data + n){}
+        
         typedef function<void(R& r)> TraverseFunc;
         
         Action find(const V& value, size_t& index){
@@ -436,6 +441,41 @@ namespace neu{
       }
       
       void load(){
+        FILE* file = fopen(path_.c_str(), "rb");
+        
+        uint32_t numChunks;
+        uint32_t n = fread(&numChunks, 1, 4, file);
+        if(n != 4){
+          NERROR("failed to read page file [1]: " + path_);
+        }
+        
+        uint32_t chunkSize;
+        uint32_t dataSize;
+        R buf[MAX_CHUNK_SIZE];
+        
+        firstChunk_ = 0;
+        
+        for(size_t i = 0; i < numChunks; ++i){
+          n = fread(&chunkSize, 1, 4, file);
+          if(n != 4){
+            NERROR("failed to read page file [2]: " + path_);
+          }
+          
+          dataSize = sizeof(R)*chunkSize;
+          
+          n = fread(buf, 1, dataSize, file);
+          if(n != dataSize){
+            NERROR("failed to read page file [3]: " + path_);
+          }
+          
+          Chunk* chunk = new Chunk(buf, chunkSize);
+          if(!firstChunk_){
+            firstChunk_ = chunk;
+          }
+          
+          chunkMap_.insert({chunk->min(), chunk});
+        }
+        
         loaded_ = true;
       }
       
