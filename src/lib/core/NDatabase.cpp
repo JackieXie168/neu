@@ -171,8 +171,13 @@ namespace neu{
         return type_;
       }
       
-      void setPath(const nstr& path){
+      void init(const nstr& path){
         path_ = path;
+        if(NSys::exists(path_)){
+          NERROR("index path exists: " + path_);
+        }
+        
+        NSys::makeDir(path_);
       }
       
       const nstr& path(){
@@ -377,6 +382,14 @@ namespace neu{
         path_ = index->path() + "/" + nvar(id);
       }
       
+      void init(){
+        if(NSys::exists(path_)){
+          NERROR("page path exists: " + path_);
+        }
+        
+        NSys::makeDir(path_);
+      }
+      
       ~Page(){
         for(auto& itr : chunkMap_){
           delete itr.second;
@@ -472,6 +485,7 @@ namespace neu{
       
       Page* split(uint64_t id){
         Page* p = new Page(index_, id);
+        p->init();
         
         typename ChunkMap_::iterator itr;
 
@@ -567,6 +581,7 @@ namespace neu{
         
         firstPage_ = new IndexPage(this, nextPageId_++);
         pageMap_.insert({min_, firstPage_});
+        firstPage_->init();
       }
       
       virtual ~Index(){
@@ -1159,9 +1174,15 @@ namespace neu{
       
     }
     
-    void setName(const nstr& name){
+    void init(const nstr& name){
       name_ = name;
       path_ = d_->path() + "/" + name;
+      
+      if(NSys::exists(path_)){
+        NERROR("table path exists: " + path_);
+      }
+      
+      NSys::makeDir(path_);
     }
     
     const nstr& name(){
@@ -1206,7 +1227,7 @@ namespace neu{
           NERROR("invalid index type");
       }
       
-      index->setPath(path_ + "/" + indexName);
+      index->init(path_ + "/" + indexName);
       
       indexMap_.insert({indexName, index});
     }
@@ -1669,7 +1690,7 @@ namespace neu{
     
     NTable* table = new NTable(this);
     NTable_* t = table->x_;
-    t->setName(tableName);
+    t->init(tableName);
     
     tableMap_.insert({tableName, t});
     
