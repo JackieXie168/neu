@@ -56,6 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NEncoder.h>
 #include <neu/NHashMap.h>
+#include <neu/NSys.h>
 
 using namespace std;
 using namespace neu;
@@ -116,7 +117,13 @@ namespace neu{
     : o_(o),
     path_(path),
     nextRowId_(1){
-      
+      if(create){
+        if(NSys::exists(path)){
+          NERROR("path exists: " + path);
+        }
+        
+        NSys::makeDir(path);
+      }
     }
     
     NTable* addTable(const nstr& tableName);
@@ -128,6 +135,10 @@ namespace neu{
     }
     
     void compact();
+    
+    const nstr& path(){
+      return path_;
+    }
     
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
@@ -148,6 +159,32 @@ namespace neu{
     static const Action Split = 0x2;
     static const Action RemapSplit = 0x3;
     static const Action Append = 0x4;
+    
+    class IndexBase{
+    public:
+      IndexBase(uint8_t type)
+      : type_(type){
+        
+      }
+      
+      uint8_t type(){
+        return type_;
+      }
+      
+      void setPath(const nstr& path){
+        path_ = path;
+      }
+      
+      const nstr& path(){
+        return path_;
+      }
+      
+      virtual void dump(){}
+      
+    private:
+      uint8_t type_;
+      nstr path_;
+    };
     
     template<class R, class V>
     class Page{
@@ -332,11 +369,12 @@ namespace neu{
         Chunk_ chunk_;
       };
       
-      Page(uint64_t id)
-      : id_(id),
+      Page(IndexBase* index, uint64_t id)
+      : index_(index),
+      id_(id),
       loaded_(true),
       firstChunk_(0){
-
+        path_ = index->path() + "/" + nvar(id);
       }
       
       ~Page(){
@@ -433,7 +471,7 @@ namespace neu{
       }
       
       Page* split(uint64_t id){
-        Page* p = new Page(id);
+        Page* p = new Page(index_, id);
         
         typename ChunkMap_::iterator itr;
 
@@ -502,32 +540,17 @@ namespace neu{
     private:
       typedef NMap<V, Chunk*> ChunkMap_;
       
+      IndexBase* index_;
       uint64_t id_;
       bool loaded_;
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
+      nstr path_;
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
         return itr == chunkMap_.begin() ? itr : --itr;
       }
-    };
-    
-    class IndexBase{
-    public:
-      IndexBase(uint8_t type)
-      : type_(type){
-        
-      }
-      
-      uint8_t type(){
-        return type_;
-      }
-      
-      virtual void dump(){}
-      
-    private:
-      uint8_t type_;
     };
     
     template<typename R, typename V>
@@ -542,7 +565,7 @@ namespace neu{
       nextPageId_(0){
         min(min_);
         
-        firstPage_ = new IndexPage(nextPageId_++);
+        firstPage_ = new IndexPage(this, nextPageId_++);
         pageMap_.insert({min_, firstPage_});
       }
       
@@ -1138,6 +1161,11 @@ namespace neu{
     
     void setName(const nstr& name){
       name_ = name;
+      path_ = d_->path() + "/" + name;
+    }
+    
+    const nstr& name(){
+      return name_;
     }
     
     void addIndex(const nstr& indexName, uint8_t indexType){
@@ -1177,6 +1205,8 @@ namespace neu{
         default:
           NERROR("invalid index type");
       }
+      
+      index->setPath(path_ + "/" + indexName);
       
       indexMap_.insert({indexName, index});
     }
@@ -1628,6 +1658,7 @@ namespace neu{
     DataMap_ dataMap_;
     Data* lastData_;
     DataIndex* dataIndex_;
+    nstr path_;
   };
   
   NTable* NDatabase_::addTable(const nstr& tableName){
