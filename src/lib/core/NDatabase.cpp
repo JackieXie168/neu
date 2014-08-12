@@ -59,6 +59,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NEncoder.h>
 #include <neu/NHashMap.h>
 #include <neu/NSys.h>
+#include <neu/NRWMutex.h>
+#include <neu/NReadGuard.h>
+#include <neu/NWriteGuard.h>
 
 using namespace std;
 using namespace neu;
@@ -1473,7 +1476,21 @@ namespace neu{
       return name_;
     }
     
+    void readLock_(){
+      mutex_.readLock();
+    }
+    
+    void writeLock_(){
+      mutex_.writeLock();
+    }
+    
+    void unlock_(){
+      mutex_.unlock();
+    }
+    
     void addIndex(const nstr& indexName, uint8_t indexType){
+      NWriteGuard guard(mutex_);
+      
       auto itr = indexMap_.find(indexName);
       
       if(itr != indexMap_.end()){
@@ -1518,6 +1535,8 @@ namespace neu{
     }
     
     RowId insert(nvar& row){
+      NWriteGuard guard(mutex_);
+      
       RowId rowId = d_->nextRowId();
       insert_(rowId, row);
       return rowId;
@@ -1617,6 +1636,8 @@ namespace neu{
     }
     
     void update(nvar& row){
+      NWriteGuard guard(mutex_);
+      
       RowId rowId = row["id"];
       RowId newRowId = dataIndex_->update(rowId);
       
@@ -1629,6 +1650,8 @@ namespace neu{
     }
     
     bool get(RowId rowId, nvar& row){
+      NReadGuard guard(mutex_);
+      
       uint32_t dataId;
       uint32_t offset;
       
@@ -1646,6 +1669,8 @@ namespace neu{
     }
     
     bool exists(RowId rowId){
+      NReadGuard guard(mutex_);
+      
       return dataIndex_->exists(rowId);
     }
     
@@ -1654,6 +1679,8 @@ namespace neu{
     }
     
     void erase(RowId rowId){
+      NWriteGuard guard(mutex_);
+      
       dataIndex_->erase(rowId);
     }
     
@@ -1752,6 +1779,8 @@ namespace neu{
     }
     
     size_t memoryUsage(PMap& pm){
+      NReadGuard guard(mutex_);
+      
       size_t m = 0;
       for(auto& itr : indexMap_){
         m += itr.second->memoryUsage(pm);
@@ -1842,6 +1871,7 @@ namespace neu{
     void query(const nstr& indexName,
                const nvar& start,
                NTable::QueryFunc qf){
+      NReadGuard guard(mutex_);
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
@@ -1857,6 +1887,7 @@ namespace neu{
                     const nvar& start,
                     const nvar& end,
                     RowSet& rs){
+      NReadGuard guard(mutex_);
       
       if(start > end){
         NERROR("invalid start/end");
@@ -1878,6 +1909,8 @@ namespace neu{
     }
     
     void traverseStart(NTable::QueryFunc qf){
+      NReadGuard guard(mutex_);
+      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         bool success = get(rowId, row);
@@ -1889,6 +1922,8 @@ namespace neu{
     }
     
     void traverseEnd(NTable::QueryFunc qf){
+      NReadGuard guard(mutex_);
+      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         bool success = get(rowId, row);
@@ -1902,6 +1937,8 @@ namespace neu{
     }
     
     void join(const nstr& indexName, const RowSet& js, RowSet& rs){
+      NReadGuard guard(mutex_);
+      
       for(RowId findRowId : js){
         auto f = [&](RowId rowId, const nvar& v) -> int{
           RowId toRowId = v;
@@ -1922,6 +1959,8 @@ namespace neu{
     }
     
     void get(const RowSet& rs, NTable::QueryFunc qf){
+      NReadGuard guard(mutex_);
+      
       for(RowId findRowId : rs){
         auto f = [&](RowId rowId, const nvar& v) -> int{
           if(v.some()){
@@ -1945,6 +1984,8 @@ namespace neu{
     }
     
     bool getFirst(const nstr& indexName, const nvar& value, nvar& row){
+      NReadGuard guard(mutex_);
+      
       bool success = false;
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
@@ -1992,6 +2033,7 @@ namespace neu{
     DataIndex* dataIndex_;
     nstr path_;
     size_t memoryUsage_;
+    NRWMutex mutex_;
   };
   
   NTable* NDatabase_::addTable(const nstr& tableName){
@@ -2021,13 +2063,25 @@ namespace neu{
   void NDatabase_::compact(){
     RowSet rs;
     UpdateMap um;
-    
+
     for(auto& itr : tableMap_){
-      itr.second->mapCompact(rs, um);
+      NTable_* t = itr.second;
+      t->writeLock_();
     }
     
     for(auto& itr : tableMap_){
-      itr.second->compact(rs, um);
+      NTable_* t = itr.second;
+      t->mapCompact(rs, um);
+    }
+    
+    for(auto& itr : tableMap_){
+      NTable_* t = itr.second;
+      t->compact(rs, um);
+    }
+    
+    for(auto& itr : tableMap_){
+      NTable_* t = itr.second;
+      t->unlock_();
     }
   }
   
