@@ -4825,6 +4825,10 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
@@ -4919,6 +4923,10 @@ nvar& nvar::set(const nvar& x){
         case Set:
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           t_ = Map;
@@ -5015,6 +5023,10 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
@@ -5109,6 +5121,10 @@ nvar& nvar::set(const nvar& x){
         case Set:
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           t_ = Map;
@@ -5208,6 +5224,10 @@ nvar& nvar::set(const nvar& x){
         case Set:
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           t_ = Map;
@@ -5318,6 +5338,11 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          delete h_.r;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           delete h_.r;
           t_ = Map;
@@ -5424,6 +5449,10 @@ nvar& nvar::set(const nvar& x){
         case Set:
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           t_ = Map;
@@ -5533,6 +5562,11 @@ nvar& nvar::set(const nvar& x){
           delete h_.x;
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          delete h_.x;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           delete h_.x;
@@ -5652,6 +5686,11 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          delete h_.s;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           delete h_.s;
           t_ = Map;
@@ -5756,6 +5795,10 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
@@ -5855,6 +5898,10 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
@@ -5953,6 +6000,10 @@ nvar& nvar::set(const nvar& x){
         case Set:
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           t_ = Map;
@@ -6062,6 +6113,11 @@ nvar& nvar::set(const nvar& x){
           delete h_.v;
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          delete h_.v;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           delete h_.v;
@@ -6179,6 +6235,11 @@ nvar& nvar::set(const nvar& x){
           delete h_.l;
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          delete h_.l;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           delete h_.l;
@@ -6298,6 +6359,11 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          delete h_.q;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           delete h_.q;
           t_ = Map;
@@ -6415,6 +6481,11 @@ nvar& nvar::set(const nvar& x){
         case Set:
           *h_.set = *x.h_.set;
           return *this;
+        case HashSet:
+          delete h_.set;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           delete h_.set;
           t_ = Map;
@@ -6453,6 +6524,128 @@ nvar& nvar::set(const nvar& x){
           return *this;
         default:
           delete h_.set;
+          t_ = x.t_;
+          h_.i = x.h_.i;
+          return *this;
+      }
+      return *this;
+    case HashSet:
+      switch(x.t_){
+        case None:
+          delete h_.hset;
+          t_ = None;
+          return *this;
+        case Undefined:
+          delete h_.hset;
+          t_ = Undefined;
+          return *this;
+        case False:
+          delete h_.hset;
+          t_ = False;
+          return *this;
+        case True:
+          delete h_.hset;
+          t_ = True;
+          return *this;
+        case Rational:
+          delete h_.hset;
+          t_ = Rational;
+          h_.r = new nrat(*x.h_.r);
+          return *this;
+        case Real:
+          delete h_.hset;
+          t_ = Real;
+          h_.x = new nreal(*x.h_.x);
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          delete h_.hset;
+          t_ = x.t_;
+          h_.s = new nstr(*x.h_.s);
+          return *this;
+        case LocalObject:
+          delete h_.hset;
+          t_ = LocalObject;
+          h_.o = x.h_.o->clone();
+          return *this;
+        case SharedObject:
+          delete h_.hset;
+          t_ = SharedObject;
+          h_.o = x.h_.o;
+          h_.o->ref();
+          return *this;
+        case Vector:
+          delete h_.hset;
+          t_ = Vector;
+          h_.v = new nvec(*x.h_.v);
+          return *this;
+        case List:
+          delete h_.hset;
+          t_ = List;
+          h_.l = new nlist(*x.h_.l);
+          return *this;
+        case Queue:
+          delete h_.hset;
+          t_ = Queue;
+          h_.q = new nqueue(*x.h_.q);
+          return *this;
+        case Function:
+          delete h_.hset;
+          t_ = Function;
+          h_.f = x.h_.f->clone();
+          return *this;
+        case HeadSequence:
+          delete h_.hset;
+          t_ = HeadSequence;
+          h_.hs = x.h_.hs->clone();
+          return *this;
+        case Set:
+          delete h_.hset;
+          t_ = Set;
+          h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          *h_.hset = *x.h_.hset;
+          return *this;
+        case Map:
+          delete h_.hset;
+          t_ = Map;
+          h_.m = new nmap(*x.h_.m);
+          return *this;
+        case HashMap:
+          delete h_.hset;
+          t_ = HashMap;
+          h_.h = new nhmap(*x.h_.h);
+          return *this;
+        case Multimap:
+          delete h_.hset;
+          t_ = Multimap;
+          h_.mm = new nmmap(*x.h_.mm);
+          return *this;
+        case HeadMap:
+          delete h_.hset;
+          t_ = HeadMap;
+          h_.hm = x.h_.hm->clone();
+          return *this;
+        case SequenceMap:
+          delete h_.hset;
+          t_ = SequenceMap;
+          h_.sm = x.h_.sm->clone();
+          return *this;
+        case HeadSequenceMap:
+          delete h_.hset;
+          t_ = HeadSequenceMap;
+          h_.hsm = x.h_.hsm->clone();
+          return *this;
+        case Reference:
+          delete h_.hset;
+          t_ = Reference;
+          h_.ref = x.h_.ref;
+          h_.ref->ref();
+          return *this;
+        default:
+          delete h_.hset;
           t_ = x.t_;
           h_.i = x.h_.i;
           return *this;
@@ -6533,6 +6726,11 @@ nvar& nvar::set(const nvar& x){
           delete h_.m;
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          delete h_.m;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           *h_.m = *x.h_.m;
@@ -6651,6 +6849,11 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          delete h_.h;
+          t_ = Set;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           delete h_.h;
           t_ = Map;
@@ -6767,6 +6970,11 @@ nvar& nvar::set(const nvar& x){
           delete h_.mm;
           t_ = Set;
           h_.set = new nset(*x.h_.set);
+          return *this;
+        case HashSet:
+          delete h_.mm;
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
           delete h_.mm;
@@ -6915,6 +7123,13 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = HashSet;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           if(h_.ref->deref()){
             delete h_.ref;
@@ -7034,6 +7249,10 @@ nvar& nvar::set(const nvar& x){
           t_ = Set;
           h_.set = new nset(*x.h_.set);
           return *this;
+        case HashSet:
+          t_ = Set;
+          h_.hset = new nhset(*x.h_.hset);
+          return *this;
         case Map:
           t_ = Map;
           h_.m = new nmap(*x.h_.m);
@@ -7096,6 +7315,11 @@ nvar& nvar::set(const nvar& x){
       h_.hsm->dealloc();
       delete h_.hsm;
       break;
+
+    
+    
+    
+    
     case Symbol:
     case Function:{
       CFunction* f = new CFunction("Set");
@@ -7150,6 +7374,9 @@ nvar& nvar::set(const nvar& x){
       return *this;
     case Set:
       h_.set = new nset(*x.h_.set);
+      return *this;
+    case HashSet:
+      h_.hset = new nhset(*x.h_.hset);
       return *this;
     case Map:
       h_.m = new nmap(*x.h_.m);
