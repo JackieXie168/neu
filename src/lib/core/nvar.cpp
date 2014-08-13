@@ -25928,14 +25928,110 @@ void nvar::ceil(){
 }
 
 nvar& nvar::unite(const nvar& x){
+  switch(t_){
+    case Set:
+      switch(x.t_){
+        case Set:
+          h_.set->unite(*x.h_.set);
+          break;
+        default:{
+          nvar s(x);
+          s.touchSet();
+          h_.set->unite(*s.h_.set);
+          break;
+        }
+      }
+      break;
+    case HashSet:
+      switch(x.t_){
+        case HashSet:
+          h_.hset->unite(*x.h_.hset);
+          break;
+        default:{
+          nvar s(x);
+          s.touchHashSet();
+          h_.hset->unite(*s.h_.hset);
+          break;
+        }
+      }
+      break;
+    default:
+      touchSet();
+      unite(x);
+  }
+
   return *this;
 }
 
 nvar& nvar::intersect(const nvar& x){
+  switch(t_){
+    case Set:
+      switch(x.t_){
+        case Set:
+          h_.set->intersect(*x.h_.set);
+          break;
+        default:{
+          nvar s(x);
+          s.touchSet();
+          h_.set->intersect(*s.h_.set);
+          break;
+        }
+      }
+      break;
+    case HashSet:
+      switch(x.t_){
+        case HashSet:
+          h_.hset->intersect(*x.h_.hset);
+          break;
+        default:{
+          nvar s(x);
+          s.touchHashSet();
+          h_.hset->intersect(*s.h_.hset);
+          break;
+        }
+      }
+      break;
+    default:
+      touchSet();
+      intersect(x);
+  }
+  
   return *this;
 }
 
 nvar& nvar::complement(const nvar& x){
+  switch(t_){
+    case Set:
+      switch(x.t_){
+        case Set:
+          h_.set->complement(*x.h_.set);
+          break;
+        default:{
+          nvar s(x);
+          s.touchSet();
+          h_.set->complement(*s.h_.set);
+          break;
+        }
+      }
+      break;
+    case HashSet:
+      switch(x.t_){
+        case HashSet:
+          h_.hset->complement(*x.h_.hset);
+          break;
+        default:{
+          nvar s(x);
+          s.touchHashSet();
+          h_.hset->complement(*s.h_.hset);
+          break;
+        }
+      }
+      break;
+    default:
+      touchSet();
+      complement(x);
+  }
+  
   return *this;
 }
 
