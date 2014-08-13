@@ -128,32 +128,7 @@ namespace neu{
   
   class NDatabase_{
   public:
-    NDatabase_(NDatabase* o, const nstr& path, bool create)
-    : o_(o),
-    path_(path),
-    metaPath_(path + "/meta.nvar"),
-    tick_(0){
-
-      if(create){
-        if(NSys::exists(path_)){
-          NERROR("path exists: " + path_);
-        }
-        
-        NSys::makeDir(path);
-        
-        nextRowId_ = 1;
-        memoryLimit_ = DEFAULT_MEMORY_LIMIT;
-      }
-      else{
-        nvar m;
-        m.open(metaPath_);
-
-        NGET(m, nextRowId_);
-        NGET(m, memoryLimit_);
-        
-        const nhmap& tm = m["tableMap"];
-      }
-    }
+    NDatabase_(NDatabase* o, const nstr& path, bool create);
     
     NTable* addTable(const nstr& tableName);
     
@@ -186,6 +161,8 @@ namespace neu{
     void checkMemory();
     
     void save();
+    
+    void saveMeta();
     
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
@@ -1352,14 +1329,14 @@ namespace neu{
     
     class Data : public Pageable{
     public:
-      Data(NTable_* table, uint64_t id)
+      Data(NTable_* table, uint64_t id, size_t size=0)
       : table_(table),
       d_(table_->database()),
       data_(0),
-      size_(0),
+      size_(size),
       id_(id),
       tick_(0){
-        path_ = table_->path() + "/" + nvar(id);
+        path_ = table_->path() + "/__data/" + nvar(id);
       }
       
       ~Data(){
@@ -1512,6 +1489,75 @@ namespace neu{
     dataIndex_(new DataIndex(d_)){
       
     }
+
+    NTable_(NTable* o, NDatabase_* d, const nstr& path)
+    : o_(o),
+    d_(d),
+    path_(path),
+    lastData_(0){
+      
+      metaPath_ = path_ + "/meta.nvar";
+      
+      if(!NSys::exists(metaPath_)){
+        NERROR("table meta path not found: " + metaPath_);
+      }
+      
+      dataPath_ = path_ + "/__data";
+      
+      if(!NSys::exists(dataPath_)){
+        NERROR("table data path not found: " + metaPath_);
+      }
+      
+      dataMetaPath_ = dataPath_ + "/meta.nvar";
+      if(!NSys::exists(dataMetaPath_)){
+        NERROR("table data meta path not found: " + dataMetaPath_);
+      }
+      
+      nvar m;
+      m.open(metaPath_);
+      NGET(m, name_);
+      NGET(m, nextDataId_);
+    
+      m = undef;
+      m.open(dataMetaPath_);
+      const nhmap& dm = m;
+      
+      for(auto& itr : dm){
+        uint64_t dataId = itr.first;
+        size_t size = itr.second;
+        
+        dataMap_.insert({dataId, new Data(this, dataId, size)});
+      }
+    }
+    
+    void saveDataMeta(){
+      nvar m = nhmap();
+
+      Data* data;
+      for(auto& itr : dataMap_){
+        data = itr.second;
+        m(itr.first) = data->size();
+      }
+      
+      m.save(metaPath_);
+    }
+    
+    void saveMeta(){
+      nvar m;
+      NPUT(m, name_);
+      NPUT(m, nextDataId_);
+      
+      nvar& dm = m("dataMap") = nhmap();
+      Data* data;
+      
+      for(auto& itr : dataMap_){
+        data = itr.second;
+        
+        dm(itr.first) = data->size();
+      }
+      
+      m.save(metaPath_);
+    }
     
     void init(const nstr& name){
       name_ = name;
@@ -1522,12 +1568,20 @@ namespace neu{
       }
 
       NSys::makeDir(path_);
+
+      metaPath_ = path_ + "/meta.nvar";
+      
+      if(NSys::exists(metaPath_)){
+        NERROR("table meta path exists: " + metaPath_);
+      }
       
       dataPath_ = path_ + "/__data";
 
       if(NSys::exists(dataPath_)){
         NERROR("table data path exists: " + dataPath_);
       }
+      
+      NSys::makeDir(dataPath_);
     }
     
     const nstr& path(){
@@ -2100,20 +2154,6 @@ namespace neu{
       return d_;
     }
     
-    void saveDataMeta(){
-      nvar m;
-      m.touchHashMap();
-      Data* data;
-      
-      for(auto& itr : dataMap_){
-        data = itr.second;
-        
-        m(itr.first) = data->size();
-      }
-      
-      m.save(dataPath_ + "/meta.nvar");
-    }
-    
   private:
     typedef NMap<nstr, IndexBase*> IndexMap_;
     typedef NMap<uint64_t, Data*> DataMap_;
@@ -2128,9 +2168,42 @@ namespace neu{
     DataIndex* dataIndex_;
     nstr path_;
     nstr dataPath_;
+    nstr dataMetaPath_;
+    nstr metaPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
   };
+  
+  NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
+  : o_(o),
+  path_(path),
+  metaPath_(path + "/meta.nvar"),
+  tick_(0){
+    
+    if(create){
+      if(NSys::exists(path_)){
+        NERROR("path exists: " + path_);
+      }
+      
+      NSys::makeDir(path);
+      
+      nextRowId_ = 1;
+      memoryLimit_ = DEFAULT_MEMORY_LIMIT;
+    }
+    else{
+      nvar m;
+      m.open(metaPath_);
+      NGET(m, memoryLimit_);
+      NGET(m, nextRowId_);
+    }
+  }
+  
+  void NDatabase_::saveMeta(){
+    nvar m = nhmap();
+    NPUT(m, memoryLimit_);
+    NPUT(m, nextRowId_);
+    m.save(metaPath_);
+  }
   
   NTable* NDatabase_::addTable(const nstr& tableName){
     auto itr = tableMap_.find(tableName);
@@ -2218,6 +2291,10 @@ namespace neu{
 
 NTable::NTable(NDatabase_* d){
   x_ = new NTable_(this, d);
+}
+
+NTable::NTable(NDatabase_* d, const nstr& path){
+  x_ = new NTable_(this, d, path);
 }
 
 void NTable::addIndex(const nstr& indexName,

@@ -122,6 +122,7 @@ namespace neu{
     
   private:
     NTable(class NDatabase_*);
+    NTable(class NDatabase_*, const nstr&);
     
     class NTable_* x_;
   };
