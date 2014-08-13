@@ -21317,7 +21317,88 @@ void nvar::touchMultimap(){
 }
 
 void nvar::touchQueue(){
-  
+  switch(t_){
+    case None:
+    case Undefined:
+      t_ = Queue;
+      h_.q = new nqueue;
+      break;
+    case False:
+    case True:
+    case Integer:
+    case Rational:
+    case Float:
+    case Real:
+    case Symbol:
+    case String:
+    case StringPointer:
+    case Binary:
+    case RawPointer:
+    case ObjectPointer:
+    case LocalObject:
+    case SharedObject:{
+      Head h;
+      h.q = new nqueue;
+      h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Queue, h));
+      t_ = HeadSequence;
+      break;
+    }
+    case Vector:{
+      nqueue* q = new nqueue(h_.v->begin(), h_.v->end());
+      delete h_.v;
+      h_.q = q;
+      t_ = Queue;
+      break;
+    }
+      break;
+    case List:{
+      nqueue* q = new nqueue(h_.l->begin(), h_.l->end());
+      delete h_.l;
+      h_.q = q;
+      t_ = Queue;
+      break;
+    }
+    case Queue:
+      break;
+    case HeadSequence:
+      h_.hs->s->touchQueue();
+      break;
+    case Set:
+    case HashSet:
+    case Map:
+    case HashMap:
+    case Multimap:{
+      Head h;
+      h.q = new nqueue;
+      h_.sm = new CSequenceMap(new nvar(Vector, h), new nvar(t_, h_));
+      t_ = SequenceMap;
+      break;
+    }
+    case HeadMap:{
+      Head h;
+      h.v = new nvec;
+      CHeadMap* hm = h_.hm;
+      h_.hsm =
+      new CHeadSequenceMap(hm->h, new nvar(t_, h_), hm->m);
+      t_ = HeadSequenceMap;
+      delete hm;
+      break;
+    }
+    case SequenceMap:
+      h_.sm->s->touchQueue();
+      break;
+    case HeadSequenceMap:
+      h_.hsm->s->touchQueue();
+      break;
+    case Reference:
+      h_.ref->v->touchQueue();
+      break;
+    case Pointer:
+      h_.vp->touchQueue();
+      break;
+    default:
+      NERROR("invalid operand");
+  }
 }
 
 void nvar::touchQueue(size_t size, const nvar& v){
@@ -21333,7 +21414,119 @@ void nvar::touchHashSet(){
 }
 
 void nvar::touchHashMap(){
-  
+  switch(t_){
+    case None:
+    case Undefined:
+      t_ = HashMap;
+      h_.h = new nhmap;
+      break;
+    case False:
+    case True:
+    case Integer:
+    case Rational:
+    case Float:
+    case Real:
+    case Symbol:
+    case String:
+    case StringPointer:
+    case Binary:
+    case RawPointer:
+    case ObjectPointer:
+    case LocalObject:
+    case SharedObject:{
+      Head h;
+      h.h = new nhmap;
+      h_.hm = new CHeadMap(new nvar(t_, h_), new nvar(HashMap, h));
+      t_ = HeadMap;
+      break;
+    }
+    case Vector:
+    case List:
+    case Queue:{
+      Head h;
+      h.h = new nhmap;
+      h_.sm = new CSequenceMap(new nvar(t_, h_), new nvar(HashMap, h));
+      t_ = SequenceMap;
+      break;
+    }
+    case HeadSequence:{
+      Head h;
+      h.h = new nhmap;
+      CHeadSequence* hs = h_.hs;
+      h_.hsm = new CHeadSequenceMap(hs->h, hs->s, new nvar(HashMap, h));
+      t_ = HeadSequenceMap;
+      delete hs;
+      break;
+    }
+    case Set:{
+      nhmap* m = new nhmap;
+      
+      for(auto& itr : *h_.set){
+        m->insert({*itr, true});
+      }
+      
+      delete h_.set;
+      t_ = HashMap;
+      h_.h = m;
+      break;
+    }
+    case HashSet:{
+      nhmap* m = new nhmap;
+      
+      for(auto& itr : *h_.hset){
+        m->insert({*itr, true});
+      }
+      
+      delete h_.hset;
+      t_ = HashMap;
+      h_.h = m;
+      break;
+    }
+    case Map:{
+      nhmap* m = new nhmap(h_.m->begin(), h_.m->end());
+      
+      delete h_.m;
+      t_ = HashMap;
+      h_.h = m;
+      break;
+    }
+    case HashMap:
+      break;
+    case Multimap:{
+      const nmmap& mm = *h_.mm;
+      nhmap* m = new nhmap;
+      for(auto& itr : mm){
+        auto itr2 = m->find(itr.first);
+        if(itr2 == m->end()){
+          m->insert({itr.first, nvec(1, itr.second)});
+        }
+        else{
+          itr2->second.pushBack(itr.second);
+        }
+      }
+      delete h_.mm;
+      h_.h = m;
+      t_ = HashMap;
+      break;
+    }
+    case HeadMap:
+      h_.hm->m->touchHashMap();
+      break;
+    case SequenceMap:
+      h_.sm->m->touchHashMap();
+      break;
+    case HeadSequenceMap:
+      h_.hsm->m->touchHashMap();
+      break;
+    case Reference:
+      h_.ref->v->touchHashMap();
+      break;
+    case Pointer:
+      h_.vp->touchHashMap();
+      break;
+    default:
+      NERROR("invalid operand");
+  }
 }
 
 void nvar::append(const nvar& x){
