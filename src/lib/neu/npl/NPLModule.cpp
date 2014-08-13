@@ -663,7 +663,7 @@ namespace{
       if(v.hasVector()){
         vv = toVar(h);
         
-        globalCall("long nvar::touchVector(nvar*)", {vv});
+        globalCall("void nvar::touchVector(nvar*)", {vv});
         
         const nvec& vec = v;
         for(size_t i = 0; i < vec.size(); ++i){
@@ -678,7 +678,7 @@ namespace{
       else if(v.hasList()){
         vv = toVar(h);
 
-        globalCall("long nvar::touchList(nvar*)", {vv});
+        globalCall("void nvar::touchList(nvar*)", {vv});
         
         const nlist& l = v;
         for(size_t i = 0; i < l.size(); ++i){
@@ -693,7 +693,7 @@ namespace{
       else if(v.hasQueue()){
         vv = toVar(h);
         
-        globalCall("long nvar::touchQueue(nvar*)", {vv});
+        globalCall("void nvar::touchQueue(nvar*)", {vv});
         
         const nqueue& q = v;
         for(size_t i = 0; i < q.size(); ++i){
@@ -709,7 +709,7 @@ namespace{
       if(v.hasSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("long nvar::touchSet(nvar*)", {vv});
+        globalCall("void nvar::touchSet(nvar*)", {vv});
         
         const nset& s = v;
         for(auto& itr : s){
@@ -729,7 +729,7 @@ namespace{
       else if(v.hasHashSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("long nvar::touchHashSet(nvar*)", {vv});
+        globalCall("void nvar::touchHashSet(nvar*)", {vv});
         
         const nhset& s = v;
         for(auto& itr : s){
@@ -749,7 +749,7 @@ namespace{
       else if(v.hasMap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("long nvar::touchMap(nvar*)", {vv});
+        globalCall("void nvar::touchMap(nvar*)", {vv});
         
         const nmap& m = v;
         for(auto& itr : m){
@@ -787,7 +787,7 @@ namespace{
       else if(v.hasHashMap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("long nvar::touchHashMap(nvar*)", {vv});
+        globalCall("void nvar::touchHashMap(nvar*)", {vv});
         
         const nhmap& m = v;
         for(auto& itr : m){
@@ -825,7 +825,7 @@ namespace{
       else if(v.hasMultimap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("long nvar::touchMultimap(nvar*)", {vv});
+        globalCall("void nvar::touchMultimap(nvar*)", {vv});
         
         const nmmap& m = v;
         for(auto& itr : m){
