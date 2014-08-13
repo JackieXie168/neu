@@ -275,10 +275,10 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       break;
     }
     case Queue:{
-      ostr << "[[";
+      ostr << "@[";
       bool first = true;
       streamOutputSequence_(ostr, *h_.q, first, concise);
-      ostr << "]]";
+      ostr << "]";
       break;
     }
     case Function:{
@@ -321,9 +321,9 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           ostr << ")";
           break;
         case Queue:
-          ostr << "[[:" << sstr.str() << ",";
+          ostr << "@[:" << sstr.str() << ",";
           streamOutputSequence_(ostr, *h_.hs->s->h_.q, first, concise);
-          ostr << "]]";
+          ostr << "]";
           break;
         default:
           assert(false && "invalid case");
@@ -482,8 +482,8 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       switch(h_.sm->s->t_){
         case Queue:
-          ostr <<  "[[" << m;
-          end = "]]";
+          ostr <<  "@[" << m;
+          end = "]";
           streamOutputSequence_(ostr, *h_.sm->s->h_.q, first, concise);
           break;
         case Vector:
@@ -554,8 +554,8 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       switch(h_.hsm->s->t_){
         case Queue:
-          ostr <<  "[[" << m << ":" << hstr.str() << ", ";
-          end = "]]";
+          ostr <<  "@[" << m << ":" << hstr.str() << ", ";
+          end = "]";
           streamOutputSequence_(ostr, *h_.hsm->s->h_.q, first, concise);
           break;
         case Vector:

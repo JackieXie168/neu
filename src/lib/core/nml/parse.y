@@ -244,6 +244,33 @@ expr: expr_num {
   
   PS->addItems(nvar::Vector, nvar::Map, $$, $5);
 }
+| '[' '%' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Set, $$, $3);
+}
+| '[' '%' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::Set, $$, $6);
+}
+| '[' '&' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::HashSet, $$, $3);
+}
+| '[' '&' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::HashSet, $$, $6);
+}
+| '[' '=' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::HashMap, $$, $3);
+}
+| '[' '=' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::HashMap, $$, $6);
+}
 | '[' '|' exprs ']' {
   $$ = undef;
   PS->addItems(nvar::Vector, nvar::Multimap, $$, $3);
@@ -283,6 +310,91 @@ expr: expr_num {
   $$ = undef;
   $$.setHead($4);
   PS->addItems(nvar::List, nvar::Multimap, $$, $6);
+}
+| '(' '%' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Set, $$, $3);
+}
+| '(' '%' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Set, $$, $3);
+}
+| '(' '%' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::Set, $$, $6);
+}
+| '(' '&' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+}
+| '(' '&' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+}
+| '(' '&' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::HashSet, $$, $6);
+}
+| '(' '=' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
+}
+| '(' '=' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
+}
+| '(' '=' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::HashMap, $$, $6);
+}
+| '@' '[' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Map, $$, $3);
+}
+| '@' '[' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  
+  PS->addItems(nvar::Queue, nvar::Map, $$, $6);
+}
+| '@' '[' '=' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::HashMap, $$, $4);
+}
+| '@' '[' '=' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::HashMap, $$, $7);
+}
+| '@' '[' '|' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Multimap, $$, $4);
+}
+| '@' '[' '|' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::Multimap, $$, $7);
+}
+| '@' '[' '%' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Set, $$, $4);
+}
+| '@' '[' '%' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::Set, $$, $7);
+}
+| '@' '[' '&' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::HashSet, $$, $4);
+}
+| '@' '[' '&' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::HashSet, $$, $7);
 }
 | IDENTIFIER gets {
   $$ = undef;

@@ -376,7 +376,7 @@ KW_IMPORT import
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\@] {
   PS->advance(1, "operator");
   return *yytext;
 }

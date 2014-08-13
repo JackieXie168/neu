@@ -386,7 +386,7 @@ namespace neu{
   std::ostream& operator<<(std::ostream& ostr,
                            const NQueue<T, Allocator>& q){
     typename NQueue<T, Allocator>::const_iterator itr = q.begin();
-    ostr << "[[";
+    ostr << "@[";
     bool first = true;
     while(itr != q.end()){
       if(first){
