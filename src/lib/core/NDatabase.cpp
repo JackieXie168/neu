@@ -131,15 +131,26 @@ namespace neu{
     NDatabase_(NDatabase* o, const nstr& path, bool create)
     : o_(o),
     path_(path),
-    nextRowId_(1),
-    tick_(0),
-    memoryLimit_(DEFAULT_MEMORY_LIMIT){
+    metaPath_(path + "/meta.nvar"),
+    tick_(0){
+
       if(create){
-        if(NSys::exists(path)){
-          NERROR("path exists: " + path);
+        if(NSys::exists(path_)){
+          NERROR("path exists: " + path_);
         }
         
         NSys::makeDir(path);
+        
+        nextRowId_ = 1;
+        memoryLimit_ = DEFAULT_MEMORY_LIMIT;
+      }
+      else{
+        nvar meta;
+        meta.open(metaPath_);
+        nextRowId_ = meta["nextRowId"];
+        memoryLimit_ = meta["memoryLimit"];
+      
+        const nhmap& m = meta["tableMap"];
       }
     }
     
@@ -180,6 +191,7 @@ namespace neu{
     
     NDatabase* o_;
     nstr path_;
+    nstr metaPath_;
     RowId nextRowId_;
     TableMap_ tableMap_;
     atomic<uint64_t> tick_;
@@ -1507,8 +1519,14 @@ namespace neu{
       if(NSys::exists(path_)){
         NERROR("table path exists: " + path_);
       }
-      
+
       NSys::makeDir(path_);
+      
+      dataPath_ = path_ + "/__data";
+
+      if(NSys::exists(dataPath_)){
+        NERROR("table data path exists: " + dataPath_);
+      }
     }
     
     const nstr& path(){
@@ -2081,6 +2099,20 @@ namespace neu{
       return d_;
     }
     
+    void saveDataMeta(){
+      nvar m;
+      m.touchHashMap();
+      Data* data;
+      
+      for(auto& itr : dataMap_){
+        data = itr.second;
+        
+        m(itr.first) = data->size();
+      }
+      
+      m.save(dataPath_ + "/meta.nvar");
+    }
+    
   private:
     typedef NMap<nstr, IndexBase*> IndexMap_;
     typedef NMap<uint64_t, Data*> DataMap_;
@@ -2094,6 +2126,7 @@ namespace neu{
     Data* lastData_;
     DataIndex* dataIndex_;
     nstr path_;
+    nstr dataPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
   };

@@ -639,6 +639,12 @@ namespace neu{
     : t_(Vector){
       h_.v = new nvec(v);
     }
+
+    template<class T>
+    nvar(const NVector<T>& v)
+    : t_(Vector){
+      h_.v = new nvec(v.begin(), v.end());
+    }
     
     nvar(nvec&& v)
     : t_(Vector){
@@ -666,15 +672,22 @@ namespace neu{
     : t_(List){
       h_.l = new nlist(l);
     }
+
+    template<class T>
+    nvar(const NList<T>& l)
+    : t_(List){
+      h_.l = new nlist(l.begin(), l.end());
+    }
     
     nvar(nlist&& l)
     : t_(List){
       h_.l = new nlist(std::move(l));
     }
     
-    nvar(const nqueue& q)
+    template<class T>
+    nvar(const NQueue<T>& q)
     : t_(Queue){
-      h_.q = new nqueue(q);
+      h_.q = new nqueue(q.begin(), q.end());
     }
     
     nvar(nqueue&& q)
@@ -687,24 +700,54 @@ namespace neu{
       h_.set = new nset(s);
     }
     
+    template<class T>
+    nvar(const NSet<T>& s)
+    : t_(Set){
+      h_.set = new nset(s.begin(), s.end());
+    }
+
     nvar(const nhset& s)
     : t_(HashSet){
       h_.hset = new nhset(s);
     }
     
+    template<class T>
+    nvar(const NHashSet<T>& s)
+    : t_(HashSet){
+      h_.hset = new nhset(s.begin(), s.end());
+    }
+
     nvar(const nmap& m)
     : t_(Map){
       h_.m = new nmap(m);
     }
     
+    template<class K, class V>
+    nvar(const NMap<K, V>& m)
+    : t_(Map){
+      h_.m = new nmap(m.begin(), m.end());
+    }
+
     nvar(const nhmap& m)
     : t_(HashMap){
       h_.h = new nhmap(m);
     }
     
+    template<class K, class V>
+    nvar(const NHashMap<K, V>& m)
+    : t_(HashMap){
+      h_.h = new nhmap(m.begin(), m.end());
+    }
+
     nvar(const nmmap& m)
     : t_(Multimap){
       h_.mm = new nmmap(m);
+    }
+    
+    template<class K, class V>
+    nvar(const NMultimap<K, V>& m)
+    : t_(Multimap){
+      h_.mm = new nmmap(m.begin(), m.end());
     }
 
     nvar(nset&& s)
