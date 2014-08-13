@@ -55,8 +55,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_SCOPE_H
 #define NEU_N_SCOPE_H
 
-#include <unordered_map>
-
 #include <neu/NObjectBase.h>
 #include <neu/nvar.h>
 #include <neu/NRWMutex.h>
@@ -182,7 +180,7 @@ namespace neu{
       }
     };
 
-    typedef std::unordered_map<nstr, nvar, SymHash_> SymbolMap_;
+    typedef NHashMap<nstr, nvar, SymHash_> SymbolMap_;
     
     typedef std::pair<nstr, int16_t> FuncKey_;
     
@@ -193,8 +191,7 @@ namespace neu{
       }
     };
 
-    typedef std::unordered_map<FuncKey_,
-    std::pair<nvar, nvar>, FuncHash_> FunctionMap_;
+    typedef NHashMap<FuncKey_, std::pair<nvar, nvar>, FuncHash_> FunctionMap_;
     
     SymbolMap_ symbolMap_;
     FunctionMap_ functionMap_;

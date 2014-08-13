@@ -55,8 +55,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_FUNC_MAP_H
 #define NEU_N_FUNC_MAP_H
 
-#include <unordered_map>
-
 #include <neu/nvar.h>
 
 namespace neu{
@@ -106,7 +104,7 @@ namespace neu{
       }
     };
     
-    typedef std::unordered_map<FuncKey_, NFunc, Hash_> FunctorMap_;
+    typedef NHashMap<FuncKey_, NFunc, Hash_> FunctorMap_;
     
     FunctorMap_ functorMap_;
   };

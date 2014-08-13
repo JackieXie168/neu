@@ -64,7 +64,7 @@ namespace neu{
 
     typedef uint64_t RowId;
     
-    typedef NSet<RowId> RowSet;
+    typedef NHashSet<RowId> RowSet;
     
     enum IndexType{
       UInt32,
