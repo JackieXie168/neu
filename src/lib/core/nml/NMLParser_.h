@@ -467,6 +467,78 @@ namespace neu{
       return openTokens_ != 0;
     }
     
+    void addItems(nvar::Type seqType,
+                  nvar::Type mapType,
+                  nvar& v,
+                  nvar& items){
+
+      bool noSeq = true;
+      bool noMap = true;
+      
+      size_t size = items.size();
+      for(size_t i = 0; i < size; ++i){
+        nvar& ii = items[i];
+        
+        if(ii.isFunction("V_")){
+          if(noSeq){
+            switch(seqType){
+              case nvar::Vector:
+                v.touchVector();
+                break;
+              case nvar::List:
+                v.touchList();
+                break;
+              case nvar::Queue:
+                v.touchQueue();
+                break;
+              default:
+                assert(false);
+            }
+            noSeq = false;
+          }
+          
+          v << move(ii[0]);
+        }
+        else if(ii.isFunction("KV_")){
+          if(noMap){
+            switch(mapType){
+              case nvar::Map:
+                v.touchMap();
+                break;
+              case nvar::HashMap:
+                v.touchHashMap();
+                break;
+              default:
+                assert(false);
+            }
+            noMap = false;
+          }
+          
+          v(ii[0]) = move(ii[1]);
+        }
+        else if(ii.isFunction("K_")){
+          if(noMap){
+            switch(mapType){
+              case nvar::Set:
+                v.touchSet();
+                break;
+              case nvar::HashSet:
+                v.touchHashSet();
+                break;
+              default:
+                assert(false);
+            }
+            noMap = false;
+          }
+          
+          v.add(ii[0]);
+        }
+        else{
+          assert(false);
+        }
+      }
+    }
+    
   private:
     NMLParser* o_;
     ostream* estr_;

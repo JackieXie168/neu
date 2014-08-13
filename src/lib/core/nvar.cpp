@@ -311,17 +311,17 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       switch(h_.hs->s->t_){
         case Vector:
-          ostr << "[:" << sstr.str();
+          ostr << "[:" << sstr.str() << ",";
           streamOutputSequence_(ostr, *h_.hs->s->h_.v, first, concise);
           ostr << "]";
           break;
         case List:
-          ostr << "(:" << sstr.str();
+          ostr << "(:" << sstr.str() << ",";
           streamOutputSequence_(ostr, *h_.hs->s->h_.l, first, concise);
           ostr << ")";
           break;
         case Queue:
-          ostr << "[[:" << sstr.str();
+          ostr << "[[:" << sstr.str() << ",";
           streamOutputSequence_(ostr, *h_.hs->s->h_.q, first, concise);
           ostr << "]]";
           break;
@@ -530,7 +530,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       nstr m;
       
-      switch(h_.sm->m->t_){
+      switch(h_.hsm->m->t_){
         case Set:
           m = "%";
           break;

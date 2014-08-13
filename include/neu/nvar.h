@@ -3641,6 +3641,34 @@ namespace neu{
       return (*this)(nvar(k));
     }
 
+    void add(const nvar& key){
+      switch(t_){
+        case Set:
+          h_.set->insert(key);
+          break;
+        case HashSet:
+          h_.hset->insert(key);
+          break;
+        case HeadMap:
+          h_.hm->m->add(key);
+          break;
+        case SequenceMap:
+          h_.sm->m->add(key);
+          break;
+        case HeadSequenceMap:
+          h_.hsm->m->add(key);
+          break;
+        case Reference:
+          h_.ref->v->add(key);
+          break;
+        case Pointer:
+          h_.vp->add(key);
+          break;
+        default:
+          NERROR("invalid operand");
+      }
+    }
+    
     nvar& operator()(std::initializer_list<nvar> il){
       return (*this)(nvar(il));
     }    

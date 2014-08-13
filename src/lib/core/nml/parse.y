@@ -73,7 +73,7 @@ using namespace neu;
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR VAR PUSH KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS KW_IMPORT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels class_defs ctor strings
+%type<v> stmt expr expr_num expr_map exprs get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels class_defs ctor strings
 
 %left ','
 %right '=' VAR ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -235,43 +235,54 @@ expr: expr_num {
   $$ = PS->func("Or") << move($1) << move($3);
 }
 | '[' exprs ']' {
-  $$ = move($2);
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Map, $$, $2);
 }
 | '[' ':' expr ',' exprs ']' {
-  $$ = move($5);
+  $$ = undef;
   $$.setHead($3);
+  
+  PS->addItems(nvar::Vector, nvar::Map, $$, $5);
 }
-| '[' '|' multi_exprs ']' {
-  $$ = move($3);
+| '[' '|' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Multimap, $$, $3);
 }
-| '[' '|' ':' expr ',' multi_exprs ']' {
-  $$ = move($6);
+| '[' '|' ':' expr ',' exprs ']' {
+  $$ = undef;
   $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::Multimap, $$, $6);
 }
-| '(' expr_list ')' {
+| '(' exprs ')' {
   if($2.size() == 1){
     $$ = move($2[0]);
   }
   else{
-    $$ = move($2);
+    $$ = undef;
+    PS->addItems(nvar::List, nvar::Map, $$, $2);
   }
 }
-| '(' expr_list ',' ')' {
-  $$ = move($2);
+| '(' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Map, $$, $2);
 }
-| '(' ':' expr ',' expr_list ')' {
-  $$ = move($5);
+| '(' ':' expr ',' exprs ')' {
+  $$ = undef;
   $$.setHead($3);
+  PS->addItems(nvar::List, nvar::Map, $$, $5);
 }
-| '(' '|' multi_expr_list ')' {
-  $$ = move($3);
+| '(' '|' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
 }
-| '(' '|' multi_expr_list ',' ')' {
-  $$ = move($3);
+| '(' '|' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
 }
-| '(' '|' ':' expr ',' multi_expr_list ')' {
-  $$ = move($6);
+| '(' '|' ':' expr ',' exprs ')' {
+  $$ = undef;
   $$.setHead($4);
+  PS->addItems(nvar::List, nvar::Multimap, $$, $6);
 }
 | IDENTIFIER gets {
   $$ = undef;
@@ -297,8 +308,10 @@ expr: expr_num {
 ;
 
 expr_map: expr ':' expr {
-  $$ = nvec();
-  $$ << move($1) << move($3);
+  $$ = nfunc("KV_") << move($1) << move($3);
+}
+| expr ':' {
+  $$ = nfunc("K_") << move($1);
 }
 
 exprs: /* empty */ {
@@ -306,87 +319,19 @@ exprs: /* empty */ {
 }
 | exprs ',' expr {
   $$ = move($1);
-  $$ << move($3);
+  $$ << (nfunc("V_") << move($3));
 }
 | expr {
   $$ = nvec();
-  $$ << move($1);
+  $$ << (nfunc("V_") << move($1));
 }
 | expr_map {
-  $$ = undef;
-  $$($1[0]) = move($1[1]);
+  $$ = nvec();
+  $$ << move($1);
 }
 | exprs ',' expr_map {
   $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-multi_exprs: /* empty */ {
-  $$ = nvec();
-  $$.touchMultimap();
-}
-| multi_exprs ',' expr {
-  $$ = move($1);
   $$ << move($3);
-}
-| expr {
-  $$ = nvec();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = undef;
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| multi_exprs ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-expr_list: /* empty */ {
-  $$ = nlist();
-}
-| expr_list ',' expr {
-  $$ = move($1);
-  $$ << $3;
-}
-| expr {
-  $$ = nlist();
-  $$ << $1;
-}
-| expr_map {
-  $$($1[0]) = move($1[1]);
-}
-| expr_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-multi_expr_list: /* empty */ {
-  $$ = nlist();
-  $$.touchMultimap();
-}
-| multi_expr_list ',' expr {
-  $$ = move($1);
-  $$ << move($3);
-}
-| expr {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| multi_expr_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
 }
 ;
 
