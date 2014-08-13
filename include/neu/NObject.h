@@ -238,10 +238,22 @@ namespace neu{
     nvar PopScope();
     
     nvar PushBack(const nvar& v1, const nvar& v2);
-    
-    nvar TouchMultimap(const nvar& v1);
+
+    nvar TouchVector(const nvar& v1);
     
     nvar TouchList(const nvar& v1);
+    
+    nvar TouchQueue(const nvar& v1);
+    
+    nvar TouchSet(const nvar& v1);
+    
+    nvar TouchHashSet(const nvar& v1);
+    
+    nvar TouchMap(const nvar& v1);
+    
+    nvar TouchHashMap(const nvar& v1);
+    
+    nvar TouchMultimap(const nvar& v1);
     
     nvar Keys(const nvar& v1);
     
@@ -350,10 +362,6 @@ namespace neu{
     nvar PopFront(const nvar& v);
     
     nvar AllKeys(const nvar& v);
-    
-    nvar TouchVector(const nvar& v);
-    
-    nvar TouchMap(const nvar& v);
     
     nvar Open(const nvar& v1, const nvar& v2);
     

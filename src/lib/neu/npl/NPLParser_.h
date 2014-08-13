@@ -505,7 +505,7 @@ namespace neu{
             noMap = false;
           }
           
-          v.add(ii[0]);
+          v.addKey(ii[0]);
         }
         else{
           assert(false);

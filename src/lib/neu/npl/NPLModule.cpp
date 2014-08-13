@@ -159,8 +159,14 @@ namespace{
     FKEY_Float_1,
     FKEY_Put_2,
     FKEY_PushBack_2,
-    FKEY_TouchMultimap_1,
+    FKEY_TouchVector_1,
     FKEY_TouchList_1,
+    FKEY_TouchQueue_1,
+    FKEY_TouchSet_1,
+    FKEY_TouchHashSet_1,
+    FKEY_TouchMap_1,
+    FKEY_TouchHashMap_1,
+    FKEY_TouchMultimap_1,
     FKEY_Keys_1,
     FKEY_PushFront_2,
     FKEY_PopBack_1,
@@ -270,8 +276,14 @@ namespace{
     _functionMap[{"Float", 1}] = FKEY_Float_1;
     _functionMap[{"Put", 2}] = FKEY_Put_2;
     _functionMap[{"PushBack", 2}] = FKEY_PushBack_2;
-    _functionMap[{"TouchMultimap", 1}] = FKEY_TouchMultimap_1;
+    _functionMap[{"TouchVector", 1}] = FKEY_TouchVector_1;
     _functionMap[{"TouchList", 1}] = FKEY_TouchList_1;
+    _functionMap[{"TouchQueue", 1}] = FKEY_TouchQueue_1;
+    _functionMap[{"TouchSet", 1}] = FKEY_TouchSet_1;
+    _functionMap[{"TouchHashSet", 1}] = FKEY_TouchHashSet_1;
+    _functionMap[{"TouchMap", 1}] = FKEY_TouchMap_1;
+    _functionMap[{"TouchHashMap", 1}] = FKEY_TouchHashMap_1;
+    _functionMap[{"TouchMultimap", 1}] = FKEY_TouchMultimap_1;
     _functionMap[{"Keys", 1}] = FKEY_Keys_1;
     _functionMap[{"PushFront", 2}] = FKEY_PushFront_2;
     _functionMap[{"PopBack", 1}] = FKEY_PopBack_1;
@@ -646,52 +658,214 @@ namespace{
     }
     
     Value* completeVar(Value* h, const nvar& v){
-      nvec keys;
-      v.keys(keys);
+      Value* vv = 0;
       
-      if(v.empty() && keys.empty()){
-        return h;
+      if(v.hasVector()){
+        vv = toVar(h);
+        
+        globalCall("long nvar::touchVector(nvar*)", {vv});
+        
+        const nvec& vec = v;
+        for(size_t i = 0; i < vec.size(); ++i){
+          Value* vi = compile(v[i]);
+          if(!vi){
+            return 0;
+          }
+          
+          pushBack(vv, toVar(vi));
+        }
+      }
+      else if(v.hasList()){
+        vv = toVar(h);
+
+        globalCall("long nvar::touchList(nvar*)", {vv});
+        
+        const nlist& l = v;
+        for(size_t i = 0; i < l.size(); ++i){
+          Value* vi = compile(l[i]);
+          if(!vi){
+            return 0;
+          }
+          
+          pushBack(vv, toVar(vi));
+        }
+      }
+      else if(v.hasQueue()){
+        vv = toVar(h);
+        
+        globalCall("long nvar::touchQueue(nvar*)", {vv});
+        
+        const nqueue& q = v;
+        for(size_t i = 0; i < q.size(); ++i){
+          Value* vi = compile(v[i]);
+          if(!vi){
+            return 0;
+          }
+          
+          pushBack(vv, toVar(vi));
+        }
+      }
+
+      if(v.hasSet()){
+        vv = vv ? vv : toVar(h);
+        
+        globalCall("long nvar::touchSet(nvar*)", {vv});
+        
+        const nset& s = v;
+        for(auto& itr : s){
+          if((*itr).isHidden()){
+            continue;
+          }
+          
+          Value* k = compile(*itr);
+          
+          if(!k){
+            return 0;
+          }
+          
+          globalCall("void nvar::addKey(nvar*, nvar*)", {vv, k});
+        }
+      }
+      else if(v.hasHashSet()){
+        vv = vv ? vv : toVar(h);
+        
+        globalCall("long nvar::touchHashSet(nvar*)", {vv});
+        
+        const nhset& s = v;
+        for(auto& itr : s){
+          if((*itr).isHidden()){
+            continue;
+          }
+          
+          Value* k = compile(*itr);
+          
+          if(!k){
+            return 0;
+          }
+          
+          globalCall("void nvar::addKey(nvar*, nvar*)", {vv, k});
+        }
+      }
+      else if(v.hasMap()){
+        vv = vv ? vv : toVar(h);
+        
+        globalCall("long nvar::touchMap(nvar*)", {vv});
+        
+        const nmap& m = v;
+        for(auto& itr : m){
+          const nvar& k = itr.first;
+          const nvar& val = itr.second;
+          
+          if(k.isHidden()){
+            continue;
+          }
+          
+          Value* kv;
+          
+          if(k.hasString()){
+            kv = getString(k);
+          }
+          else{
+            kv = compile(k);
+          }
+          
+          if(!kv){
+            return 0;
+          }
+          
+          Value* p = put(vv, kv);
+          
+          Value* vc = compile(val);
+          
+          if(!vc){
+            return 0;
+          }
+          
+          store(vc, p);
+        }
+      }
+      else if(v.hasHashMap()){
+        vv = vv ? vv : toVar(h);
+        
+        globalCall("long nvar::touchHashMap(nvar*)", {vv});
+        
+        const nhmap& m = v;
+        for(auto& itr : m){
+          const nvar& k = itr.first;
+          const nvar& val = itr.second;
+          
+          if(k.isHidden()){
+            continue;
+          }
+          
+          Value* kv;
+          
+          if(k.hasString()){
+            kv = getString(k);
+          }
+          else{
+            kv = compile(k);
+          }
+          
+          if(!kv){
+            return 0;
+          }
+          
+          Value* p = put(vv, kv);
+          
+          Value* vc = compile(val);
+          
+          if(!vc){
+            return 0;
+          }
+          
+          store(vc, p);
+        }
+      }
+      else if(v.hasMultimap()){
+        vv = vv ? vv : toVar(h);
+        
+        globalCall("long nvar::touchMultimap(nvar*)", {vv});
+        
+        const nmmap& m = v;
+        for(auto& itr : m){
+          const nvar& k = itr.first;
+          const nvar& val = itr.second;
+          
+          if(k.isHidden()){
+            continue;
+          }
+          
+          Value* kv;
+          
+          if(k.hasString()){
+            kv = getString(k);
+          }
+          else{
+            kv = compile(k);
+          }
+          
+          if(!kv){
+            return 0;
+          }
+          
+          Value* p = put(vv, kv);
+          
+          Value* vc = compile(val);
+          
+          if(!vc){
+            return 0;
+          }
+          
+          store(vc, p);
+        }
       }
       
-      Value* vv = toVar(h);
-      
-      size_t size = v.size();
-      
-      for(size_t i = 0; i < size; ++i){
-        Value* vi = compile(v[i]);
-        if(!vi){
-          return 0;
-        }
-
-        pushBack(vv, toVar(vi));
+      if(vv){
+        return vv;
       }
       
-      const nmap& m = v;
-      
-      for(const nvar& key : keys){
-        const nvar& val = v[key];
-        
-        Value* kv;
-
-        if(key.hasString()){
-          kv = getString(key);
-        }
-        else{
-          kv = compile(key);
-        }
-        
-        Value* p = put(vv, kv);
-
-        Value* vc = compile(val);
-        
-        if(!vc){
-          return 0;
-        }
-        
-        store(vc, p);
-      }
-      
-      return vv;
+      return h;
     }
     
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
@@ -3865,7 +4039,7 @@ namespace{
 
           return getInt64(0);
         }
-        case FKEY_TouchMultimap_1:{
+        case FKEY_TouchVector_1:{
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -3874,8 +4048,8 @@ namespace{
           if(!isVar(l)){
             return error("not a var[0]", n);
           }
-
-          return globalCall("void nvar::touchMultimap(nvar*)", {l});
+          
+          return globalCall("void nvar::touchVector(nvar*)", {l});
         }
         case FKEY_TouchList_1:{
           Value* l = getLValue(n[0]);
@@ -3888,6 +4062,78 @@ namespace{
           }
           
           return globalCall("void nvar::touchList(nvar*)", {l});
+        }
+        case FKEY_TouchQueue_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          return globalCall("void nvar::touchQueue(nvar*)", {l});
+        }
+        case FKEY_TouchSet_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          return globalCall("void nvar::touchSet(nvar*)", {l});
+        }
+        case FKEY_TouchHashSet_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          return globalCall("void nvar::touchHashSet(nvar*)", {l});
+        }
+        case FKEY_TouchMap_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          return globalCall("void nvar::touchMap(nvar*)", {l});
+        }
+        case FKEY_TouchHashMap_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          return globalCall("void nvar::touchHashMap(nvar*)", {l});
+        }
+        case FKEY_TouchMultimap_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+
+          return globalCall("void nvar::touchMultimap(nvar*)", {l});
         }
         case FKEY_Keys_1:{
           Value* l = getLValue(n[0]);
@@ -5064,17 +5310,38 @@ namespace{
     createFunction("void nvar::pushBack(nvar*, nvar*)",
                    "_ZN3neu4nvar8pushBackERKS0_");
     
-    createFunction("void nvar::touchMultimap(nvar*)",
-                   "_ZN3neu4nvar13touchMultimapEv");
+    createFunction("void nvar::touchVector(nvar*)",
+                   "_ZN3neu4nvar9touchVectorEv");
     
     createFunction("void nvar::touchList(nvar*)",
                    "_ZN3neu4nvar9touchListEv");
+
+    createFunction("void nvar::touchQueue(nvar*)",
+                   "_ZN3neu4nvar9touchQueueEv");
+    
+    createFunction("void nvar::touchSet(nvar*)",
+                   "_ZN3neu4nvar9touchSetEv");
+    
+    createFunction("void nvar::touchHashSet(nvar*)",
+                   "_ZN3neu4nvar9touchHashSetEv");
+    
+    createFunction("void nvar::touchMap(nvar*)",
+                   "_ZN3neu4nvar9touchMapEv");
+    
+    createFunction("void nvar::touchHashMap(nvar*)",
+                   "_ZN3neu4nvar9touchHashMapEv");
+    
+    createFunction("void nvar::touchMultimap(nvar*)",
+                   "_ZN3neu4nvar13touchMultimapEv");
     
     createFunction("bool nvar::toBool(nvar*)",
                    "_ZNK3neu4nvar6toBoolEv");
     
     createFunction("void nvar::keys(nvar*, nvar*)",
                    "_ZNK3neu4nvar4keysEv");
+
+    createFunction("void nvar::addKey(nvar*, nvar*)",
+                   "__ZN3neu4nvar6addKeyERKS0_");
     
     createFunction("void nvar::pushFront(nvar*, nvar*)",
                    "_ZN3neu4nvar9pushFrontERKS0_");

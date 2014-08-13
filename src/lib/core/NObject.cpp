@@ -1213,19 +1213,67 @@ namespace neu{
       
       return p1.toPtr();
     }
+
+    nvar TouchVector(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchVector();
+      
+      return none;
+    }
+
+    nvar TouchList(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchList();
+      
+      return none;
+    }
+    
+    nvar TouchQueue(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchQueue();
+      
+      return none;
+    }
+    
+    nvar TouchSet(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchSet();
+      
+      return none;
+    }
+    
+    nvar TouchHashSet(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchHashSet();
+      
+      return none;
+    }
+    
+    nvar TouchMap(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchMap();
+      
+      return none;
+    }
+    
+    nvar TouchHashMap(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchHashMap();
+      
+      return none;
+    }
     
     nvar TouchMultimap(const nvar& v1){
       nvar p1 = process(v1);
       
       p1.touchMultimap();
-      
-      return none;
-    }
-    
-    nvar TouchList(const nvar& v1){
-      nvar p1 = process(v1);
-      
-      p1.touchList();
       
       return none;
     }
@@ -1639,22 +1687,6 @@ namespace neu{
       nvar p = process(v);
       
       return p.allKeys();
-    }
-    
-    nvar TouchVector(const nvar& v){
-      nvar p = process(v);
-      
-      p.touchVector();
-      
-      return none;
-    }
-    
-    nvar TouchMap(const nvar& v){
-      nvar p = process(v);
-      
-      p.touchMap();
-      
-      return none;
     }
     
     nvar Open(const nvar& v1, const nvar& v2){
@@ -2197,14 +2229,44 @@ FuncMap::FuncMap(){
         return NObject_::obj(o)->PushBack(v[0], v[1]);
       });
   
-  add("TouchMultimap", 1,
+  add("TouchVector", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::obj(o)->TouchMultimap(v[0]);
+        return NObject_::obj(o)->TouchVector(v[0]);
       });
   
   add("TouchList", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->TouchList(v[0]);
+      });
+  
+  add("TouchQueue", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchQueue(v[0]);
+      });
+  
+  add("TouchSet", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchSet(v[0]);
+      });
+  
+  add("TouchHashSet", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchHashSet(v[0]);
+      });
+  
+  add("TouchMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchMap(v[0]);
+      });
+
+  add("TouchHashMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchHashMap(v[0]);
+      });
+  
+  add("TouchMultimap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchMultimap(v[0]);
       });
   
   add("Keys", 1,
@@ -2475,16 +2537,6 @@ FuncMap::FuncMap(){
   add("AllKeys", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->AllKeys(v[0]);
-      });
-  
-  add("TouchVector", 1,
-      [](void* o, const nvar& v) -> nvar{
-        return NObject_::obj(o)->TouchVector(v[0]);
-      });
-  
-  add("TouchMap", 1,
-      [](void* o, const nvar& v) -> nvar{
-        return NObject_::obj(o)->TouchMap(v[0]);
       });
   
   add("Open", 2,
@@ -2906,12 +2958,36 @@ nvar NObject::PushBack(const nvar& v1, const nvar& v2){
   return x_->PushBack(v1, v2);
 }
 
-nvar NObject::TouchMultimap(const nvar& v1){
-  return x_->TouchMultimap(v1);
+nvar NObject::TouchVector(const nvar& v1){
+  return x_->TouchVector(v1);
 }
 
 nvar NObject::TouchList(const nvar& v1){
   return x_->TouchList(v1);
+}
+
+nvar NObject::TouchQueue(const nvar& v1){
+  return x_->TouchQueue(v1);
+}
+
+nvar NObject::TouchSet(const nvar& v1){
+  return x_->TouchSet(v1);
+}
+
+nvar NObject::TouchHashSet(const nvar& v1){
+  return x_->TouchHashSet(v1);
+}
+
+nvar NObject::TouchMap(const nvar& v1){
+  return x_->TouchMap(v1);
+}
+
+nvar NObject::TouchHashMap(const nvar& v1){
+  return x_->TouchHashMap(v1);
+}
+
+nvar NObject::TouchMultimap(const nvar& v1){
+  return x_->TouchMultimap(v1);
 }
 
 nvar NObject::Keys(const nvar& v1){
@@ -3127,14 +3203,6 @@ nvar NObject::PopFront(const nvar& v){
 
 nvar NObject::AllKeys(const nvar& v){
   return x_->AllKeys(v);
-}
-
-nvar NObject::TouchVector(const nvar& v){
-  return x_->TouchVector(v);
-}
-
-nvar NObject::TouchMap(const nvar& v){
-  return x_->TouchMap(v);
 }
 
 nvar NObject::Open(const nvar& v1, const nvar& v2){

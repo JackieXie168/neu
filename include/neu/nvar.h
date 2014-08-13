@@ -3641,7 +3641,7 @@ namespace neu{
       return (*this)(nvar(k));
     }
 
-    void add(const nvar& key){
+    void addKey(const nvar& key){
       switch(t_){
         case Set:
           h_.set->insert(key);
@@ -3649,20 +3649,29 @@ namespace neu{
         case HashSet:
           h_.hset->insert(key);
           break;
+        case Map:
+          h_.m->insert({key, true});
+          break;
+        case HashMap:
+          h_.h->insert({key, true});
+          break;
+        case Multimap:
+          h_.mm->insert({key, true});
+          break;
         case HeadMap:
-          h_.hm->m->add(key);
+          h_.hm->m->addKey(key);
           break;
         case SequenceMap:
-          h_.sm->m->add(key);
+          h_.sm->m->addKey(key);
           break;
         case HeadSequenceMap:
-          h_.hsm->m->add(key);
+          h_.hsm->m->addKey(key);
           break;
         case Reference:
-          h_.ref->v->add(key);
+          h_.ref->v->addKey(key);
           break;
         case Pointer:
-          h_.vp->add(key);
+          h_.vp->addKey(key);
           break;
         default:
           NERROR("invalid operand");
