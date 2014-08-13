@@ -78,6 +78,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NObjectBase.h>
 #include <neu/NError.h>
 
+#define NGET(X,Y) X[#Y].as(Y)
+#define NPUT(X,Y) X(#Y) = Y
+
 namespace neu{
 
 #ifdef __APPLE__
@@ -839,6 +842,203 @@ namespace neu{
     }
     
     ~nvar();
+    
+    template<class T>
+    T& as(T& t){
+      t = *this;
+      return t;
+    }
+
+    template<class T>
+    NVector<T>& as(NVector<T>& x){
+      switch(t_){
+        case Vector:{
+          const nvec& v = *h_.v;
+          
+          size_t size = v.size();
+          x.reserve(size);
+          
+          for(size_t i = 0; i < size; ++i){
+            x.push_back(v[i]);
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class T>
+    NList<T>& as(NList<T>& x){
+      switch(t_){
+        case List:{
+          const nlist& l = *h_.l;
+          
+          size_t size = l.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            x.push_back(l[i]);
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class T>
+    NQueue<T>& as(NQueue<T>& x){
+      switch(t_){
+        case Queue:{
+          const nqueue& q = *h_.q;
+          
+          size_t size = q.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            x.push_back(q[i]);
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class T>
+    NSet<T>& as(NSet<T>& x){
+      switch(t_){
+        case Set:{
+          const nset& s = *h_.set;
+          
+          for(auto& itr : s){
+            x.insert(*itr);
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class T>
+    NHashSet<T>& as(NHashSet<T>& x){
+      switch(t_){
+        case HashSet:{
+          const nset& s = *h_.set;
+          
+          for(auto& itr : s){
+            x.insert(*itr);
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class K, class V>
+    NMap<K, V>& as(NMap<K, V>& x){
+      switch(t_){
+        case Map:{
+          const nmap& m = *h_.m;
+          
+          for(auto& itr : m){
+            x.insert({itr.first, itr.second});
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class K, class V>
+    NHashMap<K, V>& as(NHashMap<K, V>& x){
+      switch(t_){
+        case HashMap:{
+          const nhmap& m = *h_.h;
+          
+          for(auto& itr : m){
+            x.insert({itr.first, itr.second});
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
+    
+    template<class K, class V>
+    NMultimap<K, V>& as(NMultimap<K, V>& x){
+      switch(t_){
+        case Multimap:{
+          const nmmap& m = *h_.mm;
+          
+          for(auto& itr : m){
+            x.insert({itr.first, itr.second});
+          }
+          
+          return x;
+        }
+        case Reference:
+          return h_.ref->v->as(x);
+        case Pointer:
+          return h_.vp->as(x);
+        default:
+          NERROR("invalid operand");
+      }
+      
+      return x;
+    }
     
     bool isFalse() const{
       switch(t_){
