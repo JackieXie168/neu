@@ -54,8 +54,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NNModule.h>
 
-#include <deque>
-
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/JIT.h"
@@ -77,6 +75,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NBasicMutex.h>
 #include <neu/NVSemaphore.h>
 #include <neu/NNet.h>
+#include <neu/NQueue.h>
 
 using namespace std;
 using namespace llvm;
@@ -245,7 +244,7 @@ public:
 
 private:
   typedef NVector<RunNeuron*> NeuronVec_;
-  typedef deque<size_t> Queue_;
+  typedef NQueue<size_t> Queue_;
 
   size_t threads_;
   NeuronVec_ neuronVec_;
