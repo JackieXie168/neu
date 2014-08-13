@@ -390,7 +390,7 @@ template <class Value, class Hash, class Pred, class Alloc>
 std::ostream& operator<<(std::ostream& ostr,
                          const NHashSet<Value, Hash, Pred, Alloc>& s){
   auto itr = s.begin();
-  ostr << "[& ";
+  ostr << "[^";
   bool first = true;
   while(itr != s.end()){
     if(first){

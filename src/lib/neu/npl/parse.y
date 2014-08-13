@@ -73,7 +73,7 @@ using namespace neu;
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE PTR_TYPE FLOAT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt class_defs case_stmts case_stmt case_label case_labels var_decl
+%type<v> stmt expr expr_num expr_map exprs get gets func_def args params block stmts if_stmt class_defs case_stmts case_stmt case_label case_labels var_decl
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -284,43 +284,166 @@ expr: expr_num {
   $$ = PS->func("Select") << move($1) << move($3) << move($5);
 }
 | '[' exprs ']' {
-  $$ = move($2);
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Map, $$, $2);
 }
 | '[' ':' expr ',' exprs ']' {
-  $$ = move($5);
+  $$ = undef;
   $$.setHead($3);
+  
+  PS->addItems(nvar::Vector, nvar::Map, $$, $5);
 }
-| '[' '|' multi_exprs ']' {
-  $$ = move($3);
+| '[' '%' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Set, $$, $3);
 }
-| '[' '|' ':' expr ',' multi_exprs ']' {
-  $$ = move($6);
+| '[' '%' ':' expr ',' exprs ']' {
+  $$ = undef;
   $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::Set, $$, $6);
 }
-| '(' expr_list ')' {
+| '[' '^' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::HashSet, $$, $3);
+}
+| '[' '^' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::HashSet, $$, $6);
+}
+| '[' '=' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::HashMap, $$, $3);
+}
+| '[' '=' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::HashMap, $$, $6);
+}
+| '[' '|' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Vector, nvar::Multimap, $$, $3);
+}
+| '[' '|' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::Vector, nvar::Multimap, $$, $6);
+}
+| '(' exprs ')' {
   if($2.size() == 1){
     $$ = move($2[0]);
   }
   else{
-    $$ = move($2);
+    $$ = undef;
+    PS->addItems(nvar::List, nvar::Map, $$, $2);
   }
 }
-| '(' expr_list ',' ')' {
-  $$ = move($2);
+| '(' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Map, $$, $2);
 }
-| '(' ':' expr ',' expr_list ')' {
-  $$ = move($5);
+| '(' ':' expr ',' exprs ')' {
+  $$ = undef;
   $$.setHead($3);
+  PS->addItems(nvar::List, nvar::Map, $$, $5);
 }
-| '(' '|' multi_expr_list ')' {
-  $$ = move($3);
+| '(' '|' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
 }
-| '(' '|' multi_expr_list ',' ')' {
-  $$ = move($3);
+| '(' '|' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
 }
-| '(' '|' ':' expr ',' multi_expr_list ')' {
-  $$ = move($6);
+| '(' '|' ':' expr ',' exprs ')' {
+  $$ = undef;
   $$.setHead($4);
+  PS->addItems(nvar::List, nvar::Multimap, $$, $6);
+}
+| '(' '%' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Set, $$, $3);
+}
+| '(' '%' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::Set, $$, $3);
+}
+| '(' '%' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::Set, $$, $6);
+}
+| '(' '^' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+}
+| '(' '^' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+}
+| '(' '^' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::HashSet, $$, $6);
+}
+| '(' '=' exprs ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
+}
+| '(' '=' exprs ',' ')' {
+  $$ = undef;
+  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
+}
+| '(' '=' ':' expr ',' exprs ')' {
+  $$ = undef;
+  $$.setHead($4);
+  PS->addItems(nvar::List, nvar::HashMap, $$, $6);
+}
+| '@' '[' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Map, $$, $3);
+}
+| '@' '[' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($4);
+  
+  PS->addItems(nvar::Queue, nvar::Map, $$, $6);
+}
+| '@' '[' '=' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::HashMap, $$, $4);
+}
+| '@' '[' '=' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::HashMap, $$, $7);
+}
+| '@' '[' '|' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Multimap, $$, $4);
+}
+| '@' '[' '|' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::Multimap, $$, $7);
+}
+| '@' '[' '%' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::Set, $$, $4);
+}
+| '@' '[' '%' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::Set, $$, $7);
+}
+| '@' '[' '^' exprs ']' {
+  $$ = undef;
+  PS->addItems(nvar::Queue, nvar::HashSet, $$, $4);
+}
+| '@' '[' '^' ':' expr ',' exprs ']' {
+  $$ = undef;
+  $$.setHead($5);
+  PS->addItems(nvar::Queue, nvar::HashSet, $$, $7);
 }
 | IDENTIFIER gets {
   $$ = undef;
@@ -362,97 +485,30 @@ args: /* empty */ {
 ;
 
 expr_map: expr ':' expr {
-  $$ = nvec();
-  $$ << move($1) << move($3);
+  $$ = nfunc("KV_") << move($1) << move($3);
 }
-;
+| expr ':' {
+  $$ = nfunc("K_") << move($1);
+}
 
 exprs: /* empty */ {
   $$ = nvec();
 }
 | exprs ',' expr {
   $$ = move($1);
-  $$ << move($3);
+  $$ << (nfunc("V_") << move($3));
 }
 | expr {
   $$ = nvec();
-  $$ << move($1);
+  $$ << (nfunc("V_") << move($1));
 }
 | expr_map {
-  $$ = undef;
-  $$($1[0]) = move($1[1]);
+  $$ = nvec();
+  $$ << move($1);
 }
 | exprs ',' expr_map {
   $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-multi_exprs: /* empty */ {
-  $$ = nvec();
-  $$.touchMultimap();
-}
-| multi_exprs ',' expr {
-  $$ = move($1);
   $$ << move($3);
-}
-| expr {
-  $$ = nvec();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = undef;
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| multi_exprs ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-expr_list: /* empty */ {
-  $$ = nlist();
-}
-| expr_list ',' expr {
-  $$ = move($1);
-  $$ << $3;
-}
-| expr {
-  $$ = nlist();
-  $$ << $1;
-}
-| expr_map {
-  $$($1[0]) = move($1[1]);
-}
-| expr_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-multi_expr_list: /* empty */ {
-  $$ = nlist();
-  $$.touchMultimap();
-}
-| multi_expr_list ',' expr {
-  $$ = move($1);
-  $$ << move($3);
-}
-| expr {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| multi_expr_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
 }
 ;
 

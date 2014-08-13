@@ -419,7 +419,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           break;
         case HashSet:
           if(streamOutputSet_(sstr, *h_.hm->m->h_.hset, first, concise)){
-            ostr << "[&:" << hstr.str() << ", " << sstr.str() << "]";
+            ostr << "[^:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
             ostr << hstr.str();
@@ -463,7 +463,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           m = "%";
           break;
         case HashSet:
-          m = "&";
+          m = "^";
           break;
         case Map:
           break;
@@ -535,7 +535,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           m = "%";
           break;
         case HashSet:
-          m = "&";
+          m = "^";
           break;
         case Map:
           break;

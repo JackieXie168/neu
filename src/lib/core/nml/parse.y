@@ -253,11 +253,11 @@ expr: expr_num {
   $$.setHead($4);
   PS->addItems(nvar::Vector, nvar::Set, $$, $6);
 }
-| '[' '&' exprs ']' {
+| '[' '^' exprs ']' {
   $$ = undef;
   PS->addItems(nvar::Vector, nvar::HashSet, $$, $3);
 }
-| '[' '&' ':' expr ',' exprs ']' {
+| '[' '^' ':' expr ',' exprs ']' {
   $$ = undef;
   $$.setHead($4);
   PS->addItems(nvar::Vector, nvar::HashSet, $$, $6);
@@ -324,15 +324,15 @@ expr: expr_num {
   $$.setHead($4);
   PS->addItems(nvar::List, nvar::Set, $$, $6);
 }
-| '(' '&' exprs ')' {
+| '(' '^' exprs ')' {
   $$ = undef;
   PS->addItems(nvar::List, nvar::HashSet, $$, $3);
 }
-| '(' '&' exprs ',' ')' {
+| '(' '^' exprs ',' ')' {
   $$ = undef;
   PS->addItems(nvar::List, nvar::HashSet, $$, $3);
 }
-| '(' '&' ':' expr ',' exprs ')' {
+| '(' '^' ':' expr ',' exprs ')' {
   $$ = undef;
   $$.setHead($4);
   PS->addItems(nvar::List, nvar::HashSet, $$, $6);
@@ -387,11 +387,11 @@ expr: expr_num {
   $$.setHead($5);
   PS->addItems(nvar::Queue, nvar::Set, $$, $7);
 }
-| '@' '[' '&' exprs ']' {
+| '@' '[' '^' exprs ']' {
   $$ = undef;
   PS->addItems(nvar::Queue, nvar::HashSet, $$, $4);
 }
-| '@' '[' '&' ':' expr ',' exprs ']' {
+| '@' '[' '^' ':' expr ',' exprs ']' {
   $$ = undef;
   $$.setHead($5);
   PS->addItems(nvar::Queue, nvar::HashSet, $$, $7);
