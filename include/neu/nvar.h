@@ -844,13 +844,19 @@ namespace neu{
     ~nvar();
     
     template<class T>
-    T& as(T& t){
+    T& as(T& t) const{
       t = *this;
       return t;
     }
 
     template<class T>
-    NVector<T>& as(NVector<T>& x){
+    T* as(T* t) const{
+      T v;
+      return new T(std::move(as(v)));
+    }
+    
+    template<class T>
+    NVector<T>& as(NVector<T>& x) const{
       switch(t_){
         case Vector:{
           const nvec& v = *h_.v;
@@ -859,7 +865,8 @@ namespace neu{
           x.reserve(size);
           
           for(size_t i = 0; i < size; ++i){
-            x.push_back(v[i]);
+            T t;
+            x.push_back(v[i].as(t));
           }
           
           return x;
@@ -876,7 +883,7 @@ namespace neu{
     }
     
     template<class T>
-    NList<T>& as(NList<T>& x){
+    NList<T>& as(NList<T>& x) const{
       switch(t_){
         case List:{
           const nlist& l = *h_.l;
@@ -884,7 +891,8 @@ namespace neu{
           size_t size = l.size();
           
           for(size_t i = 0; i < size; ++i){
-            x.push_back(l[i]);
+            T t;
+            x.push_back(l[i].as(t));
           }
           
           return x;
@@ -901,7 +909,7 @@ namespace neu{
     }
     
     template<class T>
-    NQueue<T>& as(NQueue<T>& x){
+    NQueue<T>& as(NQueue<T>& x) const{
       switch(t_){
         case Queue:{
           const nqueue& q = *h_.q;
@@ -909,7 +917,8 @@ namespace neu{
           size_t size = q.size();
           
           for(size_t i = 0; i < size; ++i){
-            x.push_back(q[i]);
+            T t;
+            x.push_back(q[i].as(t));
           }
           
           return x;
@@ -926,13 +935,14 @@ namespace neu{
     }
     
     template<class T>
-    NSet<T>& as(NSet<T>& x){
+    NSet<T>& as(NSet<T>& x) const{
       switch(t_){
         case Set:{
           const nset& s = *h_.set;
           
           for(auto& itr : s){
-            x.insert(*itr);
+            T t;
+            x.insert((*itr).as(t));
           }
           
           return x;
@@ -949,13 +959,14 @@ namespace neu{
     }
     
     template<class T>
-    NHashSet<T>& as(NHashSet<T>& x){
+    NHashSet<T>& as(NHashSet<T>& x) const{
       switch(t_){
         case HashSet:{
           const nset& s = *h_.set;
           
           for(auto& itr : s){
-            x.insert(*itr);
+            T t;
+            x.insert((*itr).as(t));
           }
           
           return x;
@@ -972,13 +983,19 @@ namespace neu{
     }
     
     template<class K, class V>
-    NMap<K, V>& as(NMap<K, V>& x){
+    NMap<K, V>& as(NMap<K, V>& x) const{
       switch(t_){
         case Map:{
           const nmap& m = *h_.m;
           
           for(auto& itr : m){
-            x.insert({itr.first, itr.second});
+            K k;
+            itr.first.as(k);
+            
+            V v;
+            itr.second.as(v);
+            
+            x.insert({k, v});
           }
           
           return x;
@@ -995,13 +1012,19 @@ namespace neu{
     }
     
     template<class K, class V>
-    NHashMap<K, V>& as(NHashMap<K, V>& x){
+    NHashMap<K, V>& as(NHashMap<K, V>& x) const{
       switch(t_){
         case HashMap:{
           const nhmap& m = *h_.h;
           
           for(auto& itr : m){
-            x.insert({itr.first, itr.second});
+            K k;
+            itr.first.as(k);
+            
+            V v;
+            itr.second.as(v);
+            
+            x.insert({k, v});
           }
           
           return x;
@@ -1018,13 +1041,19 @@ namespace neu{
     }
     
     template<class K, class V>
-    NMultimap<K, V>& as(NMultimap<K, V>& x){
+    NMultimap<K, V>& as(NMultimap<K, V>& x) const{
       switch(t_){
         case Multimap:{
           const nmmap& m = *h_.mm;
           
           for(auto& itr : m){
-            x.insert({itr.first, itr.second});
+            K k;
+            itr.first.as(k);
+            
+            V v;
+            itr.second.as(v);
+            
+            x.insert({k, v});
           }
           
           return x;

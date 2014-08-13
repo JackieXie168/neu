@@ -145,12 +145,13 @@ namespace neu{
         memoryLimit_ = DEFAULT_MEMORY_LIMIT;
       }
       else{
-        nvar meta;
-        meta.open(metaPath_);
-        nextRowId_ = meta["nextRowId"];
-        memoryLimit_ = meta["memoryLimit"];
-      
-        const nhmap& m = meta["tableMap"];
+        nvar m;
+        m.open(metaPath_);
+
+        NGET(m, nextRowId_);
+        NGET(m, memoryLimit_);
+        
+        const nhmap& tm = m["tableMap"];
       }
     }
     
