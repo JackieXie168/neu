@@ -2480,6 +2480,8 @@ namespace neu{
       NTable_* t = itr.second;
       t->unlock_();
     }
+    
+    saveMeta();
   }
   
   size_t NDatabase_::memoryUsage(PMap& pm){
