@@ -271,6 +271,8 @@ namespace neu{
       
       virtual void save() = 0;
       
+      virtual void saveMeta() = 0;
+      
       virtual void dump(){}
       
     private:
@@ -509,6 +511,10 @@ namespace neu{
         }
         
         tick_ = d_->read();
+      }
+      
+      uint64_t id(){
+        return id_;
       }
       
       void write(){
@@ -1697,7 +1703,15 @@ namespace neu{
       }
     }
     
+    void setDirty(bool flag){
+      dirty_ = flag;
+    }
+    
     void saveDataMeta(){
+      if(!dirty_){
+        return;
+      }
+      
       nvar m = nhmap();
 
       Data* data;
@@ -1707,20 +1721,18 @@ namespace neu{
       }
       
       m.save(dataMetaPath_);
+      dirty_ = false;
+    }
+    
+    void saveIndexMeta(){
+      for(auto& itr : indexMap_){
+        itr.second->saveMeta();
+      }
     }
     
     void saveMeta(){
       nvar m;
       m.save(metaPath_);
-      dirty_ = false;
-    }
-    
-    void setDirty(bool flag){
-      dirty_ = flag;
-    }
-    
-    bool isDirty(){
-      return dirty_;
     }
     
     void init(const nstr& name){
@@ -2462,6 +2474,7 @@ namespace neu{
     PMap pm;
     int64_t m = memoryUsage(pm);
     
+    bool stored = false;
     while(m > memoryLimit_){
       auto itr = pm.begin();
       if(itr == pm.end()){
@@ -2473,6 +2486,15 @@ namespace neu{
       
       size_t mi = itr->second.second;
       m -= mi;
+      
+      stored = false;
+    }
+    
+    if(stored){
+      for(auto& itr : tableMap_){
+        itr.second->saveIndexMeta();
+        itr.second->saveDataMeta();
+      }
     }
   }
   
