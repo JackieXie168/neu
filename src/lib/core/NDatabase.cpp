@@ -812,6 +812,13 @@ namespace neu{
       Index(uint8_t type, const nstr& path)
       : IndexBase(type, path),
       firstPage_(0){
+        min(min_);
+        
+        nvar m;
+        m.open(metaPath());
+        
+        NGET(m, nextPageId_);
+        
         // DO IT HERE
        
         /*
@@ -822,7 +829,13 @@ namespace neu{
       }
       
       void saveMeta(){
+        nvar m;
+        nhmap& pm = m("pageMap") = nhmap();
         
+        for(auto& itr : pageMap_){
+          IndexPage* page = itr.second;
+          pm.insert({itr.first, page->id()});
+        }
       }
       
       virtual ~Index(){
