@@ -475,11 +475,11 @@ namespace neu{
         bool unique_;
       };
       
-      Page(IndexBase* index, uint64_t id)
+      Page(IndexBase* index, uint64_t id, bool create=true)
       : index_(index),
       d_(index_->table()->database()),
       id_(id),
-      loaded_(true),
+      loaded_(create),
       firstChunk_(0),
       tick_(0),
       memoryUsage_(0){
@@ -818,14 +818,14 @@ namespace neu{
         m.open(metaPath());
         
         NGET(m, nextPageId_);
+        const nhmap& pm = m["pageMap"];
         
-        // DO IT HERE
-       
-        /*
-        NGET(m, nextPageId_);
-        min(min_);
-
-        setType(m["type"]);*/
+        for(auto& itr : pm){
+          uint64_t pageId = itr.first;
+          V min = itr.second;
+          IndexPage* page = new IndexPage(this, pageId, false);
+          pageMap_.insert({min, page});
+        }
       }
       
       void saveMeta(){
@@ -834,7 +834,7 @@ namespace neu{
         
         for(auto& itr : pageMap_){
           IndexPage* page = itr.second;
-          pm.insert({itr.first, page->id()});
+          pm.insert({page->id(), page->min()});
         }
       }
       
