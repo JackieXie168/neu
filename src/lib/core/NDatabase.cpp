@@ -192,14 +192,16 @@ namespace neu{
     public:
       IndexBase(uint8_t type)
       : type_(type),
-      table_(0){
+      table_(0),
+      dirty_(false){
         
       }
       
       IndexBase(uint8_t type, const nstr& path)
       : type_(type),
       table_(0),
-      path_(path){
+      path_(path),
+      dirty_(false){
         metaPath_ = path_ + "/meta.nvar";
       }
       
@@ -257,6 +259,14 @@ namespace neu{
         return metaPath_;
       }
       
+      void setDirty(bool flag){
+        dirty_ = flag;
+      }
+      
+      bool isDirty(){
+        return dirty_;
+      }
+      
       virtual size_t memoryUsage(PMap& pm) = 0;
       
       virtual void save() = 0;
@@ -270,6 +280,7 @@ namespace neu{
       nstr metaPath_;
       bool unique_;
       bool autoErase_;
+      bool dirty_;
     };
         
     template<class R, class V>
@@ -531,6 +542,7 @@ namespace neu{
         
         loaded_ = false;
         memoryUsage_ = 0;
+        index_->setDirty(true);
       }
       
       void save(){
@@ -842,6 +854,8 @@ namespace neu{
           IndexPage* page = itr.second;
           pm.insert({page->id(), page->min()});
         }
+        
+        setDirty(false);
       }
       
       virtual ~Index(){
@@ -1497,6 +1511,7 @@ namespace neu{
         save();
         free(data_);
         data_ = 0;
+        table_->setDirty(true);
       }
       
       void load(){
@@ -1587,6 +1602,7 @@ namespace neu{
     d_(d),
     nextDataId_(0),
     lastData_(0),
+    dirty_(false),
     dataIndex_(new DataIndex(d_)){
       
     }
@@ -1595,7 +1611,8 @@ namespace neu{
     : o_(o),
     d_(d),
     path_(path),
-    lastData_(0){
+    lastData_(0),
+    dirty_(false){
       
       metaPath_ = path_ + "/meta.nvar";
       
@@ -1695,6 +1712,15 @@ namespace neu{
     void saveMeta(){
       nvar m;
       m.save(metaPath_);
+      dirty_ = false;
+    }
+    
+    void setDirty(bool flag){
+      dirty_ = flag;
+    }
+    
+    bool isDirty(){
+      return dirty_;
     }
     
     void init(const nstr& name){
@@ -2322,6 +2348,7 @@ namespace neu{
     nstr metaPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
+    bool dirty_;
   };
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
