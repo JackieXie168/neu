@@ -818,6 +818,9 @@ namespace neu{
         m.open(metaPath());
         
         NGET(m, nextPageId_);
+        setUnique(m["unique"]);
+        setAutoErase(m["autoErase"]);
+        
         const nhmap& pm = m["pageMap"];
         
         for(auto& itr : pm){
@@ -830,6 +833,9 @@ namespace neu{
       
       void saveMeta(){
         nvar m;
+        m("unique_") = unique();
+        m("autoErase_") = autoErase();
+        
         nhmap& pm = m("pageMap") = nhmap();
         
         for(auto& itr : pageMap_){
