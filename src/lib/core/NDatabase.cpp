@@ -121,6 +121,11 @@ namespace{
   
   typedef NMap<uint64_t, pair<Pageable*, size_t>> PMap;
   
+  nstr oldPath(const nstr& path){
+    nstr f = NSys::basename(path);
+    return NSys::stripPath(path) + "/old/" + f;
+  }
+  
 } // end namespace
 
 namespace neu{
@@ -192,16 +197,14 @@ namespace neu{
     public:
       IndexBase(uint8_t type)
       : type_(type),
-      table_(0),
-      dirty_(false){
+      table_(0){
         
       }
       
       IndexBase(uint8_t type, const nstr& path)
       : type_(type),
       table_(0),
-      path_(path),
-      dirty_(false){
+      path_(path){
         metaPath_ = path_ + "/meta.nvar";
       }
       
@@ -233,6 +236,13 @@ namespace neu{
         }
         
         NSys::makeDir(path_);
+        
+        nstr oldPath = path_ + "/old";
+        if(NSys::exists(oldPath)){
+          NERROR("index old path exists: " + oldPath);
+        }
+        
+        NSys::makeDir(oldPath);
       }
       
       void setUnique(bool flag){
@@ -259,17 +269,9 @@ namespace neu{
         return metaPath_;
       }
       
-      void setDirty(bool flag){
-        dirty_ = flag;
-      }
-      
-      bool isDirty(){
-        return dirty_;
-      }
-      
       virtual size_t memoryUsage(PMap& pm) = 0;
       
-      virtual void save() = 0;
+      virtual void save(bool manual) = 0;
       
       virtual void saveMeta() = 0;
       
@@ -282,7 +284,6 @@ namespace neu{
       nstr metaPath_;
       bool unique_;
       bool autoErase_;
-      bool dirty_;
     };
         
     template<class R, class V>
@@ -493,6 +494,7 @@ namespace neu{
       d_(index_->table()->database()),
       id_(id),
       loaded_(create),
+      new_(create),
       firstChunk_(0),
       tick_(0),
       memoryUsage_(0){
@@ -538,7 +540,7 @@ namespace neu{
       }
       
       void store(){
-        save();
+        save(false);
         
         for(auto& itr : chunkMap_){
           delete itr.second;
@@ -548,10 +550,20 @@ namespace neu{
         
         loaded_ = false;
         memoryUsage_ = 0;
-        index_->setDirty(true);
       }
       
-      void save(){
+      void save(bool manual){
+        if(manual){
+          new_ = false;
+        }
+        else if(!new_){
+          nstr op = oldPath(path_);
+          
+          if(!NSys::exists(op)){
+            NSys::rename(path_, op);
+          }
+        }
+        
         FILE* file = fopen(path_.c_str(), "wb");
         
         if(!file){
@@ -798,6 +810,7 @@ namespace neu{
       NDatabase_* d_;
       uint64_t id_;
       bool loaded_;
+      bool new_;
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
       nstr path_;
@@ -860,8 +873,6 @@ namespace neu{
           IndexPage* page = itr.second;
           pm.insert({page->id(), page->min()});
         }
-        
-        setDirty(false);
       }
       
       virtual ~Index(){
@@ -886,9 +897,9 @@ namespace neu{
         return m;
       }
       
-      void save(){
+      void save(bool manual){
         for(auto& itr : pageMap_){
-          itr.second->save();
+          itr.second->save(manual);
         }
       }
       
@@ -1455,6 +1466,7 @@ namespace neu{
       d_(table_->database()),
       data_(0),
       size_(size),
+      new_(size == 0),
       id_(id),
       tick_(0){
         path_ = table_->path() + "/__data/" + nvar(id);
@@ -1498,7 +1510,18 @@ namespace neu{
         tick_ = d_->write();
       }
       
-      void save(){
+      void save(bool manual){
+        if(manual){
+          new_ = false;
+        }
+        else if(!new_){
+          nstr op = oldPath(path_);
+          
+          if(!NSys::exists(op)){
+            NSys::rename(path_, op);
+          }
+        }
+        
         FILE* file = fopen(path_.c_str(), "wb");
         
         if(!file){
@@ -1514,10 +1537,9 @@ namespace neu{
       }
 
       void store(){
-        save();
+        save(false);
         free(data_);
         data_ = 0;
-        table_->setDirty(true);
       }
       
       void load(){
@@ -1597,6 +1619,7 @@ namespace neu{
       NTable_* table_;
       NDatabase_* d_;
       uint32_t size_;
+      bool new_;
       char* data_;
       uint64_t id_;
       nstr path_;
@@ -1608,7 +1631,6 @@ namespace neu{
     d_(d),
     nextDataId_(0),
     lastData_(0),
-    dirty_(false),
     dataIndex_(new DataIndex(d_)){
       
     }
@@ -1617,8 +1639,7 @@ namespace neu{
     : o_(o),
     d_(d),
     path_(path),
-    lastData_(0),
-    dirty_(false){
+    lastData_(0){
       
       metaPath_ = path_ + "/meta.nvar";
       
@@ -1635,6 +1656,11 @@ namespace neu{
       dataMetaPath_ = dataPath_ + "/meta.nvar";
       if(!NSys::exists(dataMetaPath_)){
         NERROR("table data meta path not found: " + dataMetaPath_);
+      }
+
+      nstr op = path_ + "/old";
+      if(!NSys::exists(op)){
+        NERROR("table old path not found: " + op);
       }
       
       nvar m;
@@ -1703,38 +1729,6 @@ namespace neu{
       }
     }
     
-    void setDirty(bool flag){
-      dirty_ = flag;
-    }
-    
-    void saveDataMeta(){
-      if(!dirty_){
-        return;
-      }
-      
-      nvar m = nhmap();
-
-      Data* data;
-      for(auto& itr : dataMap_){
-        data = itr.second;
-        m(itr.first) = data->size();
-      }
-      
-      m.save(dataMetaPath_);
-      dirty_ = false;
-    }
-    
-    void saveIndexMeta(){
-      for(auto& itr : indexMap_){
-        itr.second->saveMeta();
-      }
-    }
-    
-    void saveMeta(){
-      nvar m;
-      m.save(metaPath_);
-    }
-    
     void init(const nstr& name){
       name_ = name;
       path_ = d_->path() + "/" + name;
@@ -1745,13 +1739,18 @@ namespace neu{
 
       NSys::makeDir(path_);
 
+      nstr op = path_ + "/old";
+      if(NSys::exists(op)){
+        NERROR("table old path exists: " + op);
+      }
+      
+      NSys::makeDir(op);
+      
       metaPath_ = path_ + "/meta.nvar";
       
       if(NSys::exists(metaPath_)){
         NERROR("table meta path exists: " + metaPath_);
       }
-      
-      saveMeta();
       
       dataPath_ = path_ + "/__data";
 
@@ -1769,7 +1768,7 @@ namespace neu{
       
       NSys::makeDir(dataMetaPath_);
       
-      saveDataMeta();
+      saveMeta();
     }
     
     const nstr& path(){
@@ -1977,9 +1976,7 @@ namespace neu{
       return true;
     }
     
-    bool exists(RowId rowId){
-      NReadGuard guard(mutex_);
-      
+    bool exists_(RowId rowId){
       return dataIndex_->exists(rowId);
     }
     
@@ -2116,11 +2113,32 @@ namespace neu{
       NReadGuard guard(mutex_);
       
       for(auto& itr : indexMap_){
-        itr.second->save();
+        itr.second->save(true);
       }
       
       for(auto& itr : dataMap_){
-        itr.second->save();
+        itr.second->save(true);
+      }
+    }
+    
+    void saveMeta(){
+      NReadGuard guard(mutex_);
+      
+      nvar m;
+      m.save(metaPath_);
+      
+      nvar dm = nhmap();
+      
+      Data* data;
+      for(auto& itr : dataMap_){
+        data = itr.second;
+        dm(itr.first) = data->size();
+      }
+      
+      dm.save(dataMetaPath_);
+      
+      for(auto& itr : indexMap_){
+        itr.second->saveMeta();
       }
     }
     
@@ -2221,7 +2239,7 @@ namespace neu{
           return 0;
         }
         
-        if(exists(rowId)){
+        if(exists_(rowId)){
           rs.insert(rowId);
         }
         
@@ -2270,7 +2288,7 @@ namespace neu{
             return 0;
           }
           
-          if(exists(rowId)){
+          if(exists_(rowId)){
             rs.insert(rowId);
           }
           
@@ -2360,7 +2378,6 @@ namespace neu{
     nstr metaPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
-    bool dirty_;
   };
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
@@ -2410,6 +2427,10 @@ namespace neu{
     NPUT(m, nextRowId_);
     
     m.save(metaPath_);
+    
+    for(auto& itr : tableMap_){
+      itr.second->saveMeta();
+    }
   }
   
   NTable* NDatabase_::addTable(const nstr& tableName){
@@ -2474,7 +2495,6 @@ namespace neu{
     PMap pm;
     int64_t m = memoryUsage(pm);
     
-    bool stored = false;
     while(m > memoryLimit_){
       auto itr = pm.begin();
       if(itr == pm.end()){
@@ -2486,15 +2506,6 @@ namespace neu{
       
       size_t mi = itr->second.second;
       m -= mi;
-      
-      stored = false;
-    }
-    
-    if(stored){
-      for(auto& itr : tableMap_){
-        itr.second->saveIndexMeta();
-        itr.second->saveDataMeta();
-      }
     }
   }
   
