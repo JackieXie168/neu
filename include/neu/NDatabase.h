@@ -121,6 +121,8 @@ namespace neu{
     friend class NDatabase_;
     
   private:
+    friend class NDatabase_;
+    
     NTable(class NDatabase_*);
     NTable(class NDatabase_*, const nstr&);
     

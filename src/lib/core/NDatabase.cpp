@@ -9,7 +9,7 @@
  \/__|:|/:/  / \:\~\:\ \/__/ \:\  \ /:/  /
      |:/:/  /   \:\ \:\__\    \:\  /:/  / 
      |::/  /     \:\ \/__/     \:\/:/  /  
-     /:/  /       \:\__\        \::/  /   
+     /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/    
  
  
@@ -62,6 +62,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRWMutex.h>
 #include <neu/NReadGuard.h>
 #include <neu/NWriteGuard.h>
+#include <neu/NRegex.h>
 
 using namespace std;
 using namespace neu;
@@ -70,7 +71,7 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 65536;
+  static const size_t MAX_CHUNK_SIZE = 32768;
   static const size_t MAX_CHUNKS = 1024;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
@@ -194,7 +195,14 @@ namespace neu{
       table_(0){
         
       }
-
+      
+      IndexBase(uint8_t type, const nstr& path)
+      : type_(type),
+      table_(0),
+      path_(path){
+        metaPath_ = path_ + "/meta.nvar";
+      }
+      
       virtual ~IndexBase(){}
       
       void setTable(NTable_* table){
@@ -213,6 +221,13 @@ namespace neu{
         path_ = path;
         if(NSys::exists(path_)){
           NERROR("index path exists: " + path_);
+        }
+        
+        NSys::makeDir(path_);
+        
+        metaPath_ = path_ + "/meta.nvar";
+        if(NSys::exists(metaPath_)){
+          NERROR("index meta path exists: " + metaPath_);
         }
         
         NSys::makeDir(path_);
@@ -238,6 +253,10 @@ namespace neu{
         return path_;
       }
       
+      const nstr& metaPath(){
+        return metaPath_;
+      }
+      
       virtual size_t memoryUsage(PMap& pm) = 0;
       
       virtual void save() = 0;
@@ -248,6 +267,7 @@ namespace neu{
       NTable_* table_;
       uint8_t type_;
       nstr path_;
+      nstr metaPath_;
       bool unique_;
       bool autoErase_;
     };
@@ -789,6 +809,22 @@ namespace neu{
         firstPage_->init();
       }
       
+      Index(uint8_t type, const nstr& path)
+      : IndexBase(type, path),
+      firstPage_(0){
+        // DO IT HERE
+       
+        /*
+        NGET(m, nextPageId_);
+        min(min_);
+
+        setType(m["type"]);*/
+      }
+      
+      void saveMeta(){
+        
+      }
+      
       virtual ~Index(){
         for(auto& itr : pageMap_){
           delete itr.second;
@@ -1011,6 +1047,12 @@ namespace neu{
       d_(d){
         
       }
+
+      DataIndex(NDatabase_* d, const nstr& path)
+      : Index(DataIndexType, path),
+      d_(d){
+        
+      }
       
       void insert(uint32_t dataId, uint32_t offset, RowId rowId){
         record_.set(rowId, dataId, offset);
@@ -1095,6 +1137,11 @@ namespace neu{
         
       }
       
+      Int64Index(const nstr& path)
+      : Index(NTable::Int64, path){
+        
+      }
+      
       void insert(RowId rowId, int64_t value){
         record_.value = value;
         record_.rowId = rowId;
@@ -1123,6 +1170,11 @@ namespace neu{
     public:
       UInt64Index()
       : Index(NTable::UInt64){
+        
+      }
+      
+      UInt64Index(const nstr& path)
+      : Index(NTable::UInt64, path){
         
       }
       
@@ -1157,6 +1209,11 @@ namespace neu{
         
       }
       
+      RowIndex(const nstr& path)
+      : Index(NTable::Row, path){
+        
+      }
+      
       void insert(RowId rowId, uint64_t value){
         record_.value = value;
         record_.rowId = rowId;
@@ -1185,6 +1242,11 @@ namespace neu{
     public:
       Int32Index()
       : Index(NTable::Int32){
+        
+      }
+      
+      Int32Index(const nstr& path)
+      : Index(NTable::Int32, path){
         
       }
       
@@ -1223,6 +1285,11 @@ namespace neu{
         
       }
       
+      UInt32Index(const nstr& path)
+      : Index(NTable::UInt32, path){
+        
+      }
+      
       void insert(RowId rowId, uint32_t value){
         record_.value = value;
         record_.rowId = rowId;
@@ -1251,6 +1318,11 @@ namespace neu{
     public:
       DoubleIndex()
       : Index(NTable::Double){
+        
+      }
+      
+      DoubleIndex(const nstr& path)
+      : Index(NTable::Double, path){
         
       }
       
@@ -1285,6 +1357,11 @@ namespace neu{
         
       }
       
+      FloatIndex(const nstr& path)
+      : Index(NTable::Float, path){
+        
+      }
+      
       void insert(RowId rowId, float value){
         record_.value = value;
         record_.rowId = rowId;
@@ -1313,6 +1390,11 @@ namespace neu{
     public:
       HashIndex()
       : Index(NTable::Hash){
+        
+      }
+      
+      HashIndex(const nstr& path)
+      : Index(NTable::Hash, path){
         
       }
       
@@ -1528,6 +1610,55 @@ namespace neu{
         
         dataMap_.insert({dataId, new Data(this, dataId, size)});
       }
+      
+      nvec files;
+      if(!NSys::dirFiles(path_, files)){
+        NERROR("failed to read table[1]: " + path_);
+      }
+      
+      NRegex r("(.+?)\\.(\\d+)\\.index");
+      
+      for(const nstr& p : files){
+        nvec m;
+        if(r.match(p, m)){
+          nstr indexName = NSys::fileName(m[1]);
+          nstr fullPath = path_ + "/" + p;
+          uint8_t type = m[2].toLong();
+
+          IndexBase* index;
+          
+          switch(type){
+            case NTable::Int32:
+              index = new Int32Index(fullPath);
+              break;
+            case NTable::UInt32:
+              index = new UInt32Index(fullPath);
+              break;
+            case NTable::Int64:
+              index = new Int64Index(fullPath);
+              break;
+            case NTable::UInt64:
+              index = new UInt64Index(fullPath);
+              break;
+            case NTable::Float:
+              index = new FloatIndex(fullPath);
+              break;
+            case NTable::Double:
+              index = new DoubleIndex(fullPath);
+              break;
+            case NTable::Row:
+              index = new RowIndex(fullPath);
+              break;
+            case NTable::Hash:
+              index = new HashIndex(fullPath);
+              break;
+            default:
+              NERROR("invalid index type: " + fullPath);
+          }
+          
+          indexMap_.insert({indexName, index});
+        }
+      }
     }
     
     void saveDataMeta(){
@@ -1539,23 +1670,11 @@ namespace neu{
         m(itr.first) = data->size();
       }
       
-      m.save(metaPath_);
+      m.save(dataMetaPath_);
     }
     
     void saveMeta(){
       nvar m;
-      NPUT(m, name_);
-      NPUT(m, nextDataId_);
-      
-      nvar& dm = m("dataMap") = nhmap();
-      Data* data;
-      
-      for(auto& itr : dataMap_){
-        data = itr.second;
-        
-        dm(itr.first) = data->size();
-      }
-      
       m.save(metaPath_);
     }
     
@@ -1575,6 +1694,8 @@ namespace neu{
         NERROR("table meta path exists: " + metaPath_);
       }
       
+      saveMeta();
+      
       dataPath_ = path_ + "/__data";
 
       if(NSys::exists(dataPath_)){
@@ -1582,6 +1703,16 @@ namespace neu{
       }
       
       NSys::makeDir(dataPath_);
+      
+      dataMetaPath_ = dataPath_ + "/meta.nvar";
+      
+      if(NSys::exists(dataMetaPath_)){
+        NERROR("table data meta path exists: " + dataMetaPath_);
+      }
+      
+      NSys::makeDir(dataMetaPath_);
+      
+      saveDataMeta();
     }
     
     const nstr& path(){
@@ -2195,13 +2326,31 @@ namespace neu{
       m.open(metaPath_);
       NGET(m, memoryLimit_);
       NGET(m, nextRowId_);
+      
+      nvec files;
+      if(!NSys::dirFiles(path_, files)){
+        NERROR("failed to read database[1]: " + path_);
+      }
+      
+      for(const nstr& p : files){
+        if(p.endsWith(".table")){
+          nstr tableName = NSys::fileName(p);
+          nstr fullPath = path_ + "/" + p;
+          
+          NTable* table = new NTable(this, fullPath);
+          
+          tableMap_.insert({tableName, table->x_});
+        }
+      }
     }
   }
   
   void NDatabase_::saveMeta(){
     nvar m = nhmap();
+    
     NPUT(m, memoryLimit_);
     NPUT(m, nextRowId_);
+    
     m.save(metaPath_);
   }
   
