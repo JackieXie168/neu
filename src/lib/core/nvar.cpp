@@ -984,7 +984,7 @@ double nvar::toDouble() const{
   }
 }
 
-nvar& nvar::operator<<(const nput& p){
+nvar& nvar::operator<<(const nmput& p){
   const nvar& k = p.key;
   
   if(k.isString()){

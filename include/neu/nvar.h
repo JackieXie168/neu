@@ -78,8 +78,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NObjectBase.h>
 #include <neu/NError.h>
 
-#define NGET(X,Y) X[#Y].as(Y)
-#define NPUT(X,Y) X(#Y) = Y
+#define nget(X,Y) X[#Y].as(Y)
+#define nput(X,Y) X(#Y) = Y
 
 namespace neu{
 
@@ -90,7 +90,7 @@ namespace neu{
 #endif
 
   class nvar;
-  class nput;
+  class nmput;
   class NObject;
   
   typedef nvar (*NFunc)(void*, const nvar&);
@@ -2124,7 +2124,7 @@ namespace neu{
       }
     }
     
-    nvar& operator<<(const nput& p);
+    nvar& operator<<(const nmput& p);
     
     nvar& operator<<(const nvar& x){
       switch(t_){
@@ -4810,9 +4810,9 @@ namespace neu{
     }
   }
   
-  class nput{
+  class nmput{
   public:
-    nput(const nvar& key, const nvar& val)
+    nmput(const nvar& key, const nvar& val)
     : key(key),
     val(val){
       

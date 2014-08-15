@@ -180,7 +180,7 @@ namespace neu{
     TableMap_ tableMap_;
     atomic<uint64_t> tick_;
     size_t memoryLimit_;
-  };
+  }; // end class NDatabase_
   
   class NTable_{
   public:
@@ -209,14 +209,6 @@ namespace neu{
       }
       
       virtual ~IndexBase(){}
-      
-      void setTable(NTable_* table){
-        table_ = table;
-      }
-      
-      NTable_* table(){
-        return table_;
-      }
       
       uint8_t type(){
         return type_;
@@ -284,7 +276,7 @@ namespace neu{
       nstr metaPath_;
       bool unique_;
       bool autoErase_;
-    };
+    }; // end class IndexBase
         
     template<class R, class V>
     class Page : public Pageable{
@@ -489,9 +481,12 @@ namespace neu{
         bool unique_;
       };
       
-      Page(IndexBase* index, uint64_t id, bool create=true)
+      Page(NDatabase_* d,
+           IndexBase* index,
+           uint64_t id,
+           bool create=true)
       : index_(index),
-      d_(index_->table()->database()),
+      d_(d),
       id_(id),
       loaded_(create),
       new_(create),
@@ -525,14 +520,6 @@ namespace neu{
         }
         
         tick_ = d_->write();
-      }
-      
-      void init(){
-        if(NSys::exists(path_)){
-          NERROR("page path exists: " + path_);
-        }
-        
-        NSys::makeDir(path_);
       }
       
       size_t memoryUsage(){
@@ -727,8 +714,7 @@ namespace neu{
       }
       
       Page* split(uint64_t id){
-        Page* p = new Page(index_, id);
-        p->init();
+        Page* p = new Page(d_, index_, id);
         p->write();
         
         typename ChunkMap_::iterator itr;
@@ -821,7 +807,7 @@ namespace neu{
         auto itr = chunkMap_.upper_bound(v);
         return itr == chunkMap_.begin() ? itr : --itr;
       }
-    };
+    }; // end class Page
     
     template<typename R, typename V>
     class Index : public IndexBase{
@@ -830,25 +816,26 @@ namespace neu{
       
       typedef function<void(R& r)> TraverseFunc;
       
-      Index(uint8_t type)
+      Index(NDatabase_* d, uint8_t type)
       : IndexBase(type),
+      d_(d),
       nextPageId_(0){
         min(min_);
         
-        firstPage_ = new IndexPage(this, nextPageId_++);
+        firstPage_ = new IndexPage(d_, this, nextPageId_++);
         pageMap_.insert({min_, firstPage_});
-        firstPage_->init();
       }
       
-      Index(uint8_t type, const nstr& path)
+      Index(NDatabase_* d, uint8_t type, const nstr& path)
       : IndexBase(type, path),
+      d_(d),
       firstPage_(0){
         min(min_);
         
         nvar m;
         m.open(metaPath());
         
-        NGET(m, nextPageId_);
+        nget(m, nextPageId_);
         setUnique(m["unique"]);
         setAutoErase(m["autoErase"]);
         
@@ -857,7 +844,7 @@ namespace neu{
         for(auto& itr : pm){
           uint64_t pageId = itr.first;
           V min = itr.second;
-          IndexPage* page = new IndexPage(this, pageId, false);
+          IndexPage* page = new IndexPage(d_, this, pageId, false);
           pageMap_.insert({min, page});
         }
       }
@@ -1026,6 +1013,7 @@ namespace neu{
     private:
       typedef NMap<V, IndexPage*> PageMap_;
       
+      NDatabase_* d_;
       V min_;
       uint64_t nextPageId_;
       PageMap_ pageMap_;
@@ -1035,7 +1023,7 @@ namespace neu{
         auto itr = pageMap_.upper_bound(v);
         return itr == pageMap_.begin() ? itr : --itr;
       }
-    };
+    }; // end class Index
 
     class DataRecord{
     public:
@@ -1093,13 +1081,13 @@ namespace neu{
     public:
       
       DataIndex(NDatabase_* d)
-      : Index(DataIndexType),
+      : Index(d, DataIndexType),
       d_(d){
         
       }
 
       DataIndex(NDatabase_* d, const nstr& path)
-      : Index(DataIndexType, path),
+      : Index(d, DataIndexType, path),
       d_(d){
         
       }
@@ -1182,13 +1170,13 @@ namespace neu{
     
     class Int64Index : public Index<Int64Record, int64_t>{
     public:
-      Int64Index()
-      : Index(NTable::Int64){
+      Int64Index(NDatabase_* d)
+      : Index(d, NTable::Int64){
         
       }
       
-      Int64Index(const nstr& path)
-      : Index(NTable::Int64, path){
+      Int64Index(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Int64, path){
         
       }
       
@@ -1218,13 +1206,13 @@ namespace neu{
     
     class UInt64Index : public Index<UInt64Record, uint64_t>{
     public:
-      UInt64Index()
-      : Index(NTable::UInt64){
+      UInt64Index(NDatabase_* d)
+      : Index(d, NTable::UInt64){
         
       }
       
-      UInt64Index(const nstr& path)
-      : Index(NTable::UInt64, path){
+      UInt64Index(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::UInt64, path){
         
       }
       
@@ -1254,13 +1242,13 @@ namespace neu{
     
     class RowIndex : public Index<RowRecord, RowId>{
     public:
-      RowIndex()
-      : Index(NTable::Row){
+      RowIndex(NDatabase_* d)
+      : Index(d, NTable::Row){
         
       }
       
-      RowIndex(const nstr& path)
-      : Index(NTable::Row, path){
+      RowIndex(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Row, path){
         
       }
       
@@ -1290,13 +1278,13 @@ namespace neu{
     
     class Int32Index : public Index<Int32Record, int32_t>{
     public:
-      Int32Index()
-      : Index(NTable::Int32){
+      Int32Index(NDatabase_* d)
+      : Index(d, NTable::Int32){
         
       }
       
-      Int32Index(const nstr& path)
-      : Index(NTable::Int32, path){
+      Int32Index(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Int32, path){
         
       }
       
@@ -1330,13 +1318,13 @@ namespace neu{
     
     class UInt32Index : public Index<UInt32Record, uint32_t>{
     public:
-      UInt32Index()
-      : Index(NTable::UInt32){
+      UInt32Index(NDatabase_* d)
+      : Index(d, NTable::UInt32){
         
       }
       
-      UInt32Index(const nstr& path)
-      : Index(NTable::UInt32, path){
+      UInt32Index(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::UInt32, path){
         
       }
       
@@ -1366,13 +1354,13 @@ namespace neu{
     
     class DoubleIndex : public Index<DoubleRecord, double>{
     public:
-      DoubleIndex()
-      : Index(NTable::Double){
+      DoubleIndex(NDatabase_* d)
+      : Index(d, NTable::Double){
         
       }
       
-      DoubleIndex(const nstr& path)
-      : Index(NTable::Double, path){
+      DoubleIndex(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Double, path){
         
       }
       
@@ -1402,13 +1390,13 @@ namespace neu{
     
     class FloatIndex : public Index<FloatRecord, double>{
     public:
-      FloatIndex()
-      : Index(NTable::Float){
+      FloatIndex(NDatabase_* d)
+      : Index(d, NTable::Float){
         
       }
       
-      FloatIndex(const nstr& path)
-      : Index(NTable::Float, path){
+      FloatIndex(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Float, path){
         
       }
       
@@ -1438,13 +1426,13 @@ namespace neu{
     
     class HashIndex : public Index<HashRecord, uint64_t>{
     public:
-      HashIndex()
-      : Index(NTable::Hash){
+      HashIndex(NDatabase_* d)
+      : Index(d, NTable::Hash){
         
       }
       
-      HashIndex(const nstr& path)
-      : Index(NTable::Hash, path){
+      HashIndex(NDatabase_* d, const nstr& path)
+      : Index(d, NTable::Hash, path){
         
       }
       
@@ -1495,18 +1483,12 @@ namespace neu{
       }
       
       void read(){
-        if(!data_){
-          load();
-        }
-        
+        load();
         tick_ = d_->read();
       }
       
       void write(){
-        if(!data_){
-          load();
-        }
-        
+        load();
         tick_ = d_->write();
       }
       
@@ -1543,6 +1525,10 @@ namespace neu{
       }
       
       void load(){
+        if(data_ || new_){
+          return;
+        }
+        
         FILE* file = fopen(path_.c_str(), "rb");
         
         if(!file){
@@ -1563,6 +1549,8 @@ namespace neu{
       }
 
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
+        cout << "++++ inserting: " << size << endl;
+        
         write();
         
         uint32_t offset = size_;
@@ -1624,7 +1612,7 @@ namespace neu{
       uint64_t id_;
       nstr path_;
       size_t tick_;
-    };
+    }; // end class Data
     
     NTable_(NTable* o, NDatabase_* d)
     : o_(o),
@@ -1665,8 +1653,8 @@ namespace neu{
       
       nvar m;
       m.open(metaPath_);
-      NGET(m, name_);
-      NGET(m, nextDataId_);
+      nget(m, name_);
+      nget(m, nextDataId_);
     
       m = undef;
       m.open(dataMetaPath_);
@@ -1697,28 +1685,28 @@ namespace neu{
           
           switch(type){
             case NTable::Int32:
-              index = new Int32Index(fullPath);
+              index = new Int32Index(d_, fullPath);
               break;
             case NTable::UInt32:
-              index = new UInt32Index(fullPath);
+              index = new UInt32Index(d_, fullPath);
               break;
             case NTable::Int64:
-              index = new Int64Index(fullPath);
+              index = new Int64Index(d_, fullPath);
               break;
             case NTable::UInt64:
-              index = new UInt64Index(fullPath);
+              index = new UInt64Index(d_, fullPath);
               break;
             case NTable::Float:
-              index = new FloatIndex(fullPath);
+              index = new FloatIndex(d_, fullPath);
               break;
             case NTable::Double:
-              index = new DoubleIndex(fullPath);
+              index = new DoubleIndex(d_, fullPath);
               break;
             case NTable::Row:
-              index = new RowIndex(fullPath);
+              index = new RowIndex(d_, fullPath);
               break;
             case NTable::Hash:
-              index = new HashIndex(fullPath);
+              index = new HashIndex(d_, fullPath);
               break;
             default:
               NERROR("invalid index type: " + fullPath);
@@ -1766,8 +1754,6 @@ namespace neu{
         NERROR("table data meta path exists: " + dataMetaPath_);
       }
       
-      NSys::makeDir(dataMetaPath_);
-      
       saveMeta();
     }
     
@@ -1807,28 +1793,28 @@ namespace neu{
       
       switch(indexType){
         case NTable::Int32:
-          index = new Int32Index;
+          index = new Int32Index(d_);
           break;
         case NTable::UInt32:
-          index = new UInt32Index;
+          index = new UInt32Index(d_);
           break;
         case NTable::Int64:
-          index = new Int64Index;
+          index = new Int64Index(d_);
           break;
         case NTable::UInt64:
-          index = new UInt64Index;
+          index = new UInt64Index(d_);
           break;
         case NTable::Float:
-          index = new FloatIndex;
+          index = new FloatIndex(d_);
           break;
         case NTable::Double:
-          index = new DoubleIndex;
+          index = new DoubleIndex(d_);
           break;
         case NTable::Row:
-          index = new RowIndex;
+          index = new RowIndex(d_);
           break;
         case NTable::Hash:
-          index = new HashIndex;
+          index = new HashIndex(d_);
           break;
         default:
           NERROR("invalid index type");
@@ -1836,7 +1822,6 @@ namespace neu{
       
       index->setUnique(unique);
       index->setAutoErase(autoErase);
-      index->setTable(this);
       index->init(path_ + "/" + indexName);
       
       indexMap_.insert({indexName, index});
@@ -2006,56 +1991,56 @@ namespace neu{
         
         switch(oldIndex->type()){
           case NTable::Int32:{
-            Int32Index* ni = new Int32Index;
+            Int32Index* ni = new Int32Index(d_);
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt32:{
-            UInt32Index* ni = new UInt32Index;
+            UInt32Index* ni = new UInt32Index(d_);
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Int64:{
-            Int64Index* ni = new Int64Index;
+            Int64Index* ni = new Int64Index(d_);
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt64:{
-            UInt64Index* ni = new UInt64Index;
+            UInt64Index* ni = new UInt64Index(d_);
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Float:{
-            FloatIndex* ni = new FloatIndex;
+            FloatIndex* ni = new FloatIndex(d_);
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Double:{
-            DoubleIndex* ni = new DoubleIndex;
+            DoubleIndex* ni = new DoubleIndex(d_);
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Row:{
-            RowIndex* ni = new RowIndex;
+            RowIndex* ni = new RowIndex(d_);
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
             oi->compact(*ni, rs, um);
             newIndex = ni;
             break;
           }
           case NTable::Hash:{
-            HashIndex* ni = new HashIndex;
+            HashIndex* ni = new HashIndex(d_);
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
@@ -2067,7 +2052,6 @@ namespace neu{
 
         newIndex->setUnique(oldIndex->unique());
         newIndex->setAutoErase(oldIndex->autoErase());
-        newIndex->setTable(this);
         
         delete oldIndex;
         newIndexMap_.insert({itr.first, newIndex});
@@ -2378,7 +2362,7 @@ namespace neu{
     nstr metaPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
-  };
+  }; // end class NTable_
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
   : o_(o),
@@ -2399,8 +2383,8 @@ namespace neu{
     else{
       nvar m;
       m.open(metaPath_);
-      NGET(m, memoryLimit_);
-      NGET(m, nextRowId_);
+      nget(m, memoryLimit_);
+      nget(m, nextRowId_);
       
       nvec files;
       if(!NSys::dirFiles(path_, files)){
@@ -2423,8 +2407,8 @@ namespace neu{
   void NDatabase_::saveMeta(){
     nvar m = nhmap();
     
-    NPUT(m, memoryLimit_);
-    NPUT(m, nextRowId_);
+    nput(m, memoryLimit_);
+    nput(m, nextRowId_);
     
     m.save(metaPath_);
     
