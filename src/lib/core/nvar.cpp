@@ -335,7 +335,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       bool first = true;
       bool found = streamOutputSet_(sstr, *h_.set, first, concise);
       if(found){
-        ostr << "[%";
+        ostr << "[% ";
         ostr << sstr.str();
         ostr << "]";
       }
@@ -349,7 +349,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       bool first = true;
       bool found = streamOutputSet_(sstr, *h_.hset, first, concise);
       if(found){
-        ostr << "[%";
+        ostr << "[^ ";
         ostr << sstr.str();
         ostr << "]";
       }
@@ -377,7 +377,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       bool first = true;
       bool found = streamOutputMap_(sstr, *h_.h, first, concise);
       if(found){
-        ostr << "[=";
+        ostr << "[= ";
         ostr << sstr.str();
         ostr << "]";
       }
@@ -460,18 +460,18 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
 
       switch(h_.sm->m->t_){
         case Set:
-          m = "%";
+          m = "% ";
           break;
         case HashSet:
-          m = "^";
+          m = "^ ";
           break;
         case Map:
           break;
         case Multimap:
-          m = "|";
+          m = "| ";
           break;
         case HashMap:
-          m = "=";
+          m = "= ";
           break;
         default:
           assert(false && "invalid case");
@@ -982,19 +982,6 @@ double nvar::toDouble() const{
     default:
       NERROR("invalid operand");
   }
-}
-
-nvar& nvar::operator<<(const nmput& p){
-  const nvar& k = p.key;
-  
-  if(k.isString()){
-    (*this)(k.str()) = p.val;
-  }
-  else{
-    (*this)(k) = p.val;
-  }
-  
-  return *this;
 }
 
 void nvar::pushBack(const nvar& x){

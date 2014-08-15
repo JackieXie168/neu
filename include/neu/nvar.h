@@ -90,7 +90,6 @@ namespace neu{
 #endif
 
   class nvar;
-  class nmput;
   class NObject;
   
   typedef nvar (*NFunc)(void*, const nvar&);
@@ -2124,7 +2123,10 @@ namespace neu{
       }
     }
     
-    nvar& operator<<(const nmput& p);
+    template<class K, class V>
+    nvar& operator<<(const std::pair<K, V>& p){
+      return *this(p.first) = p.second;
+    }
     
     nvar& operator<<(const nvar& x){
       switch(t_){
@@ -4809,18 +4811,6 @@ namespace neu{
         return nvar(&v, nvar::Ptr);
     }
   }
-  
-  class nmput{
-  public:
-    nmput(const nvar& key, const nvar& val)
-    : key(key),
-    val(val){
-      
-    }
-    
-    nvar key;
-    nvar val;
-  };
   
   inline nvar nml(const nstr& code){
     return nvar::fromStr(code);

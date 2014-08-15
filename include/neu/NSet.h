@@ -389,7 +389,7 @@ namespace neu{
   std::ostream& operator<<(std::ostream& ostr,
                            const NSet<Key, Compare, Allocator>& s){
     typename NSet<Key, Compare, Allocator>::const_iterator itr = s.begin();
-    ostr << "[%";
+    ostr << "[% ";
     while(itr != s.end()){
       if(itr != s.begin()){
         ostr << ", ";

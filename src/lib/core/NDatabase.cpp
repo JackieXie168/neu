@@ -73,6 +73,8 @@ namespace{
   
   static const size_t MAX_CHUNK_SIZE = 32768;
   static const size_t MAX_CHUNKS = 1024;
+  //static const size_t MAX_CHUNK_SIZE = 5;
+  //static const size_t MAX_CHUNKS = 5;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
@@ -196,45 +198,14 @@ namespace neu{
     class IndexBase{
     public:
       IndexBase(uint8_t type)
-      : type_(type),
-      table_(0){
+      : type_(type){
         
-      }
-      
-      IndexBase(uint8_t type, const nstr& path)
-      : type_(type),
-      table_(0),
-      path_(path){
-        metaPath_ = path_ + "/meta.nvar";
       }
       
       virtual ~IndexBase(){}
       
       uint8_t type(){
         return type_;
-      }
-      
-      void init(const nstr& path){
-        path_ = path;
-        if(NSys::exists(path_)){
-          NERROR("index path exists: " + path_);
-        }
-        
-        NSys::makeDir(path_);
-        
-        metaPath_ = path_ + "/meta.nvar";
-        if(NSys::exists(metaPath_)){
-          NERROR("index meta path exists: " + metaPath_);
-        }
-        
-        NSys::makeDir(path_);
-        
-        nstr oldPath = path_ + "/old";
-        if(NSys::exists(oldPath)){
-          NERROR("index old path exists: " + oldPath);
-        }
-        
-        NSys::makeDir(oldPath);
       }
       
       void setUnique(bool flag){
@@ -253,14 +224,6 @@ namespace neu{
         return autoErase_;
       }
       
-      const nstr& path(){
-        return path_;
-      }
-      
-      const nstr& metaPath(){
-        return metaPath_;
-      }
-      
       virtual size_t memoryUsage(PMap& pm) = 0;
       
       virtual void save(bool manual) = 0;
@@ -269,11 +232,10 @@ namespace neu{
       
       virtual void dump(){}
       
+      virtual const nstr& path() const = 0;
+      
     private:
-      NTable_* table_;
       uint8_t type_;
-      nstr path_;
-      nstr metaPath_;
       bool unique_;
       bool autoErase_;
     }; // end class IndexBase
@@ -493,7 +455,7 @@ namespace neu{
       firstChunk_(0),
       tick_(0),
       memoryUsage_(0){
-        path_ = index->path() + "/" + nvar(id);
+        path_ = index_->path() + "/" + nvar(id);
       }
       
       ~Page(){
@@ -816,36 +778,56 @@ namespace neu{
       
       typedef function<void(R& r)> TraverseFunc;
       
-      Index(NDatabase_* d, uint8_t type)
+      Index(NDatabase_* d, uint8_t type, const nstr& path, bool create)
       : IndexBase(type),
       d_(d),
-      nextPageId_(0){
-        min(min_);
-        
-        firstPage_ = new IndexPage(d_, this, nextPageId_++);
-        pageMap_.insert({min_, firstPage_});
-      }
-      
-      Index(NDatabase_* d, uint8_t type, const nstr& path)
-      : IndexBase(type, path),
-      d_(d),
+      path_(path),
       firstPage_(0){
         min(min_);
         
-        nvar m;
-        m.open(metaPath());
-        
-        nget(m, nextPageId_);
-        setUnique(m["unique"]);
-        setAutoErase(m["autoErase"]);
-        
-        const nhmap& pm = m["pageMap"];
-        
-        for(auto& itr : pm){
-          uint64_t pageId = itr.first;
-          V min = itr.second;
-          IndexPage* page = new IndexPage(d_, this, pageId, false);
-          pageMap_.insert({min, page});
+        if(create){
+          firstPage_ = new IndexPage(d_, this, nextPageId_++);
+          pageMap_.insert({min_, firstPage_});
+          nextPageId_ = 0;
+          
+          if(NSys::exists(path_)){
+            NERROR("index path exists: " + path_);
+          }
+          
+          NSys::makeDir(path_);
+          
+          metaPath_ = path_ + "/meta.nvar";
+          if(NSys::exists(metaPath_)){
+            NERROR("index meta path exists: " + metaPath_);
+          }
+          
+          NSys::makeDir(path_);
+          
+          nstr oldPath = path_ + "/old";
+          if(NSys::exists(oldPath)){
+            NERROR("index old path exists: " + oldPath);
+          }
+          
+          NSys::makeDir(oldPath);
+        }
+        else{
+          firstPage_ = 0;
+          
+          nvar m;
+          m.open(metaPath_);
+          
+          nget(m, nextPageId_);
+          setUnique(m["unique"]);
+          setAutoErase(m["autoErase"]);
+          
+          const nhmap& pm = m["pageMap"];
+          
+          for(auto& itr : pm){
+            uint64_t pageId = itr.first;
+            V min = itr.second;
+            IndexPage* page = new IndexPage(d_, this, pageId, false);
+            pageMap_.insert({min, page});
+          }
         }
       }
       
@@ -882,6 +864,10 @@ namespace neu{
         }
         
         return m;
+      }
+      
+      const nstr& path() const{
+        return path_;
       }
       
       void save(bool manual){
@@ -1018,6 +1004,8 @@ namespace neu{
       uint64_t nextPageId_;
       PageMap_ pageMap_;
       IndexPage* firstPage_;
+      nstr path_;
+      nstr metaPath_;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -1080,16 +1068,10 @@ namespace neu{
     class DataIndex : public Index<DataRecord, RowId>{
     public:
       
-      DataIndex(NDatabase_* d)
-      : Index(d, DataIndexType),
+      DataIndex(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, DataIndexType, path, create),
       d_(d){
-        
-      }
 
-      DataIndex(NDatabase_* d, const nstr& path)
-      : Index(d, DataIndexType, path),
-      d_(d){
-        
       }
       
       void insert(uint32_t dataId, uint32_t offset, RowId rowId){
@@ -1170,13 +1152,8 @@ namespace neu{
     
     class Int64Index : public Index<Int64Record, int64_t>{
     public:
-      Int64Index(NDatabase_* d)
-      : Index(d, NTable::Int64){
-        
-      }
-      
-      Int64Index(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Int64, path){
+      Int64Index(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Int64, path, create){
         
       }
       
@@ -1206,13 +1183,8 @@ namespace neu{
     
     class UInt64Index : public Index<UInt64Record, uint64_t>{
     public:
-      UInt64Index(NDatabase_* d)
-      : Index(d, NTable::UInt64){
-        
-      }
-      
-      UInt64Index(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::UInt64, path){
+      UInt64Index(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::UInt64, path, create){
         
       }
       
@@ -1242,13 +1214,8 @@ namespace neu{
     
     class RowIndex : public Index<RowRecord, RowId>{
     public:
-      RowIndex(NDatabase_* d)
-      : Index(d, NTable::Row){
-        
-      }
-      
-      RowIndex(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Row, path){
+      RowIndex(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Row, path, create){
         
       }
       
@@ -1278,13 +1245,8 @@ namespace neu{
     
     class Int32Index : public Index<Int32Record, int32_t>{
     public:
-      Int32Index(NDatabase_* d)
-      : Index(d, NTable::Int32){
-        
-      }
-      
-      Int32Index(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Int32, path){
+      Int32Index(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Int32, path, create){
         
       }
       
@@ -1318,13 +1280,8 @@ namespace neu{
     
     class UInt32Index : public Index<UInt32Record, uint32_t>{
     public:
-      UInt32Index(NDatabase_* d)
-      : Index(d, NTable::UInt32){
-        
-      }
-      
-      UInt32Index(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::UInt32, path){
+      UInt32Index(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::UInt32, path, create){
         
       }
       
@@ -1354,13 +1311,8 @@ namespace neu{
     
     class DoubleIndex : public Index<DoubleRecord, double>{
     public:
-      DoubleIndex(NDatabase_* d)
-      : Index(d, NTable::Double){
-        
-      }
-      
-      DoubleIndex(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Double, path){
+      DoubleIndex(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Double, path, create){
         
       }
       
@@ -1390,13 +1342,8 @@ namespace neu{
     
     class FloatIndex : public Index<FloatRecord, double>{
     public:
-      FloatIndex(NDatabase_* d)
-      : Index(d, NTable::Float){
-        
-      }
-      
-      FloatIndex(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Float, path){
+      FloatIndex(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Float, path, create){
         
       }
       
@@ -1426,13 +1373,8 @@ namespace neu{
     
     class HashIndex : public Index<HashRecord, uint64_t>{
     public:
-      HashIndex(NDatabase_* d)
-      : Index(d, NTable::Hash){
-        
-      }
-      
-      HashIndex(NDatabase_* d, const nstr& path)
-      : Index(d, NTable::Hash, path){
+      HashIndex(NDatabase_* d, const nstr& path, bool create)
+      : Index(d, NTable::Hash, path, create){
         
       }
       
@@ -1612,155 +1554,143 @@ namespace neu{
       size_t tick_;
     }; // end class Data
     
-    NTable_(NTable* o, NDatabase_* d)
-    : o_(o),
-    d_(d),
-    nextDataId_(0),
-    lastData_(0),
-    dataIndex_(new DataIndex(d_)){
-      
-    }
-
-    NTable_(NTable* o, NDatabase_* d, const nstr& path)
+    NTable_(NTable* o, NDatabase_* d, const nstr& path, bool create)
     : o_(o),
     d_(d),
     path_(path),
     lastData_(0){
       
-      metaPath_ = path_ + "/meta.nvar";
-      
-      if(!NSys::exists(metaPath_)){
-        NERROR("table meta path not found: " + metaPath_);
-      }
-      
-      dataPath_ = path_ + "/__data";
-      
-      if(!NSys::exists(dataPath_)){
-        NERROR("table data path not found: " + metaPath_);
-      }
-      
-      dataMetaPath_ = dataPath_ + "/meta.nvar";
-      if(!NSys::exists(dataMetaPath_)){
-        NERROR("table data meta path not found: " + dataMetaPath_);
-      }
-
-      nstr op = path_ + "/old";
-      if(!NSys::exists(op)){
-        NERROR("table old path not found: " + op);
-      }
-      
-      nvar m;
-      m.open(metaPath_);
-      nget(m, name_);
-      nget(m, nextDataId_);
-    
-      m = undef;
-      m.open(dataMetaPath_);
-      const nhmap& dm = m;
-      
-      for(auto& itr : dm){
-        uint64_t dataId = itr.first;
-        size_t size = itr.second;
+      if(create){
+        nextDataId_ = 0;
         
-        dataMap_.insert({dataId, new Data(this, dataId, size)});
-      }
-      
-      nvec files;
-      if(!NSys::dirFiles(path_, files)){
-        NERROR("failed to read table[1]: " + path_);
-      }
-      
-      NRegex r("(.+?)\\.(\\d+)\\.index");
-      
-      for(const nstr& p : files){
-        nvec m;
-        if(r.match(p, m)){
-          nstr indexName = NSys::fileName(m[1]);
-          nstr fullPath = path_ + "/" + p;
-          uint8_t type = m[2].toLong();
+        if(NSys::exists(path_)){
+          NERROR("table path exists: " + path_);
+        }
+        
+        NSys::makeDir(path_);
+        
+        nstr op = path_ + "/old";
+        if(NSys::exists(op)){
+          NERROR("table old path exists: " + op);
+        }
+        
+        NSys::makeDir(op);
+        
+        metaPath_ = path_ + "/meta.nvar";
+        
+        if(NSys::exists(metaPath_)){
+          NERROR("table meta path exists: " + metaPath_);
+        }
+        
+        dataPath_ = path_ + "/__data";
+        
+        if(NSys::exists(dataPath_)){
+          NERROR("table data path exists: " + dataPath_);
+        }
+        
+        NSys::makeDir(dataPath_);
+        
+        dataMetaPath_ = dataPath_ + "/meta.nvar";
+        
+        if(NSys::exists(dataMetaPath_)){
+          NERROR("table data meta path exists: " + dataMetaPath_);
+        }
 
-          IndexBase* index;
+        dataIndex_ = new DataIndex(d_, path_ + "/__data.index", true);
+        
+        saveMeta();
+      }
+      else{
+        metaPath_ = path_ + "/meta.nvar";
+        
+        if(!NSys::exists(metaPath_)){
+          NERROR("table meta path not found: " + metaPath_);
+        }
+        
+        dataPath_ = path_ + "/__data";
+        
+        if(!NSys::exists(dataPath_)){
+          NERROR("table data path not found: " + metaPath_);
+        }
+        
+        dataMetaPath_ = dataPath_ + "/meta.nvar";
+        if(!NSys::exists(dataMetaPath_)){
+          NERROR("table data meta path not found: " + dataMetaPath_);
+        }
+        
+        nstr op = path_ + "/old";
+        if(!NSys::exists(op)){
+          NERROR("table old path not found: " + op);
+        }
+        
+        nvar m;
+        m.open(metaPath_);
+        nget(m, nextDataId_);
+        
+        m = undef;
+        m.open(dataMetaPath_);
+        const nhmap& dm = m;
+        
+        for(auto& itr : dm){
+          uint64_t dataId = itr.first;
+          size_t size = itr.second;
           
-          switch(type){
-            case NTable::Int32:
-              index = new Int32Index(d_, fullPath);
-              break;
-            case NTable::UInt32:
-              index = new UInt32Index(d_, fullPath);
-              break;
-            case NTable::Int64:
-              index = new Int64Index(d_, fullPath);
-              break;
-            case NTable::UInt64:
-              index = new UInt64Index(d_, fullPath);
-              break;
-            case NTable::Float:
-              index = new FloatIndex(d_, fullPath);
-              break;
-            case NTable::Double:
-              index = new DoubleIndex(d_, fullPath);
-              break;
-            case NTable::Row:
-              index = new RowIndex(d_, fullPath);
-              break;
-            case NTable::Hash:
-              index = new HashIndex(d_, fullPath);
-              break;
-            default:
-              NERROR("invalid index type: " + fullPath);
+          dataMap_.insert({dataId, new Data(this, dataId, size)});
+        }
+        
+        nvec files;
+        if(!NSys::dirFiles(path_, files)){
+          NERROR("failed to read table[1]: " + path_);
+        }
+        
+        NRegex r("(.+?)\\.(\\d+)\\.index");
+        
+        for(const nstr& p : files){
+          nvec m;
+          if(r.match(p, m)){
+            nstr indexName = NSys::fileName(m[1]);
+            nstr fullPath = path_ + "/" + p;
+            uint8_t type = m[2].toLong();
+            
+            IndexBase* index;
+            
+            switch(type){
+              case NTable::Int32:
+                index = new Int32Index(d_, fullPath, false);
+                break;
+              case NTable::UInt32:
+                index = new UInt32Index(d_, fullPath, false);
+                break;
+              case NTable::Int64:
+                index = new Int64Index(d_, fullPath, false);
+                break;
+              case NTable::UInt64:
+                index = new UInt64Index(d_, fullPath, false);
+                break;
+              case NTable::Float:
+                index = new FloatIndex(d_, fullPath, false);
+                break;
+              case NTable::Double:
+                index = new DoubleIndex(d_, fullPath, false);
+                break;
+              case NTable::Row:
+                index = new RowIndex(d_, fullPath, false);
+                break;
+              case NTable::Hash:
+                index = new HashIndex(d_, fullPath, false);
+                break;
+              default:
+                NERROR("invalid index type: " + fullPath);
+            }
+            
+            indexMap_.insert({indexName, index});
           }
-          
-          indexMap_.insert({indexName, index});
         }
       }
     }
     
-    void init(const nstr& name){
-      name_ = name;
-      path_ = d_->path() + "/" + name;
-      
-      if(NSys::exists(path_)){
-        NERROR("table path exists: " + path_);
-      }
-
-      NSys::makeDir(path_);
-
-      nstr op = path_ + "/old";
-      if(NSys::exists(op)){
-        NERROR("table old path exists: " + op);
-      }
-      
-      NSys::makeDir(op);
-      
-      metaPath_ = path_ + "/meta.nvar";
-      
-      if(NSys::exists(metaPath_)){
-        NERROR("table meta path exists: " + metaPath_);
-      }
-      
-      dataPath_ = path_ + "/__data";
-
-      if(NSys::exists(dataPath_)){
-        NERROR("table data path exists: " + dataPath_);
-      }
-      
-      NSys::makeDir(dataPath_);
-      
-      dataMetaPath_ = dataPath_ + "/meta.nvar";
-      
-      if(NSys::exists(dataMetaPath_)){
-        NERROR("table data meta path exists: " + dataMetaPath_);
-      }
-      
-      saveMeta();
-    }
-    
     const nstr& path(){
       return path_;
-    }
-    
-    const nstr& name(){
-      return name_;
     }
     
     void readLock_(){
@@ -1789,30 +1719,32 @@ namespace neu{
 
       IndexBase* index;
       
+      nstr path = path_ + "/" + indexName + "." + nvar(indexType) + ".index";
+      
       switch(indexType){
         case NTable::Int32:
-          index = new Int32Index(d_);
+          index = new Int32Index(d_, path, true);
           break;
         case NTable::UInt32:
-          index = new UInt32Index(d_);
+          index = new UInt32Index(d_, path, true);
           break;
         case NTable::Int64:
-          index = new Int64Index(d_);
+          index = new Int64Index(d_, path, true);
           break;
         case NTable::UInt64:
-          index = new UInt64Index(d_);
+          index = new UInt64Index(d_, path, true);
           break;
         case NTable::Float:
-          index = new FloatIndex(d_);
+          index = new FloatIndex(d_, path, true);
           break;
         case NTable::Double:
-          index = new DoubleIndex(d_);
+          index = new DoubleIndex(d_, path, true);
           break;
         case NTable::Row:
-          index = new RowIndex(d_);
+          index = new RowIndex(d_, path, true);
           break;
         case NTable::Hash:
-          index = new HashIndex(d_);
+          index = new HashIndex(d_, path, true);
           break;
         default:
           NERROR("invalid index type");
@@ -1820,7 +1752,6 @@ namespace neu{
       
       index->setUnique(unique);
       index->setAutoErase(autoErase);
-      index->init(path_ + "/" + indexName);
       
       indexMap_.insert({indexName, index});
     }
@@ -1974,7 +1905,7 @@ namespace neu{
     }
     
     void mapCompact(RowSet& rs, UpdateMap& um){
-      DataIndex* newDataIndex = new DataIndex(d_);
+      DataIndex* newDataIndex = new DataIndex(d_, "changme", true);
       dataIndex_->mapCompact(*newDataIndex, rs, um);
       delete dataIndex_;
       dataIndex_ = newDataIndex;
@@ -1989,56 +1920,56 @@ namespace neu{
         
         switch(oldIndex->type()){
           case NTable::Int32:{
-            Int32Index* ni = new Int32Index(d_);
+            Int32Index* ni = new Int32Index(d_, "changme", true);
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt32:{
-            UInt32Index* ni = new UInt32Index(d_);
+            UInt32Index* ni = new UInt32Index(d_, "changme", true);
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Int64:{
-            Int64Index* ni = new Int64Index(d_);
+            Int64Index* ni = new Int64Index(d_, "changme", true);
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt64:{
-            UInt64Index* ni = new UInt64Index(d_);
+            UInt64Index* ni = new UInt64Index(d_, "changme", true);
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Float:{
-            FloatIndex* ni = new FloatIndex(d_);
+            FloatIndex* ni = new FloatIndex(d_, "changme", true);
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Double:{
-            DoubleIndex* ni = new DoubleIndex(d_);
+            DoubleIndex* ni = new DoubleIndex(d_, "changme", true);
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Row:{
-            RowIndex* ni = new RowIndex(d_);
+            RowIndex* ni = new RowIndex(d_, "changme", true);
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
             oi->compact(*ni, rs, um);
             newIndex = ni;
             break;
           }
           case NTable::Hash:{
-            HashIndex* ni = new HashIndex(d_);
+            HashIndex* ni = new HashIndex(d_, "changme", true);
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
@@ -2093,6 +2024,8 @@ namespace neu{
     
     void save(){
       NReadGuard guard(mutex_);
+      
+      dataIndex_->save(true);
       
       for(auto& itr : indexMap_){
         itr.second->save(true);
@@ -2328,7 +2261,7 @@ namespace neu{
     }
     
     void dump(){
-      cout << "+++++++++ DUMP TABLE: " << name_ << endl;
+      cout << "+++++++++ DUMP TABLE: " << path_ << endl;
       
       for(auto& itr : indexMap_){
         cout << "---- DUMP INDEX: " << itr.first << endl;
@@ -2348,7 +2281,6 @@ namespace neu{
     
     NTable* o_;
     NDatabase_* d_;
-    nstr name_;
     IndexMap_ indexMap_;
     uint32_t nextDataId_;
     DataMap_ dataMap_;
@@ -2381,6 +2313,9 @@ namespace neu{
     else{
       nvar m;
       m.open(metaPath_);
+
+      cout << "m is: " << m << endl;
+      
       nget(m, memoryLimit_);
       nget(m, nextRowId_);
       
@@ -2394,7 +2329,7 @@ namespace neu{
           nstr tableName = NSys::fileName(p);
           nstr fullPath = path_ + "/" + p;
           
-          NTable* table = new NTable(this, fullPath);
+          NTable* table = new NTable(this, fullPath, false);
           
           tableMap_.insert({tableName, table->x_});
         }
@@ -2421,9 +2356,8 @@ namespace neu{
       NERROR("table exists: " + tableName);
     }
     
-    NTable* table = new NTable(this);
+    NTable* table = new NTable(this, path_ + "/" + tableName, true);
     NTable_* t = table->x_;
-    t->init(tableName);
     
     tableMap_.insert({tableName, t});
     
@@ -2494,6 +2428,8 @@ namespace neu{
   }
   
   void NDatabase_::save(){
+    saveMeta();
+    
     for(auto& itr : tableMap_){
       itr.second->save();
     }
@@ -2501,12 +2437,8 @@ namespace neu{
   
 } // end namespace neu
 
-NTable::NTable(NDatabase_* d){
-  x_ = new NTable_(this, d);
-}
-
-NTable::NTable(NDatabase_* d, const nstr& path){
-  x_ = new NTable_(this, d, path);
+NTable::NTable(NDatabase_* d, const nstr& path, bool create){
+  x_ = new NTable_(this, d, path, create);
 }
 
 void NTable::addIndex(const nstr& indexName,

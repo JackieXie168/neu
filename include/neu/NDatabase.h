@@ -123,8 +123,7 @@ namespace neu{
   private:
     friend class NDatabase_;
     
-    NTable(class NDatabase_*);
-    NTable(class NDatabase_*, const nstr&);
+    NTable(class NDatabase_*, const nstr&, bool);
     
     class NTable_* x_;
   };
