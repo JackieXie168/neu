@@ -1028,10 +1028,10 @@ namespace neu{
     class DataRecord{
     public:
       
-      void set(RowId rowId, uint32_t dataId, uint32_t offset){
+      void set(RowId id, uint32_t dataId, uint32_t offset){
         remap = 0;
-        value = rowId;
-        rowId = (uint64_t(dataId) << 32) | uint64_t(offset);
+        value = id;
+        rowId = uint64_t(dataId) << 32 | uint64_t(offset);
       }
       
       void erase(){
@@ -1549,8 +1549,6 @@ namespace neu{
       }
 
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
-        cout << "++++ inserting: " << size << endl;
-        
         write();
         
         uint32_t offset = size_;
