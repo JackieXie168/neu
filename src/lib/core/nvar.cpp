@@ -20735,7 +20735,7 @@ nvar& nvar::get(const nvar& key, nvar& def){
 }
 
 nvar& nvar::operator()(const char* k){
-  if(nstr::isSymbol(k)){
+  if(nstr::isSymbol(k) && !hasHashMap()){
     return (*this)(nvar(k, Sym));
   }
   

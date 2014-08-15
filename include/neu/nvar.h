@@ -3908,7 +3908,7 @@ namespace neu{
     nvar& operator()(const char* k);
     
     nvar& operator()(const nstr& k){
-      if(nstr::isSymbol(k)){
+      if(nstr::isSymbol(k) && !hasHashMap()){
         return (*this)(nvar(k, Sym));
       }
       
