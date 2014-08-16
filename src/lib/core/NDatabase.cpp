@@ -71,10 +71,10 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  //static const size_t MAX_CHUNK_SIZE = 32768;
-  //static const size_t MAX_CHUNKS = 1024;
-  static const size_t MAX_CHUNK_SIZE = 10;
-  static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 32768;
+  static const size_t MAX_CHUNKS = 1024;
+  //static const size_t MAX_CHUNK_SIZE = 10;
+  //static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
@@ -260,7 +260,7 @@ namespace neu{
         
         typedef function<void(R& r)> TraverseFunc;
         
-        Action find(const V& value, size_t& index){
+        Action findInsert(const V& value, size_t& index){
           index = 0;
           
           R* record;
@@ -301,6 +301,30 @@ namespace neu{
 
           return action;
         }
+        
+        size_t find(const V& value){
+          size_t index = 0;
+          
+          R* record;
+          size_t length = chunk_.size();
+          size_t start = 0;
+          size_t end = length;
+          
+          while(end > start){
+            index = start + (end - start)/2;
+            
+            record = &chunk_[index];
+            
+            if(value < record->value){
+              end = index;
+            }
+            else{
+              start = index + 1;
+            }
+          }
+
+          return index;
+        }
 
         R* get(const V& value){
           R* record = 0;
@@ -330,13 +354,13 @@ namespace neu{
         
         Action insert(const R& record){
           size_t index;
-          Action action = find(record.value, index);
+          Action action = findInsert(record.value, index);
 
           if(unique_ && chunk_[index].value == record.value){
             NERROR("non-unique value: " + nvar(record.value));
           }
           
-          if(find(record.value, index) & Append){
+          if(findInsert(record.value, index) & Append){
             chunk_.push_back(record);
           }
           else{
@@ -403,8 +427,7 @@ namespace neu{
         }
         
         int query(const V& start, QueryFunc_ f){
-          size_t index;
-          find(start, index);
+          size_t index = find(start);
           
           R* r;
           RowId rowId;
@@ -560,8 +583,6 @@ namespace neu{
           NERROR("failed to read page file [1]: " + path_);
         }
         
-        cout << "numChunks is: " << numChunks << endl;
-        
         uint32_t chunkSize;
         uint32_t dataSize;
         R buf[MAX_CHUNK_SIZE];
@@ -575,12 +596,7 @@ namespace neu{
             NERROR("failed to read page file [2]: " + path_);
           }
         
-          cout << "chunk size is: " << chunkSize << endl;
-          
           dataSize = sizeof(R)*chunkSize;
-
-          cout << "ds is: " << dataSize << endl;
-          
           memoryUsage_ += dataSize;
           
           n = fread(buf, 1, dataSize, file);
@@ -741,6 +757,7 @@ namespace neu{
         read();
         
         auto itr = findChunk(start);
+        assert(itr != chunkMap_.end());
         
         for(;;){
           int s = itr->second->query(start, f);
@@ -980,6 +997,7 @@ namespace neu{
 
       void query(const V& start, QueryFunc_ f){
         auto itr = findPage(start);
+        assert(itr != pageMap_.end());
         
         for(;;){
           int s = itr->second->query(start, f);
@@ -2193,6 +2211,7 @@ namespace neu{
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
+
         bool success = get(rowId, row);
         assert(success);
         return qf(row);
