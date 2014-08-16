@@ -1932,8 +1932,6 @@ namespace neu{
     }
     
     void rollback(){
-      NWriteGuard guard(mutex_);
-      
       nstr oldPath = dataPath_ + "/old";
       
       nvec oldFiles;
@@ -2010,7 +2008,6 @@ namespace neu{
                   uint8_t indexType,
                   bool unique,
                   bool autoErase){
-      NWriteGuard guard(mutex_);
       write();
       
       auto itr = indexMap_.find(indexName);
@@ -2059,7 +2056,6 @@ namespace neu{
     }
     
     RowId insert(nvar& row){
-      NWriteGuard guard(mutex_);
       write();
       
       RowId rowId = d_->nextRowId();
@@ -2163,8 +2159,6 @@ namespace neu{
     }
     
     void update(nvar& row){
-      NWriteGuard guard(mutex_);
-      
       write();
       
       RowId rowId = row["id"];
@@ -2179,8 +2173,6 @@ namespace neu{
     }
     
     bool get(RowId rowId, nvar& row){
-      NReadGuard guard(mutex_);
-      
       uint32_t dataId;
       uint32_t offset;
       
@@ -2206,8 +2198,6 @@ namespace neu{
     }
     
     void erase(RowId rowId){
-      NWriteGuard guard(mutex_);
-      
       dataIndex_->erase(rowId);
     }
     
@@ -2309,8 +2299,6 @@ namespace neu{
     }
     
     size_t memoryUsage(PMap& pm){
-      NReadGuard guard(mutex_);
-      
       size_t m = 0;
       for(auto& itr : indexMap_){
         m += itr.second->memoryUsage(pm);
@@ -2332,8 +2320,6 @@ namespace neu{
     }
     
     void save(){
-      NReadGuard guard(mutex_);
-      
       if(current_){
         return;
       }
@@ -2352,8 +2338,6 @@ namespace neu{
     }
     
     void saveMeta(){
-      NReadGuard guard(mutex_);
-      
       if(current_){
         return;
       }
@@ -2449,8 +2433,6 @@ namespace neu{
     void query(const nstr& indexName,
                const nvar& start,
                NTable::QueryFunc qf){
-      NReadGuard guard(mutex_);
-      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
 
@@ -2466,8 +2448,6 @@ namespace neu{
                     const nvar& start,
                     const nvar& end,
                     RowSet& rs){
-      NReadGuard guard(mutex_);
-      
       if(start > end){
         NERROR("invalid start/end");
       }
@@ -2488,8 +2468,6 @@ namespace neu{
     }
     
     void traverseStart(NTable::QueryFunc qf){
-      NReadGuard guard(mutex_);
-      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         bool success = get(rowId, row);
@@ -2501,8 +2479,6 @@ namespace neu{
     }
     
     void traverseEnd(NTable::QueryFunc qf){
-      NReadGuard guard(mutex_);
-      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         bool success = get(rowId, row);
@@ -2516,8 +2492,6 @@ namespace neu{
     }
     
     void join(const nstr& indexName, const RowSet& js, RowSet& rs){
-      NReadGuard guard(mutex_);
-      
       for(RowId findRowId : js){
         auto f = [&](RowId rowId, const nvar& v) -> int{
           RowId toRowId = v;
@@ -2538,8 +2512,6 @@ namespace neu{
     }
     
     void get(const RowSet& rs, NTable::QueryFunc qf){
-      NReadGuard guard(mutex_);
-      
       for(RowId findRowId : rs){
         auto f = [&](RowId rowId, const nvar& v) -> int{
           if(v.some()){
@@ -2563,8 +2535,6 @@ namespace neu{
     }
     
     bool getFirst(const nstr& indexName, const nvar& value, nvar& row){
-      NReadGuard guard(mutex_);
-      
       bool success = false;
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
