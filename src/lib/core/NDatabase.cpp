@@ -1972,6 +1972,9 @@ namespace neu{
       for(auto& itr : indexMap_){
         itr.second->rollback();
       }
+      
+      dataClean_ = true;
+      clean_ = true;
     }
     
     void clean(){
