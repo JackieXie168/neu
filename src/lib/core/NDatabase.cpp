@@ -71,10 +71,10 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  //static const size_t MAX_CHUNK_SIZE = 32768;
-  //static const size_t MAX_CHUNKS = 1024;
-  static const size_t MAX_CHUNK_SIZE = 10;
-  static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 32768;
+  static const size_t MAX_CHUNKS = 1024;
+  //static const size_t MAX_CHUNK_SIZE = 10;
+  //static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
@@ -574,6 +574,8 @@ namespace neu{
           
           dataSize = sizeof(R)*chunkSize;
           memoryUsage_ += dataSize;
+          
+          //cout << "ds is: " << dataSize << endl;
           
           n = fread(buf, 1, dataSize, file);
           if(n != dataSize){
