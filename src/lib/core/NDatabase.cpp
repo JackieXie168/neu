@@ -242,6 +242,8 @@ namespace neu{
       virtual const nstr& path() const = 0;
       
       virtual void rollback() = 0;
+
+      virtual void clean() = 0;
       
     private:
       uint8_t type_;
@@ -949,6 +951,20 @@ namespace neu{
               remove(fullPath.c_str());
             }
           }
+        }
+      }
+      
+      void clean(){
+        nstr oldPath = path_ + "/old";
+        
+        nvec oldFiles;
+        if(!NSys::dirFiles(oldPath, oldFiles)){
+          NERROR("index failed to clean[1]");
+        }
+        
+        for(const nstr& p : oldFiles){
+          nstr fullPath = oldPath + "/" + p;
+          remove(fullPath.c_str());
         }
       }
       
@@ -1890,6 +1906,24 @@ namespace neu{
       }
     }
     
+    void clean(){
+      nstr oldPath = dataPath_ + "/old";
+      
+      nvec oldFiles;
+      if(!NSys::dirFiles(oldPath, oldFiles)){
+        NERROR("index failed to clean[1]");
+      }
+      
+      for(const nstr& p : oldFiles){
+        nstr fullPath = oldPath + "/" + p;
+        remove(fullPath.c_str());
+      }
+      
+      for(auto& itr : indexMap_){
+        itr.second->clean();
+      }
+    }
+    
     void addIndex(const nstr& indexName,
                   uint8_t indexType,
                   bool unique,
@@ -2638,6 +2672,10 @@ namespace neu{
     
     for(auto& itr : tableMap_){
       itr.second->save();
+    }
+    
+    for(auto& itr : tableMap_){
+      itr.second->clean();
     }
   }
   
