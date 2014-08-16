@@ -4354,12 +4354,11 @@ namespace neu{
       }
     }
     
-    char* pack(uint32_t& size, bool compress=true) const;
-
-    char* packWithParams(uint32_t& size,
-                         size_t minCompressSize) const;
+    static const size_t NO_COMPRESS = std::numeric_limits<size_t>::max();
     
-    void unpack(char* buf, uint32_t size, bool compressed=true);
+    char* pack(uint32_t& size, size_t minCompressSize=1024) const;
+
+    void unpack(char* buf, uint32_t size);
     
     void save(const nstr& path) const;
     

@@ -83,6 +83,8 @@ namespace neu{
   const nvar::SequenceMapFlag* nvar::SequenceMapType = 0;
   const nvar::HeadSequenceMapFlag* nvar::HeadSequenceMapType = 0;
   
+  static const uint8_t COMPRESS_FLAG = 0x01;
+  
 } // end namespace neu
 
 namespace{
@@ -23754,42 +23756,23 @@ nvar nvar::fromStr(const nstr& str){
   NERROR("failed to parse: " + str);
 }
 
-char* nvar::pack(uint32_t& size, bool compress) const{
+char* nvar::pack(uint32_t& size, size_t minCompressSize) const{
   unsigned int psize = _packBlockSize;
   char* pbuf = (char*)malloc(psize);
   
-  uint32_t pos = 0;
+  uint32_t pos = 1;
   pbuf = pack_(pbuf, psize, pos);
   
-  if(compress){
-    unsigned int csize = psize*2;
+  if(pos - 1 >= minCompressSize){
+    unsigned int csize = pos*2;
     char* cbuf = (char*)malloc(csize);
     
-    csize = zlib_compress_(pbuf, cbuf, psize, csize);
+    csize = zlib_compress_(pbuf + 1, cbuf + 1, pos - 1, csize - 1);
     free(pbuf);
-    size = csize;
+    size = csize + 1;
     
-    return cbuf;
-  }
-  
-  size = pos;
-  return pbuf;
-}
-
-char* nvar::packWithParams(uint32_t& size, size_t minCompressSize) const{
-  unsigned int psize = _packBlockSize;
-  char* pbuf = (char*)malloc(psize);
-  
-  uint32_t pos = 0;
-  pbuf = pack_(pbuf, psize, pos);
-  
-  if(pos >= minCompressSize){
-    unsigned int csize = psize*2;
-    char* cbuf = (char*)malloc(csize);
-    
-    csize = zlib_compress_(pbuf, cbuf, psize, csize);
-    free(pbuf);
-    size = csize;
+    cbuf[0] = 0;
+    cbuf[0] |= COMPRESS_FLAG;
     
     return cbuf;
   }
@@ -24290,20 +24273,20 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
   return buf;
 }
 
-void nvar::unpack(char* buf, uint32_t size, bool compressed){
+void nvar::unpack(char* buf, uint32_t size){
   assert(t_ == Undefined);
   
-  uint32_t pos = 0;
-  
-  if(compressed){
+  if(buf[0] & COMPRESS_FLAG){
     unsigned int psize = size*2;
     char* pbuf = (char*)malloc(psize);
     
-    pbuf = zlib_decompress_(buf, size, pbuf, &psize, true);
+    pbuf = zlib_decompress_(buf + 1, size - 1, pbuf, &psize, true);
+    uint32_t pos = 0;
     unpack_(pbuf, pos);
     free(pbuf);
   }
   else{
+    uint32_t pos = 1;
     unpack_(buf, pos);
   }
 }
