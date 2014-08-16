@@ -62,6 +62,64 @@ namespace neu{
   class NTable{
   public:
 
+    class Lock{
+    public:
+      Lock(NTable* table, bool write=false){
+        lockMap_.insert({table, write});
+      }
+      
+      Lock(std::initializer_list<NTable*> tables, bool write=false){
+        for(auto& itr : tables){
+          lockMap_.insert({itr, write});
+        }
+      }
+      
+      Lock(std::initializer_list<NTable*> readTables,
+           std::initializer_list<NTable*> writeTables){
+        NMap<NTable*, bool> m;
+        
+        for(auto& itr : readTables){
+          lockMap_.insert({itr, false});
+        }
+        
+        for(auto& itr : writeTables){
+          lockMap_.insert({itr, false});
+        }
+      }
+
+      ~Lock(){
+        release();
+      }
+      
+      void release(){
+        for(auto& itr : lockMap_){
+          NTable* table = itr.first;
+          table->unlock_();
+        }
+        
+        lockMap_.clear();
+      }
+      
+    private:
+      void acquire_(){
+        for(auto& itr : lockMap_){
+          NTable* table = itr.first;
+          bool write = itr.second;
+
+          if(write){
+            table->writeLock_();
+          }
+          else{
+            table->readLock_();
+          }
+        }
+      }
+
+      typedef NMap<NTable*, bool> LockMap_;
+      
+      LockMap_ lockMap_;
+    };
+  
     typedef uint64_t RowId;
     
     typedef NHashSet<RowId> RowSet;
@@ -117,6 +175,12 @@ namespace neu{
     void save();
     
     void dump();
+    
+    void readLock_();
+    
+    void writeLock_();
+    
+    void unlock_();
     
     friend class NDatabase_;
     

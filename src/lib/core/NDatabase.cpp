@@ -2853,6 +2853,18 @@ void NTable::save(){
   x_->save();
 }
 
+void NTable::readLock_(){
+  x_->readLock_();
+}
+
+void NTable::writeLock_(){
+  x_->writeLock_();
+}
+
+void NTable::unlock_(){
+  x_->unlock_();
+}
+
 NDatabase::NDatabase(){}
 
 NDatabase::NDatabase(const nstr& path){
