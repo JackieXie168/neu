@@ -240,6 +240,10 @@ namespace neu{
         return autoErase_;
       }
       
+      void setClean(bool flag){
+        clean_ = flag;
+      }
+      
       virtual size_t memoryUsage(PMap& pm) = 0;
       
       virtual void save(bool manual) = 0;
@@ -259,6 +263,7 @@ namespace neu{
     protected:
       bool unique_;
       bool autoErase_;
+      bool clean_;
     }; // end class IndexBase
         
     template<class R, class V>
@@ -556,6 +561,7 @@ namespace neu{
           
           if(!NSys::exists(op)){
             NSys::rename(path_, op);
+            index_->setClean(false);
           }
         }
         
@@ -843,7 +849,8 @@ namespace neu{
       : IndexBase(type),
       d_(d),
       path_(path),
-      firstPage_(0){
+      firstPage_(0),
+      clean_(true){
         min(min_);
         
         metaPath_ = path_ + "/meta.nvar";
@@ -924,7 +931,8 @@ namespace neu{
         }
         
         m.save(metaPath_);
-        metaCurrent_ = false;
+        
+        metaCurrent_ = true;
       }
       
       size_t memoryUsage(PMap& pm){
@@ -982,10 +990,11 @@ namespace neu{
         
         current_ = true;
         metaCurrent_ = true;
+        clean_ = true;
       }
       
       void clean(){
-        if(current_){
+        if(clean_){
           return;
         }
         
@@ -1000,6 +1009,8 @@ namespace neu{
           nstr fullPath = oldPath + "/" + p;
           d_->safeRemove(fullPath.c_str());
         }
+        
+        clean_ = true;
       }
       
       const nstr& path() const{
@@ -1159,8 +1170,9 @@ namespace neu{
       IndexPage* firstPage_;
       nstr path_;
       nstr metaPath_;
-      bool current_;
-      bool metaCurrent_;
+      bool current_ : 1;
+      bool metaCurrent_ : 1;
+      bool clean_ : 1;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -1604,6 +1616,7 @@ namespace neu{
           
           if(!NSys::exists(op)){
             NSys::rename(path_, op);
+            table_->setDataClean(false);
           }
         }
         
@@ -1760,7 +1773,8 @@ namespace neu{
     : o_(o),
     d_(d),
     path_(path),
-    lastData_(0){
+    lastData_(0),
+    dataClean_(true){
       
       if(create){
         current_ = false;
@@ -1891,6 +1905,10 @@ namespace neu{
       }
     }
     
+    void setDataClean(bool flag){
+      dataClean_ = flag;
+    }
+    
     void write(){
       current_ = false;
     }
@@ -1955,6 +1973,14 @@ namespace neu{
     }
     
     void clean(){
+      for(auto& itr : indexMap_){
+        itr.second->clean();
+      }
+      
+      if(dataClean_){
+        return;
+      }
+      
       nstr oldPath = dataPath_ + "/old";
       
       nvec oldFiles;
@@ -1967,9 +1993,7 @@ namespace neu{
         d_->safeRemove(fullPath);
       }
       
-      for(auto& itr : indexMap_){
-        itr.second->clean();
-      }
+      dataClean_ = true;
     }
     
     void addIndex(const nstr& indexName,
@@ -2586,6 +2610,7 @@ namespace neu{
     size_t memoryUsage_;
     NRWMutex mutex_;
     bool current_;
+    bool dataClean_;
   }; // end class NTable_
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
