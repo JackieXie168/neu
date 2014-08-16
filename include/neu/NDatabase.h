@@ -144,6 +144,8 @@ namespace neu{
     
     void setMemoryLimit(size_t megabytes);
     
+    void rollback();
+    
   private:
     NDatabase();
     

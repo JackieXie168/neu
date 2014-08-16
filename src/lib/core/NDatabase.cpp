@@ -177,6 +177,8 @@ namespace neu{
     
     void saveMeta();
     
+    void rollback();
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -238,6 +240,8 @@ namespace neu{
       virtual void dump(){}
       
       virtual const nstr& path() const = 0;
+      
+      virtual void rollback() = 0;
       
     private:
       uint8_t type_;
@@ -872,6 +876,12 @@ namespace neu{
         }
       }
       
+      virtual ~Index(){
+        for(auto& itr : pageMap_){
+          delete itr.second;
+        }
+      }
+      
       void saveMeta(){
         nvar m;
         nput(m, nextPageId_);
@@ -888,12 +898,6 @@ namespace neu{
         m.save(metaPath_);
       }
       
-      virtual ~Index(){
-        for(auto& itr : pageMap_){
-          delete itr.second;
-        }
-      }
-      
       size_t memoryUsage(PMap& pm){
         size_t m = 0;
         for(auto& itr : pageMap_){
@@ -908,6 +912,44 @@ namespace neu{
         }
         
         return m;
+      }
+      
+      void rollback(){
+        nstr oldPath = path_ + "/old";
+        
+        nvec oldFiles;
+        if(!NSys::dirFiles(oldPath, oldFiles)){
+          NERROR("index failed to rollback[1]");
+        }
+        
+        for(const nstr& p : oldFiles){
+          nstr fromPath = oldPath + "/" + p;
+          nstr toPath = path_ + "/" + p;
+          NSys::rename(fromPath, toPath);
+        }
+        
+        nvar m;
+        m.open(metaPath_);
+        
+        const nhmap& pm = m["pageMap"];
+        
+        nvec newFiles;
+        if(!NSys::dirFiles(path_, newFiles)){
+          NERROR("index failed to rollback[2]");
+        }
+        
+        NRegex r("\\d+");
+        
+        for(const nstr& p : oldFiles){
+          if(r.match(p)){
+            size_t pageId = nvar(p).toLong();
+            
+            if(!pm.hasKey(pageId)){
+              nstr fullPath = path_ + "/" + p;
+              remove(fullPath.c_str());
+            }
+          }
+        }
       }
       
       const nstr& path() const{
@@ -1667,13 +1709,6 @@ namespace neu{
         
         NSys::makeDir(path_);
         
-        nstr op = path_ + "/old";
-        if(NSys::exists(op)){
-          NERROR("table old path exists: " + op);
-        }
-        
-        NSys::makeDir(op);
-        
         metaPath_ = path_ + "/meta.nvar";
         
         if(NSys::exists(metaPath_)){
@@ -1687,6 +1722,13 @@ namespace neu{
         }
         
         NSys::makeDir(dataPath_);
+        
+        nstr op = dataPath_ + "/old";
+        if(NSys::exists(op)){
+          NERROR("table old data path exists: " + op);
+        }
+        
+        NSys::makeDir(op);
         
         dataMetaPath_ = dataPath_ + "/meta.nvar";
         
@@ -1803,6 +1845,49 @@ namespace neu{
     
     void unlock_(){
       mutex_.unlock();
+    }
+    
+    void rollback(){
+      NWriteGuard guard(mutex_);
+      
+      nstr oldPath = dataPath_ + "/old";
+      
+      nvec oldFiles;
+      if(!NSys::dirFiles(oldPath, oldFiles)){
+        NERROR("table failed to rollback[1]");
+      }
+      
+      for(const nstr& p : oldFiles){
+        nstr fromPath = oldPath + "/" + p;
+        nstr toPath = dataPath_ + "/" + p;
+        NSys::rename(fromPath, toPath);
+      }
+      
+      nvar m;
+      m.open(dataMetaPath_);
+      const nhmap& dm = m;
+      
+      nvec newFiles;
+      if(!NSys::dirFiles(dataPath_, newFiles)){
+        NERROR("table failed to rollback[2]");
+      }
+      
+      NRegex r("\\d+");
+      
+      for(const nstr& p : oldFiles){
+        if(r.match(p)){
+          size_t dataId = nvar(p).toLong();
+          
+          if(!dm.hasKey(dataId)){
+            nstr fullPath = dataPath_ + "/" + p;
+            remove(fullPath.c_str());
+          }
+        }
+      }
+      
+      for(auto& itr : indexMap_){
+        itr.second->rollback();
+      }
     }
     
     void addIndex(const nstr& indexName,
@@ -2510,6 +2595,13 @@ namespace neu{
     
     saveMeta();
   }
+
+  void NDatabase_::rollback(){
+    for(auto& itr : tableMap_){
+      NTable_* t = itr.second;
+      t->rollback();
+    }
+  }
   
   size_t NDatabase_::memoryUsage(PMap& pm){
     size_t m = 0;
@@ -2655,4 +2747,8 @@ void NDatabase::save(){
 
 void NDatabase::setMemoryLimit(size_t megabytes){
   x_->setMemoryLimit(megabytes);
+}
+
+void NDatabase::rollback(){
+  x_->rollback();
 }
