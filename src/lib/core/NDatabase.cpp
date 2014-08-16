@@ -379,7 +379,7 @@ namespace neu{
             NERROR("non-unique value: " + nvar(record.value));
           }
           
-          if(findInsert(record.value, index) & Append){
+          if(action & Append){
             chunk_.push_back(record);
           }
           else{
@@ -1783,7 +1783,7 @@ namespace neu{
         if(!NSys::exists(dataMetaPath_)){
           NERROR("table data meta path not found: " + dataMetaPath_);
         }
-                
+        
         dataIndex_ = new DataIndex(d_, path_ + "/__data.index", false);
         
         nvar m;
