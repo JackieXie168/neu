@@ -179,6 +179,16 @@ namespace neu{
     
     void rollback();
     
+    void safeRemove(const nstr& path){
+      if(!path.beginsWith(path_)){
+        cerr << "Error: attempted to remove file outside "
+        "database: " << path << endl;
+        exit(1);
+      }
+      
+      remove(path_.c_str());
+    }
+    
   private:
     typedef NMap<nstr, NTable_*> TableMap_;
     
@@ -948,7 +958,7 @@ namespace neu{
             
             if(!pm.hasKey(pageId)){
               nstr fullPath = path_ + "/" + p;
-              remove(fullPath.c_str());
+              d_->safeRemove(fullPath.c_str());
             }
           }
         }
@@ -964,7 +974,7 @@ namespace neu{
         
         for(const nstr& p : oldFiles){
           nstr fullPath = oldPath + "/" + p;
-          remove(fullPath.c_str());
+          d_->safeRemove(fullPath.c_str());
         }
       }
       
@@ -1896,7 +1906,7 @@ namespace neu{
           
           if(!dm.hasKey(dataId)){
             nstr fullPath = dataPath_ + "/" + p;
-            remove(fullPath.c_str());
+            d_->safeRemove(fullPath);
           }
         }
       }
@@ -1916,7 +1926,7 @@ namespace neu{
       
       for(const nstr& p : oldFiles){
         nstr fullPath = oldPath + "/" + p;
-        remove(fullPath.c_str());
+        d_->safeRemove(fullPath);
       }
       
       for(auto& itr : indexMap_){
