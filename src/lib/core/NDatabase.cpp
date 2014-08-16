@@ -71,14 +71,14 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 32768;
-  static const size_t MAX_CHUNKS = 1024;
-  //static const size_t MAX_CHUNK_SIZE = 10;
-  //static const size_t MAX_CHUNKS = 10;
+  //static const size_t MAX_CHUNK_SIZE = 32768;
+  //static const size_t MAX_CHUNKS = 1024;
+  static const size_t MAX_CHUNK_SIZE = 10;
+  static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
-  static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
+  static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
   
   static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
   
@@ -288,7 +288,7 @@ namespace neu{
 
           Action action = None;
           
-          if(length == SPLIT_CHUNK_SIZE){
+          if(length >= SPLIT_CHUNK_SIZE){
             action |= Split;
           }
 
@@ -541,6 +541,7 @@ namespace neu{
           }
           
           dataSize = sizeof(R)*chunkSize;
+          
           n = fwrite(chunk->data(), 1, dataSize, file);
           if(n != dataSize){
             NERROR("failed to write to page file [3]: " + path_);
@@ -559,6 +560,8 @@ namespace neu{
           NERROR("failed to read page file [1]: " + path_);
         }
         
+        cout << "numChunks is: " << numChunks << endl;
+        
         uint32_t chunkSize;
         uint32_t dataSize;
         R buf[MAX_CHUNK_SIZE];
@@ -571,11 +574,14 @@ namespace neu{
           if(n != 4){
             NERROR("failed to read page file [2]: " + path_);
           }
+        
+          cout << "chunk size is: " << chunkSize << endl;
           
           dataSize = sizeof(R)*chunkSize;
-          memoryUsage_ += dataSize;
+
+          cout << "ds is: " << dataSize << endl;
           
-          //cout << "ds is: " << dataSize << endl;
+          memoryUsage_ += dataSize;
           
           n = fread(buf, 1, dataSize, file);
           if(n != dataSize){
@@ -634,7 +640,6 @@ namespace neu{
           else{
             Chunk* c = chunk->split();
             chunkMap_.insert({c->min(), c});
-
             return None;
           }
         }
