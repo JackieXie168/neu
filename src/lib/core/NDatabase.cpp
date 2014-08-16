@@ -1577,13 +1577,11 @@ namespace neu{
           memcpy(&rowId, data_ + offset, 8);
           offset += 8;
           
-          cout << "rowId is: " << rowId << endl;
-          
           uint32_t size;
           memcpy(&size, data_ + offset, 4);
           offset += 4;
-          
-          cout << "size is: " << size << endl;
+
+          cout << "### ";
           
           nvar v;
           v.unpack(data_ + offset, size);
