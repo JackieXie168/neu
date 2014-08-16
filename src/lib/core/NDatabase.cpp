@@ -823,14 +823,14 @@ namespace neu{
       IndexBase* index_;
       NDatabase_* d_;
       uint64_t id_;
-      bool needsLoad_;
-      bool existed_;
+      bool needsLoad_ : 1;
+      bool existed_ : 1;
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
       nstr path_;
       uint64_t tick_;
       size_t memoryUsage_;
-      bool current_;
+      bool current_ : 1;
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
@@ -1170,9 +1170,9 @@ namespace neu{
       IndexPage* firstPage_;
       nstr path_;
       nstr metaPath_;
-      bool current_ : 1;
-      bool metaCurrent_ : 1;
-      bool clean_ : 1;
+      bool current_;
+      bool metaCurrent_;
+      bool clean_;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -1761,12 +1761,12 @@ namespace neu{
       NDatabase_* d_;
       uint32_t size_;
       uint32_t allocSize_;
-      bool existed_;
+      bool existed_ : 1;
       char* data_;
       uint64_t id_;
       nstr path_;
       size_t tick_;
-      bool current_;
+      bool current_ : 1;
     }; // end class Data
     
     NTable_(NTable* o, NDatabase_* d, const nstr& path, bool create)
@@ -1774,7 +1774,8 @@ namespace neu{
     d_(d),
     path_(path),
     lastData_(0),
-    dataClean_(true){
+    dataClean_(true),
+    clean_(true){
       
       if(create){
         current_ = false;
@@ -1911,6 +1912,7 @@ namespace neu{
     
     void write(){
       current_ = false;
+      clean_ = false;
     }
     
     const nstr& path(){
@@ -1973,6 +1975,10 @@ namespace neu{
     }
     
     void clean(){
+      if(clean_){
+        return;
+      }
+      
       for(auto& itr : indexMap_){
         itr.second->clean();
       }
@@ -1994,6 +2000,7 @@ namespace neu{
       }
       
       dataClean_ = true;
+      clean_ = true;
     }
     
     void addIndex(const nstr& indexName,
@@ -2611,6 +2618,7 @@ namespace neu{
     NRWMutex mutex_;
     bool current_;
     bool dataClean_;
+    bool clean_;
   }; // end class NTable_
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
