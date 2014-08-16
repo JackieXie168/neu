@@ -1783,12 +1783,7 @@ namespace neu{
         if(!NSys::exists(dataMetaPath_)){
           NERROR("table data meta path not found: " + dataMetaPath_);
         }
-        
-        nstr op = path_ + "/old";
-        if(!NSys::exists(op)){
-          NERROR("table old path not found: " + op);
-        }
-        
+                
         dataIndex_ = new DataIndex(d_, path_ + "/__data.index", false);
         
         nvar m;

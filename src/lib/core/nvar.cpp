@@ -15366,6 +15366,451 @@ bool nvar::equal(const nvar& x) const{
   }
 }
 
+bool nvar::hashEqual(const nvar& x) const{
+  switch(t_){
+    case None:
+      switch(x.t_){
+        case None:
+          return true;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Undefined:
+      switch(x.t_){
+        case Undefined:
+          return true;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case False:
+      switch(x.t_){
+        case False:
+          return true;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case True:
+      switch(x.t_){
+        case True:
+          return true;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Integer:
+      switch(x.t_){
+        case Integer:
+          return h_.i == x.h_.i;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Rational:
+      switch(x.t_){
+        case Rational:
+          return *h_.r == *x.h_.r;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Float:
+      switch(x.t_){
+        case Float:
+          return h_.d == x.h_.d;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Real:
+      switch(x.t_){
+        case Real:
+          return *h_.x == *x.h_.x;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Symbol:
+    case StringPointer:
+    case String:
+    case Binary:
+      switch(x.t_){
+        case Binary:
+        case String:
+        case StringPointer:
+          return *h_.s == *x.h_.s;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case RawPointer:
+      switch(x.t_){
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.p == x.h_.o;
+        case RawPointer:
+          return h_.p == x.h_.p;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case ObjectPointer:
+    case LocalObject:
+    case SharedObject:
+      switch(x.t_){
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.o == x.h_.o;
+        case RawPointer:
+          return h_.o == x.h_.p;
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Vector:
+      switch(x.t_){
+        case Vector:{
+          size_t size = h_.v->size();
+          
+          if(size != x.h_.v->size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!(*h_.v)[i].hashEqual((*x.h_.v)[i])){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case List:
+      switch(x.t_){
+        case List:{
+          size_t size = h_.l->size();
+          
+          if(size != x.h_.l->size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!(*h_.l)[i].hashEqual((*x.h_.l)[i])){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Queue:
+      switch(x.t_){
+        case Queue:{
+          size_t size = h_.q->size();
+          
+          if(size != x.h_.q->size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!(*h_.q)[i].hashEqual((*x.h_.q)[i])){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Function:
+      switch(x.t_){
+        case Function:{
+          size_t size = h_.f->v.size();
+          
+          if(size != h_.f->v.size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!h_.f->v[i].hashEqual((x.h_.f->v[i]))){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequence:
+      switch(x.t_){
+        case HeadSequence:
+          return h_.hs->h->hashEqual(*x.h_.hs->h) &&
+          h_.hs->s->hashEqual(*x.h_.hs->s);
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Set:
+      switch(x.t_){
+        case Set:{
+          if(h_.set->size() != x.h_.set->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.set){
+            const nvar& k = *itr;
+            
+            auto itr2 = x.h_.set->find(k);
+            if(itr2 == x.h_.set->end()){
+              return false;
+            }
+            
+            const nvar& k2 = *itr2;
+            if(!k.hashEqual(k2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HashSet:
+      switch(x.t_){
+        case HashSet:{
+          if(h_.hset->size() != x.h_.hset->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.hset){
+            const nvar& k = *itr;
+            
+            auto itr2 = x.h_.hset->find(k);
+            if(itr2 == x.h_.hset->end()){
+              return false;
+            }
+            
+            const nvar& k2 = *itr2;
+            if(!k.hashEqual(k2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Map:
+      switch(x.t_){
+        case Map:{
+          if(h_.m->size() != x.h_.m->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.m){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            auto itr2 = x.h_.m->find(k);
+            if(itr2 == x.h_.m->end()){
+              return false;
+            }
+            
+            const nvar& v2 = itr2->second;
+            if(!v.hashEqual(v2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HashMap:
+      switch(x.t_){
+        case HashMap:{
+          if(h_.h->size() != x.h_.h->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.h){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            auto itr2 = x.h_.h->find(k);
+            if(itr2 == x.h_.h->end()){
+              return false;
+            }
+            
+            const nvar& v2 = itr2->second;
+            if(!v.hashEqual(v2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Multimap:
+      switch(x.t_){
+        case Multimap:{
+          if(h_.mm->size() != x.h_.mm->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.mm){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            auto itr2 = x.h_.mm->find(k);
+            if(itr2 == x.h_.mm->end()){
+              return false;
+            }
+            
+            const nvar& v2 = itr2->second;
+            if(!v.hashEqual(v2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadMap:
+      switch(x.t_){
+        case HeadMap:
+          return h_.hm->h->hashEqual(*x.h_.hm->h) &&
+          h_.hm->m->hashEqual(*x.h_.hm->m);
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case SequenceMap:
+      switch(x.t_){
+        case SequenceMap:
+          return h_.sm->s->hashEqual(*x.h_.sm->s) &&
+          h_.sm->m->hashEqual(*x.h_.sm->m);
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequenceMap:
+      switch(x.t_){
+        case HeadSequenceMap:
+          return h_.hsm->h->hashEqual(*x.h_.hsm->h) &&
+          h_.hsm->s->hashEqual(*x.h_.hsm->s) &&
+          h_.hsm->m->hashEqual(*x.h_.hsm->m);
+        case Reference:
+          return hashEqual(*x.h_.ref->v);
+        case Pointer:
+          return hashEqual(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Reference:
+      return h_.ref->v->hashEqual(x);
+    case Pointer:
+      return h_.vp->hashEqual(x);
+    default:
+      return false;
+  }
+}
+
 nvar nvar::operator<(nlonglong x) const{
   switch(t_){
     case None:
@@ -20735,7 +21180,7 @@ nvar& nvar::get(const nvar& key, nvar& def){
 }
 
 nvar& nvar::operator()(const char* k){
-  if(nstr::isSymbol(k) && !hasHashMap()){
+  if(nstr::isSymbol(k)){
     return (*this)(nvar(k, Sym));
   }
   

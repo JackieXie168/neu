@@ -110,12 +110,19 @@ namespace neu{
       return k.hash();
     }
   };
+
+  template<class T>
+  struct nvarEqual{
+    bool operator()(const T& x, const T& y) const{
+      return x.hashEqual(y);
+    }
+  };
   
   typedef NVector<nvar> nvec;
   typedef NList<nvar> nlist;
   typedef NMap<nvar, nvar, nvarLess<nvar>> nmap;
   typedef NMultimap<nvar, nvar, nvarLess<nvar>> nmmap;
-  typedef NHashMap<nvar, nvar, nvarHash<nvar>> nhmap;
+  typedef NHashMap<nvar, nvar, nvarHash<nvar>, nvarEqual<nvar>> nhmap;
   typedef NSet<nvar, nvarLess<nvar>> nset;
   typedef NHashSet<nvar, nvarHash<nvar>> nhset;
   typedef NQueue<nvar> nqueue;
@@ -3749,6 +3756,8 @@ namespace neu{
     
     bool greater(const nvar& x) const;
     
+    bool hashEqual(const nvar& x) const;
+    
     bool equal(const nvar& x) const;
     
     nvar operator<(const nvar& x) const;
@@ -4561,6 +4570,7 @@ namespace neu{
           return std::hash<std::string>()(h_.x->toStr().str());
         case Symbol:
         case String:
+          return std::hash<std::string>()(*h_.s);
         case StringPointer:
         case Binary:
           return std::hash<std::string>()(*h_.s) + t_;
