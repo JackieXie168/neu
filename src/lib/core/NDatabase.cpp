@@ -81,6 +81,9 @@ namespace{
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
   
   static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
+  static const size_t MIN_COMPRESS_SIZE = 1000;
+  
+  static const uint32_t COMPRESS_FLAG = 0x1;
   
   template<typename T>
   void min(T& m){
@@ -1534,22 +1537,25 @@ namespace neu{
         d_->checkMemory();
       }
 
-      uint32_t insert(RowId rowId, char* buf, uint32_t size){
+      uint32_t insert(RowId rowId, char* buf, uint32_t size, uint32_t flags){
         write();
         
         uint32_t offset = size_;
         
         if(data_){
-          data_ = (char*)realloc(data_, size_ + size + 12);
+          data_ = (char*)realloc(data_, size_ + size + 16);
         }
         else{
-          data_ = (char*)malloc(size + 12);
+          data_ = (char*)malloc(size + 16);
         }
 
         memcpy(data_ + size_, &rowId, 8);
         size_ += 8;
         
         memcpy(data_ + size_, &size, 4);
+        size_ += 4;
+
+        memcpy(data_ + size_, &flags, 4);
         size_ += 4;
         
         memcpy(data_ + size_, buf, size);
@@ -1568,12 +1574,20 @@ namespace neu{
         uint32_t size;
         memcpy(&size, data_ + offset, 4);
         offset += 4;
-        v.unpack(data_ + offset, size);
+        
+        uint32_t flags;
+        memcpy(&flags, data_ + offset, 4);
+        offset += 4;
+        
+        bool compressed = flags & COMPRESS_FLAG;
+
+        v.unpack(data_ + offset, size, compressed);
       }
       
       uint32_t compact(Data* newData, const RowSet& rs){
         RowId rowId;
         uint32_t size;
+        uint32_t flags;
         uint32_t offset = 0;
         
         while(offset < size_){
@@ -1582,9 +1596,12 @@ namespace neu{
 
           memcpy(&size, data_ + offset, 4);
           offset += 4;
+
+          memcpy(&flags, data_ + offset, 4);
+          offset += 4;
           
           if(!rs.hasKey(rowId)){
-            newData->insert(rowId, data_ + offset, size);
+            newData->insert(rowId, data_ + offset, size, flags);
           }
           offset += size;
         }
@@ -1607,10 +1624,16 @@ namespace neu{
           memcpy(&size, data_ + offset, 4);
           offset += 4;
 
+          uint32_t flags;
+          memcpy(&flags, data_ + offset, 4);
+          offset += 4;
+          
           cout << "### ";
 
+          bool compressed = flags & COMPRESS_FLAG;
+          
           nvar v;
-          v.unpack(data_ + offset, size);
+          v.unpack(data_ + offset, size, compressed);
 
           cout << v << endl;
           
@@ -1901,9 +1924,13 @@ namespace neu{
       }
       
       row("id") = rowId;
-      
+
+      uint32_t flags = 0;
       uint32_t size;
-      char* buf = row.pack(size);
+      char* buf = row.packWithParams(size, MIN_COMPRESS_SIZE);
+      if(size > MIN_COMPRESS_SIZE){
+        flags |= COMPRESS_FLAG;
+      }
       
       Data* data;
       
@@ -1927,7 +1954,7 @@ namespace neu{
         }
       }
       
-      uint32_t offset = data->insert(rowId, buf, size);
+      uint32_t offset = data->insert(rowId, buf, size, flags);
       free(buf);
       
       dataIndex_->insert(data->id(), offset, rowId);

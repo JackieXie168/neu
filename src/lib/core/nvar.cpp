@@ -23331,6 +23331,28 @@ char* nvar::pack(uint32_t& size, bool compress) const{
   return pbuf;
 }
 
+char* nvar::packWithParams(uint32_t& size, size_t minCompressSize) const{
+  unsigned int psize = _packBlockSize;
+  char* pbuf = (char*)malloc(psize);
+  
+  uint32_t pos = 0;
+  pbuf = pack_(pbuf, psize, pos);
+  
+  if(pos >= minCompressSize){
+    unsigned int csize = psize*2;
+    char* cbuf = (char*)malloc(csize);
+    
+    csize = zlib_compress_(pbuf, cbuf, psize, csize);
+    free(pbuf);
+    size = csize;
+    
+    return cbuf;
+  }
+  
+  size = pos;
+  return pbuf;
+}
+
 char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
   if(size - pos < _packBlockSize){
     size += _packBlockSize;

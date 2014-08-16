@@ -4346,6 +4346,9 @@ namespace neu{
     }
     
     char* pack(uint32_t& size, bool compress=true) const;
+
+    char* packWithParams(uint32_t& size,
+                         size_t minCompressSize) const;
     
     void unpack(char* buf, uint32_t size, bool compressed=true);
     
