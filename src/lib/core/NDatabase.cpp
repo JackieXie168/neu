@@ -80,6 +80,8 @@ namespace{
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 1;
   
+  static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
+  
   template<typename T>
   void min(T& m){
     m = numeric_limits<T>::min();
@@ -573,8 +575,6 @@ namespace neu{
           dataSize = sizeof(R)*chunkSize;
           memoryUsage_ += dataSize;
           
-          cout << "data size is: " << dataSize << endl;
-          
           n = fread(buf, 1, dataSize, file);
           if(n != dataSize){
             NERROR("failed to read page file [3]: " + path_);
@@ -632,6 +632,7 @@ namespace neu{
           else{
             Chunk* c = chunk->split();
             chunkMap_.insert({c->min(), c});
+
             return None;
           }
         }
@@ -1582,7 +1583,7 @@ namespace neu{
           offset += 4;
 
           cout << "### ";
-          
+
           nvar v;
           v.unpack(data_ + offset, size);
 
@@ -2371,9 +2372,6 @@ namespace neu{
     else{
       nvar m;
       m.open(metaPath_);
-
-      cout << "m is: " << m << endl;
-      
       nget(m, memoryLimit_);
       nget(m, nextRowId_);
       
@@ -2470,6 +2468,9 @@ namespace neu{
   }
   
   void NDatabase_::checkMemory(){
+    // ndm - test
+    return;
+    
     PMap pm;
     int64_t m = memoryUsage(pm);
     

@@ -23374,7 +23374,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
           break;
         }
         case 1:{
-          int8_t j = h_.i;
+          uint8_t j = h_.i;
           
           if(j <= 100){
             buf[pos++] = Pack0 - j;
