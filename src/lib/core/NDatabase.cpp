@@ -1224,6 +1224,7 @@ namespace neu{
       
       RowId update(RowId rowId){
         DataRecord* record = getRecord(rowId);
+        
         if(record){
           RowId newRowId = d_->nextRowId();
           record->update(newRowId);
@@ -1582,7 +1583,7 @@ namespace neu{
       }
       
       void load(){
-        if(data_ || new_){
+        if(data_ || size_ == 0){
           return;
         }
         
