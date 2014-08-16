@@ -496,6 +496,7 @@ namespace neu{
       id_(id),
       loaded_(create),
       new_(create),
+      current_(!create),
       firstChunk_(0),
       tick_(0),
       memoryUsage_(0){
@@ -526,6 +527,7 @@ namespace neu{
         }
         
         tick_ = d_->write();
+        current_ = false;
       }
       
       size_t memoryUsage(){
@@ -546,6 +548,10 @@ namespace neu{
       }
       
       void save(bool manual){
+        if(current_){
+          return;
+        }
+        
         if(manual){
           new_ = false;
         }
@@ -590,6 +596,7 @@ namespace neu{
         }
         
         fclose(file);
+        current_ = true;
       }
       
       void load(){
@@ -721,6 +728,7 @@ namespace neu{
       }
       
       Page* split(uint64_t id){
+        current_ = false;
         Page* p = new Page(d_, index_, id, true);
         p->write();
         
@@ -819,6 +827,7 @@ namespace neu{
       nstr path_;
       uint64_t tick_;
       size_t memoryUsage_;
+      bool current_;
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
@@ -844,6 +853,8 @@ namespace neu{
         
         if(create){
           nextPageId_ = 0;
+          current_ = false;
+          metaCurrent_ = false;
           
           firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
           pageMap_.insert({min_, firstPage_});
@@ -871,6 +882,9 @@ namespace neu{
         else{
           firstPage_ = 0;
           
+          current_ = true;
+          metaCurrent_ = true;
+          
           nvar m;
           m.open(metaPath_);
           
@@ -896,6 +910,10 @@ namespace neu{
       }
       
       void saveMeta(){
+        if(metaCurrent_){
+          return;
+        }
+        
         nvar m;
         nput(m, nextPageId_);
         nput(m, unique_);
@@ -909,6 +927,7 @@ namespace neu{
         }
         
         m.save(metaPath_);
+        metaCurrent_ = false;
       }
       
       size_t memoryUsage(PMap& pm){
@@ -963,9 +982,16 @@ namespace neu{
             }
           }
         }
+        
+        current_ = true;
+        metaCurrent_ = true;
       }
       
       void clean(){
+        if(current_){
+          return;
+        }
+        
         nstr oldPath = path_ + "/old";
         
         nvec oldFiles;
@@ -984,12 +1010,20 @@ namespace neu{
       }
       
       void save(bool manual){
+        if(current_){
+          return;
+        }
+        
         for(auto& itr : pageMap_){
           itr.second->save(manual);
         }
+        
+        current_ = true;
       }
       
       void insertRecord(const R& record){
+        current_ = false;
+        
         auto itr = findPage(record.value);
         
         IndexPage* page = itr->second;
@@ -998,14 +1032,18 @@ namespace neu{
         if(action & Split){
           IndexPage* p = page->split(nextPageId_++);
           pageMap_.insert({p->min(), p});
+          metaCurrent_ = false;
         }
         else if(action & Remap && page != firstPage_){
           pageMap_.erase(itr);
           pageMap_.insert({page->min(), page});
+          metaCurrent_ = false;
         }
       }
       
       void pushRecord(const R& record){
+        current_ = false;
+        
         auto itr = pageMap_.end();
         --itr;
         IndexPage* page = itr->second;
@@ -1015,10 +1053,12 @@ namespace neu{
         if(action & Split){
           IndexPage* p = page->split(nextPageId_++);
           pageMap_.insert({p->min(), p});
+          metaCurrent_ = false;
         }
         else if(action & Remap && page != firstPage_){
           pageMap_.erase(itr);
           pageMap_.insert({page->min(), page});
+          metaCurrent_ = false;
         }
       }
       
@@ -1122,6 +1162,8 @@ namespace neu{
       IndexPage* firstPage_;
       nstr path_;
       nstr metaPath_;
+      bool current_;
+      bool metaCurrent_;
       
       typename PageMap_::iterator findPage(const V& v){
         auto itr = pageMap_.upper_bound(v);
@@ -1513,6 +1555,7 @@ namespace neu{
       size_(size),
       allocSize_(0),
       new_(size == 0),
+      current_(size > 0),
       id_(id),
       tick_(0){
         path_ = table_->path() + "/__data/" + nvar(id);
@@ -1548,9 +1591,14 @@ namespace neu{
       void write(){
         load();
         tick_ = d_->write();
+        current_ = false;
       }
       
       void save(bool manual){
+        if(current_){
+          return;
+        }
+        
         if(manual){
           new_ = false;
         }
@@ -1574,6 +1622,7 @@ namespace neu{
         }
         
         fclose(file);
+        current_ = true;
       }
 
       void store(){
@@ -1707,6 +1756,7 @@ namespace neu{
       uint64_t id_;
       nstr path_;
       size_t tick_;
+      bool current_;
     }; // end class Data
     
     NTable_(NTable* o, NDatabase_* d, const nstr& path, bool create)
@@ -1716,6 +1766,7 @@ namespace neu{
     lastData_(0){
       
       if(create){
+        current_ = false;
         nextDataId_ = 0;
         
         if(NSys::exists(path_)){
@@ -1756,6 +1807,8 @@ namespace neu{
         saveMeta();
       }
       else{
+        current_ = true;
+        
         metaPath_ = path_ + "/meta.nvar";
         
         if(!NSys::exists(metaPath_)){
@@ -1841,6 +1894,10 @@ namespace neu{
       }
     }
     
+    void write(){
+      current_ = false;
+    }
+    
     const nstr& path(){
       return path_;
     }
@@ -1923,6 +1980,7 @@ namespace neu{
                   bool unique,
                   bool autoErase){
       NWriteGuard guard(mutex_);
+      write();
       
       auto itr = indexMap_.find(indexName);
       
@@ -1971,6 +2029,7 @@ namespace neu{
     
     RowId insert(nvar& row){
       NWriteGuard guard(mutex_);
+      write();
       
       RowId rowId = d_->nextRowId();
       insert_(rowId, row);
@@ -1978,6 +2037,8 @@ namespace neu{
     }
     
     void insert_(RowId rowId, nvar& row){
+      write();
+      
       const nmap& m = row;
       for(auto& itr : m){
         const nvar& k = itr.first;
@@ -2073,6 +2134,8 @@ namespace neu{
     void update(nvar& row){
       NWriteGuard guard(mutex_);
       
+      write();
+      
       RowId rowId = row["id"];
       RowId newRowId = dataIndex_->update(rowId);
       
@@ -2126,6 +2189,8 @@ namespace neu{
 
     void compact(const RowSet& rs, const UpdateMap& um){
       IndexMap_ newIndexMap_;
+      
+      write();
       
       for(auto& itr : indexMap_){
         IndexBase* oldIndex = itr.second;
@@ -2238,6 +2303,10 @@ namespace neu{
     void save(){
       NReadGuard guard(mutex_);
       
+      if(current_){
+        return;
+      }
+      
       dataIndex_->save(true);
       
       for(auto& itr : indexMap_){
@@ -2247,10 +2316,16 @@ namespace neu{
       for(auto& itr : dataMap_){
         itr.second->save(true);
       }
+      
+      current_ = true;
     }
     
     void saveMeta(){
       NReadGuard guard(mutex_);
+      
+      if(current_){
+        return;
+      }
       
       nvar m;
       nput(m, nextDataId_);
@@ -2513,6 +2588,7 @@ namespace neu{
     nstr metaPath_;
     size_t memoryUsage_;
     NRWMutex mutex_;
+    bool current_;
   }; // end class NTable_
   
   NDatabase_::NDatabase_(NDatabase* o, const nstr& path, bool create)
