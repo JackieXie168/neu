@@ -1563,7 +1563,7 @@ namespace neu{
       data_(0),
       size_(size),
       allocSize_(0),
-      new_(size == 0),
+      existed_(size > 0),
       current_(size > 0),
       id_(id),
       tick_(0){
@@ -1609,9 +1609,9 @@ namespace neu{
         }
         
         if(manual){
-          new_ = false;
+          existed_ = true;
         }
-        else if(!new_){
+        else if(existed_){
           nstr op = oldPath(path_);
           
           if(!NSys::exists(op)){
@@ -1672,14 +1672,14 @@ namespace neu{
         uint32_t offset = size_;
 
         if(data_){
-          size_t reqSize = size_ + size + 16;
+          size_t reqSize = size_ + size + 12;
           if(reqSize > allocSize_){
-            allocSize_ += size + 16 + OVER_ALLOC;
+            allocSize_ += size + 12 + OVER_ALLOC;
             data_ = (char*)realloc(data_, allocSize_);
           }
         }
         else{
-          allocSize_ = size + 16 + OVER_ALLOC;
+          allocSize_ = size + 12 + OVER_ALLOC;
           data_ = (char*)malloc(allocSize_);
         }
 
@@ -1761,7 +1761,7 @@ namespace neu{
       NDatabase_* d_;
       uint32_t size_;
       uint32_t allocSize_;
-      bool new_;
+      bool existed_;
       char* data_;
       uint64_t id_;
       nstr path_;
