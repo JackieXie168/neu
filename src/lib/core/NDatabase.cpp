@@ -81,7 +81,7 @@ namespace{
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
   
   static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
-  static const size_t MIN_COMPRESS_SIZE = 1000;
+  static const size_t MIN_COMPRESS_SIZE = 1024;
   
   static const uint32_t COMPRESS_FLAG = 0x1;
   
@@ -759,6 +759,7 @@ namespace neu{
       
       void traverse(TraverseFunc f){
         read();
+        
         for(auto& itr : chunkMap_){
           itr.second->traverse(f);
         }
@@ -1131,6 +1132,9 @@ namespace neu{
 
     class DataRecord{
     public:
+      RowId value;
+      uint64_t rowId : 63;
+      uint64_t remap : 1;
       
       void set(RowId id, uint32_t dataId, uint32_t offset){
         remap = 0;
@@ -1152,10 +1156,6 @@ namespace neu{
         return !remap;
       }
       
-      RowId value;
-      uint64_t rowId : 63;
-      uint64_t remap : 1;
-      
       uint32_t offset() const{
         return rowId & 0xffffffff;
       }
@@ -1174,10 +1174,9 @@ namespace neu{
           }
         }
         else{
-          
+          cout << "rowId: " << value << "; dataId: " << dataId() <<
+          "; offset: " << offset() << endl;
         }
-        cout << "rowId: " << value << "; dataId: " << dataId() <<
-        "; offset: " << offset() << endl;
       }
     };
     
