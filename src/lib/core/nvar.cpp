@@ -24289,7 +24289,7 @@ void nvar::unpack(char* buf, uint32_t size, size_t headerSize){
     char* pbuf = (char*)malloc(psize);
     
     pbuf = zlib_decompress_(buf + hs, size - hs, pbuf, &psize, true);
-    uint32_t pos = hs - 1;
+    uint32_t pos = 0;
     unpack_(pbuf, pos);
     free(pbuf);
   }
