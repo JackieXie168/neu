@@ -84,7 +84,8 @@ namespace neu{
   const nvar::HeadSequenceMapFlag* nvar::HeadSequenceMapType = 0;
   
   static const uint8_t COMPRESS_FLAG = 0x01;
-  
+
+  static const uint32_t _vid = 2014081611;
 } // end namespace neu
 
 namespace{
@@ -25078,7 +25079,9 @@ void nvar::save(const nstr& path) const{
   }
   
   uint32_t len;
-  char* buf = pack(len);
+  char* buf = pack(len, 1024, 4);
+  memcpy(buf, &_vid, 4);
+  
   uint32_t n = fwrite(buf, 1, len, file);
   
   fclose(file);
@@ -25122,7 +25125,13 @@ void nvar::open(const nstr& path){
     NERROR("[2] failed to read file: " + path);
   }
   
-  unpack(buf, size);
+  unpack(buf, size, 4);
+  uint32_t vid;
+  memcpy(&vid, buf, 4);
+  
+  if(vid != _vid){
+    NERROR("invalid or deprecated nvar");
+  }
   
   free(buf);
 }
