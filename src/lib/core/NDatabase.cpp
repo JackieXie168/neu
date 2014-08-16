@@ -194,7 +194,7 @@ namespace neu{
     NDatabase* o_;
     nstr path_;
     nstr metaPath_;
-    RowId nextRowId_;
+    atomic<RowId> nextRowId_;
     TableMap_ tableMap_;
     atomic<uint64_t> tick_;
     size_t memoryLimit_;
@@ -389,16 +389,12 @@ namespace neu{
         }
 
         Action push(const R& record){
-          if(unique_ && chunk_.back().value == record.value){
-            NERROR("non-unique value: " + nvar(record.value));
-          }
-          
           chunk_.push_back(record);
           Action action = Append;
           
           size_t size = chunk_.size();
           
-          if(size >= MAX_CHUNK_SIZE){
+          if(size >= SPLIT_CHUNK_SIZE){
             action |= Split;
           }
           else if(size == 1){
@@ -434,13 +430,6 @@ namespace neu{
           size_t size = chunk_.size();
           for(size_t i = 0; i < size; ++i){
             f(chunk_[i]);
-          }
-        }
-        
-        void dump(){
-          for(size_t i = 0; i < chunk_.size(); ++i){
-            const R& r = chunk_[i];
-            r.dump();
           }
         }
         
@@ -480,6 +469,13 @@ namespace neu{
           return chunk_.data();
         }
         
+        void dump(){
+          for(size_t i = 0; i < chunk_.size(); ++i){
+            const R& r = chunk_[i];
+            r.dump();
+          }
+        }
+        
       private:
         typedef NVector<R> Chunk_;
         
@@ -494,8 +490,8 @@ namespace neu{
       : index_(index),
       d_(d),
       id_(id),
-      loaded_(create),
-      new_(create),
+      needsLoad_(!create),
+      existed_(!create),
       current_(!create),
       firstChunk_(0),
       tick_(0),
@@ -510,7 +506,7 @@ namespace neu{
       }
       
       void read(){
-        if(!loaded_){
+        if(needsLoad_){
           load();
         }
         
@@ -522,7 +518,7 @@ namespace neu{
       }
       
       void write(){
-        if(!loaded_){
+        if(needsLoad_){
           load();
         }
         
@@ -543,7 +539,7 @@ namespace neu{
         
         chunkMap_.clear();
         
-        loaded_ = false;
+        needsLoad_ = true;
         memoryUsage_ = 0;
       }
       
@@ -553,9 +549,9 @@ namespace neu{
         }
         
         if(manual){
-          new_ = false;
+          existed_ = true;
         }
-        else if(!new_){
+        else if(existed_){
           nstr op = oldPath(path_);
           
           if(!NSys::exists(op)){
@@ -638,7 +634,7 @@ namespace neu{
         }
         fclose(file);
         
-        loaded_ = true;
+        needsLoad_ = false;
         
         d_->checkMemory();
       }
@@ -728,7 +724,8 @@ namespace neu{
       }
       
       Page* split(uint64_t id){
-        current_ = false;
+        write();
+        
         Page* p = new Page(d_, index_, id, true);
         p->write();
         
@@ -772,15 +769,6 @@ namespace neu{
         }
       }
       
-      void dump(){
-        read();
-        
-        for(auto& itr : chunkMap_){
-          cout << "@@@ CHUNK LOWER: " << itr.first << endl;
-          itr.second->dump();
-        }
-      }
-      
       int query(const V& start, QueryFunc_ f){
         read();
         
@@ -814,14 +802,23 @@ namespace neu{
         return tick_;
       }
       
+      void dump(){
+        read();
+        
+        for(auto& itr : chunkMap_){
+          cout << "@@@ CHUNK LOWER: " << itr.first << endl;
+          itr.second->dump();
+        }
+      }
+      
     private:
       typedef NMap<V, Chunk*> ChunkMap_;
       
       IndexBase* index_;
       NDatabase_* d_;
       uint64_t id_;
-      bool loaded_;
-      bool new_;
+      bool needsLoad_;
+      bool existed_;
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
       nstr path_;
