@@ -23777,6 +23777,7 @@ char* nvar::pack(uint32_t& size, size_t minCompressSize) const{
     return cbuf;
   }
   
+  pbuf[0] = 0;
   size = pos;
   return pbuf;
 }
