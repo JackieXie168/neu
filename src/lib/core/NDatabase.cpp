@@ -71,14 +71,15 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  //static const size_t MAX_CHUNK_SIZE = 32768;
-  //static const size_t MAX_CHUNKS = 1024;
-  static const size_t MAX_CHUNK_SIZE = 10;
-  static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 32768;
+  static const size_t MAX_CHUNKS = 1024;
+  //static const size_t MAX_CHUNK_SIZE = 10;
+  //static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
+  static const size_t OVER_ALLOC = 65536;
   
   static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
   static const size_t MIN_COMPRESS_SIZE = 1024;
@@ -1512,6 +1513,7 @@ namespace neu{
       d_(table_->database()),
       data_(0),
       size_(size),
+      allocSize_(0),
       new_(size == 0),
       id_(id),
       tick_(0){
@@ -1593,7 +1595,8 @@ namespace neu{
           NERROR("failed to open data file: " + path_);
         }
         
-        data_ = (char*)malloc(size_);
+        allocSize_ = size_ + OVER_ALLOC;
+        data_ = (char*)malloc(allocSize_);
         
         uint32_t n = fread(data_, 1, size_, file);
         
@@ -1610,12 +1613,17 @@ namespace neu{
         write();
         
         uint32_t offset = size_;
-        
+
         if(data_){
-          data_ = (char*)realloc(data_, size_ + size + 16);
+          size_t reqSize = size_ + size + 16;
+          if(reqSize > allocSize_){
+            allocSize_ += size + 16 + OVER_ALLOC;
+            data_ = (char*)realloc(data_, allocSize_);
+          }
         }
         else{
-          data_ = (char*)malloc(size + 16);
+          allocSize_ = size + 16 + OVER_ALLOC;
+          data_ = (char*)malloc(allocSize_);
         }
 
         memcpy(data_ + size_, &rowId, 8);
@@ -1714,6 +1722,7 @@ namespace neu{
       NTable_* table_;
       NDatabase_* d_;
       uint32_t size_;
+      uint32_t allocSize_;
       bool new_;
       char* data_;
       uint64_t id_;
@@ -2053,7 +2062,7 @@ namespace neu{
       uint32_t flags = 0;
       uint32_t size;
       char* buf = row.packWithParams(size, MIN_COMPRESS_SIZE);
-      if(size > MIN_COMPRESS_SIZE){
+      if(size >= MIN_COMPRESS_SIZE){
         flags |= COMPRESS_FLAG;
       }
       
