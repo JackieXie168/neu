@@ -71,10 +71,10 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 32768;
-  static const size_t MAX_CHUNKS = 1024;
-  //static const size_t MAX_CHUNK_SIZE = 5;
-  //static const size_t MAX_CHUNKS = 5;
+  //static const size_t MAX_CHUNK_SIZE = 32768;
+  //static const size_t MAX_CHUNKS = 1024;
+  static const size_t MAX_CHUNK_SIZE = 10;
+  static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
@@ -236,6 +236,7 @@ namespace neu{
       
     private:
       uint8_t type_;
+    protected:
       bool unique_;
       bool autoErase_;
     }; // end class IndexBase
@@ -446,7 +447,7 @@ namespace neu{
       Page(NDatabase_* d,
            IndexBase* index,
            uint64_t id,
-           bool create=true)
+           bool create)
       : index_(index),
       d_(d),
       id_(id),
@@ -572,6 +573,8 @@ namespace neu{
           dataSize = sizeof(R)*chunkSize;
           memoryUsage_ += dataSize;
           
+          cout << "data size is: " << dataSize << endl;
+          
           n = fread(buf, 1, dataSize, file);
           if(n != dataSize){
             NERROR("failed to read page file [3]: " + path_);
@@ -676,7 +679,7 @@ namespace neu{
       }
       
       Page* split(uint64_t id){
-        Page* p = new Page(d_, index_, id);
+        Page* p = new Page(d_, index_, id, true);
         p->write();
         
         typename ChunkMap_::iterator itr;
@@ -700,7 +703,12 @@ namespace neu{
       
       V min(){
         auto itr = chunkMap_.begin();
-        assert(itr != chunkMap_.end());
+
+        if(itr == chunkMap_.end()){
+          V m;
+          ::min(m);
+          return m;
+        }
         
         return itr->second->min();
       }
@@ -713,6 +721,8 @@ namespace neu{
       }
       
       void dump(){
+        read();
+        
         for(auto& itr : chunkMap_){
           cout << "@@@ CHUNK LOWER: " << itr.first << endl;
           itr.second->dump();
@@ -785,10 +795,13 @@ namespace neu{
       firstPage_(0){
         min(min_);
         
+        metaPath_ = path_ + "/meta.nvar";
+        
         if(create){
-          firstPage_ = new IndexPage(d_, this, nextPageId_++);
-          pageMap_.insert({min_, firstPage_});
           nextPageId_ = 0;
+          
+          firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
+          pageMap_.insert({min_, firstPage_});
           
           if(NSys::exists(path_)){
             NERROR("index path exists: " + path_);
@@ -817,8 +830,8 @@ namespace neu{
           m.open(metaPath_);
           
           nget(m, nextPageId_);
-          setUnique(m["unique"]);
-          setAutoErase(m["autoErase"]);
+          nget(m, unique_);
+          nget(m, autoErase_);
           
           const nhmap& pm = m["pageMap"];
           
@@ -833,8 +846,9 @@ namespace neu{
       
       void saveMeta(){
         nvar m;
-        m("unique_") = unique();
-        m("autoErase_") = autoErase();
+        nput(m, nextPageId_);
+        nput(m, unique_);
+        nput(m, autoErase_);
         
         nhmap& pm = m("pageMap") = nhmap();
         
@@ -842,6 +856,8 @@ namespace neu{
           IndexPage* page = itr.second;
           pm.insert({page->id(), page->min()});
         }
+        
+        m.save(metaPath_);
       }
       
       virtual ~Index(){
@@ -990,6 +1006,8 @@ namespace neu{
       }
       
       void dump(){
+        cout << "@@@@ INDEX: " << path_ << endl;
+        
         for(auto& itr : pageMap_){
           cout << "@@@@@@@ PAGE: " << itr.first << endl;
           itr.second->dump();
@@ -1495,9 +1513,14 @@ namespace neu{
         
         uint32_t offset = size_;
         
-        data_ = (char*)realloc(data_, size_ + size + 12);
+        if(data_){
+          data_ = (char*)realloc(data_, size_ + size + 12);
+        }
+        else{
+          data_ = (char*)malloc(size + 12);
+        }
 
-        memcpy(data_ + size, &rowId, 8);
+        memcpy(data_ + size_, &rowId, 8);
         size_ += 8;
         
         memcpy(data_ + size_, &size, 4);
@@ -1541,6 +1564,34 @@ namespace neu{
         }
         
         return offset;
+      }
+      
+      void dump(){
+        cout << "###### DUMP DATA" << endl;
+        
+        read();
+        
+        size_t offset = 0;
+        while(offset < size_){
+          RowId rowId;
+          memcpy(&rowId, data_ + offset, 8);
+          offset += 8;
+          
+          cout << "rowId is: " << rowId << endl;
+          
+          uint32_t size;
+          memcpy(&size, data_ + offset, 4);
+          offset += 4;
+          
+          cout << "size is: " << size << endl;
+          
+          nvar v;
+          v.unpack(data_ + offset, size);
+
+          cout << v << endl;
+          
+          offset += size;
+        }
       }
       
     private:
@@ -1622,6 +1673,8 @@ namespace neu{
         if(!NSys::exists(op)){
           NERROR("table old path not found: " + op);
         }
+        
+        dataIndex_ = new DataIndex(d_, path_ + "/__data.index", false);
         
         nvar m;
         m.open(metaPath_);
@@ -2040,6 +2093,7 @@ namespace neu{
       NReadGuard guard(mutex_);
       
       nvar m;
+      nput(m, nextDataId_);
       m.save(metaPath_);
       
       nvar dm = nhmap();
@@ -2051,6 +2105,8 @@ namespace neu{
       }
       
       dm.save(dataMetaPath_);
+
+      dataIndex_->saveMeta();
       
       for(auto& itr : indexMap_){
         itr.second->saveMeta();
@@ -2269,6 +2325,10 @@ namespace neu{
       }
       
       dataIndex_->dump();
+      
+      for(auto& itr : dataMap_){
+        itr.second->dump();
+      }
     }
     
     NDatabase_* database(){
@@ -2356,7 +2416,9 @@ namespace neu{
       NERROR("table exists: " + tableName);
     }
     
-    NTable* table = new NTable(this, path_ + "/" + tableName, true);
+    nstr path = path_ + "/" + tableName + ".table";
+    
+    NTable* table = new NTable(this, path, true);
     NTable_* t = table->x_;
     
     tableMap_.insert({tableName, t});
