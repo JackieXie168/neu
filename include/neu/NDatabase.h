@@ -66,12 +66,15 @@ namespace neu{
     public:
       Lock(NTable* table, bool write=false){
         lockMap_.insert({table, write});
+        acquire_();
       }
       
       Lock(std::initializer_list<NTable*> tables, bool write=false){
         for(auto& itr : tables){
           lockMap_.insert({itr, write});
         }
+        
+        acquire_();
       }
       
       Lock(std::initializer_list<NTable*> readTables,
@@ -85,6 +88,8 @@ namespace neu{
         for(auto& itr : writeTables){
           lockMap_.insert({itr, false});
         }
+        
+        acquire_();
       }
 
       ~Lock(){
