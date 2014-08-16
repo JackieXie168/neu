@@ -23756,28 +23756,32 @@ nvar nvar::fromStr(const nstr& str){
   NERROR("failed to parse: " + str);
 }
 
-char* nvar::pack(uint32_t& size, size_t minCompressSize) const{
-  unsigned int psize = _packBlockSize;
+char* nvar::pack(uint32_t& size,
+                 size_t minCompressSize,
+                 size_t headerSize) const{
+  size_t hs = headerSize + 1;
+  
+  unsigned int psize = _packBlockSize + hs;
   char* pbuf = (char*)malloc(psize);
   
-  uint32_t pos = 1;
+  uint32_t pos = hs;
   pbuf = pack_(pbuf, psize, pos);
   
-  if(pos - 1 >= minCompressSize){
-    unsigned int csize = pos*2;
+  if(pos - hs >= minCompressSize){
+    unsigned int csize = pos*2 + hs;
     char* cbuf = (char*)malloc(csize);
     
-    csize = zlib_compress_(pbuf + 1, cbuf + 1, pos - 1, csize - 1);
+    csize = zlib_compress_(pbuf + hs, cbuf + hs, pos - hs, csize - hs);
     free(pbuf);
-    size = csize + 1;
+    size = csize + hs;
     
-    cbuf[0] = 0;
-    cbuf[0] |= COMPRESS_FLAG;
+    cbuf[hs - 1] = 0;
+    cbuf[hs - 1] |= COMPRESS_FLAG;
     
     return cbuf;
   }
   
-  pbuf[0] = 0;
+  pbuf[hs - 1] = 0;
   size = pos;
   return pbuf;
 }
@@ -24274,20 +24278,22 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
   return buf;
 }
 
-void nvar::unpack(char* buf, uint32_t size){
+void nvar::unpack(char* buf, uint32_t size, size_t headerSize){
   assert(t_ == Undefined);
   
-  if(buf[0] & COMPRESS_FLAG){
-    unsigned int psize = size*2;
+  size_t hs = headerSize + 1;
+  
+  if(buf[hs - 1] & COMPRESS_FLAG){
+    unsigned int psize = (size - hs)*2;
     char* pbuf = (char*)malloc(psize);
     
-    pbuf = zlib_decompress_(buf + 1, size - 1, pbuf, &psize, true);
-    uint32_t pos = 0;
+    pbuf = zlib_decompress_(buf + hs, size - hs, pbuf, &psize, true);
+    uint32_t pos = hs - 1;
     unpack_(pbuf, pos);
     free(pbuf);
   }
   else{
-    uint32_t pos = 1;
+    uint32_t pos = hs;
     unpack_(buf, pos);
   }
 }
