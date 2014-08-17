@@ -9,7 +9,7 @@
 using namespace std;
 using namespace neu;
 
-static const size_t NUM_ROWS = 10000000;
+static const size_t NUM_ROWS = 5000000;
 static const size_t COMMIT_INTERVAL = 1000000;
 
 int main(int argc, char** argv){
@@ -45,7 +45,6 @@ int main(int argc, char** argv){
 
     // add indexable fields for fast queries
     table->addIndex("rank", NTable::Double);
-    table->addIndex("norm", NTable::Double);
 
     // the hash index is the catch-all, it can hash any nvar
     // but a hash index will not be sorted by its nvar value in
@@ -61,15 +60,16 @@ int main(int argc, char** argv){
     // add some rows to the table
     for(size_t i = 1; i < NUM_ROWS; ++i){
       row("rank") = rng.uniform(0, 100);
-      row("norm") = rng.uniform(0, 100);
       row("name") = "neu" + nvar(i);
 
       // extra unindexed payload data - can be any type of potentially
       // deep and nested nvar
+      row("norm") = rng.uniform(0, 100);
+
       if(i % 1000 == 0){
         nvar p;
         p("f1") = "t1";
-        p("v") = nvec() << (i + 1) << 2 < 3;
+        p("v") = nvec() << (i + 1) << 2 << 3;
         row("payload1") = p;
       }
 
@@ -131,9 +131,14 @@ int main(int argc, char** argv){
   // find all rows whose rank >= 99.9 and norm < 50
   table->query("rank", 99.9, f);
 
+  nvar u1;
+  table->get("name", "neu9999", u1);
+
   double dt = NSys::now() - t1;
 
-  cout << "rows is: " << rows << endl;
+  //cout << "rows is: " << rows << endl;
+
+  cout << "u1 is: " << u1 << endl;
 
   cout << "queries took: " << dt << endl;
 

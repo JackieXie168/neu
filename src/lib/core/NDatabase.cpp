@@ -2742,6 +2742,34 @@ namespace neu{
         query_("__data", findRowId, f);
       }
     }
+
+    bool getHash(const nstr& indexName, const nvar& value, nvar& row){
+      size_t h = value.hash();
+      
+      bool success = false;
+      
+      auto f = [&](RowId rowId, const nvar& v) -> int{
+        if(v != h){
+          return 0;
+        }
+        
+        nvar r;
+        success = get(rowId, r);
+        assert(success);
+
+        if(r[indexName] == value){
+          row = move(r);
+          success = true;
+          return 0;
+        }
+        
+        return 1;
+      };
+      
+      query_(indexName, h, f);
+      
+      return success;
+    }
     
     bool getFirst(const nstr& indexName, const nvar& value, nvar& row){
       bool success = false;
@@ -2751,7 +2779,6 @@ namespace neu{
           return 0;
         }
         
-        nvar row;
         success = get(rowId, row);
         assert(success);
         return 0;
@@ -2760,6 +2787,21 @@ namespace neu{
       query_(indexName, value, f);
       
       return success;
+    }
+    
+    bool get(const nstr& indexName, const nvar& value, nvar& row){
+      auto itr = indexMap_.find(indexName);
+      if(itr == indexMap_.end()){
+        NERROR("invalid index: " + indexName);
+      }
+      
+      IndexBase* index = itr->second;
+      if(index->type() == NTable::Hash){
+        return getHash(indexName, value, row);
+      }
+      else{
+        return getFirst(indexName, value, row);
+      }
     }
     
     void dump(){
@@ -3045,8 +3087,8 @@ void NTable::get(const RowSet& rs, QueryFunc f){
   x_->get(rs, f);
 }
 
-bool NTable::getFirst(const nstr& indexName, const nvar& value, nvar& row){
-  return x_->getFirst(indexName, value, row);
+bool NTable::get(const nstr& indexName, const nvar& value, nvar& row){
+  return x_->get(indexName, value, row);
 }
 
 void NTable::dump(){
