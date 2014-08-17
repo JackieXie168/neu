@@ -2653,10 +2653,10 @@ namespace neu{
       query_(indexName, start, f);
     }
     
-    void indexQuery(const nstr& indexName,
-                    const nvar& start,
-                    const nvar& end,
-                    RowSet& rs){
+    void setQuery(const nstr& indexName,
+                  const nvar& start,
+                  const nvar& end,
+                  RowSet& rs){
       if(start > end){
         NERROR("invalid start/end");
       }
@@ -2679,9 +2679,11 @@ namespace neu{
     void traverseStart(NTable::QueryFunc qf){
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
-        bool success = get(rowId, row);
-        assert(success);
-        return qf(row);
+        if(get(rowId, row)){
+          return qf(row) != 0 ? 1 : 0;
+        }
+
+        return 1;
       };
       
       query_("__data", 1, f);
@@ -2690,9 +2692,10 @@ namespace neu{
     void traverseEnd(NTable::QueryFunc qf){
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
-        bool success = get(rowId, row);
-        assert(success);
-        return qf(row);
+        if(get(rowId, row)){
+          return qf(row) != 0 ? -1 : 0;
+        }
+        return -1;
       };
 
       RowId m;
@@ -3065,11 +3068,11 @@ void NTable::query(const nstr& indexName,
   x_->query(indexName, start, f);
 }
 
-void NTable::indexQuery(const nstr& indexName,
-                        const nvar& start,
-                        const nvar& end,
-                        RowSet& rs){
-  x_->indexQuery(indexName, start, end, rs);
+void NTable::setQuery(const nstr& indexName,
+                      const nvar& start,
+                      const nvar& end,
+                      RowSet& rs){
+  x_->setQuery(indexName, start, end, rs);
 }
 
 void NTable::traverseStart(QueryFunc f){

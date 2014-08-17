@@ -138,10 +138,12 @@ int main(int argc, char** argv){
   // do "index" queries - we will fetch row id's not the actual row
 
   NTable::RowSet r1;
-  table->indexQuery("rank", 0, 0.01, r1);
+  // row ids of users whose: 0 <= rank <= 0.01
+  table->setQuery("rank", 0, 0.01, r1);
 
   NTable::RowSet r2;
-  table->indexQuery("rank", 50, 50.01, r2);
+  // row ids of users whose: 50 <= rank <= 50.01
+  table->setQuery("rank", 50, 50.01, r2);
   
   // we can do set operations: unite() for union, intersect() for
   // interesect, complement() for set difference
@@ -157,13 +159,30 @@ int main(int argc, char** argv){
   // fetch the actual rows
   table->get(r1, q2);
 
-  cout << "rows2 is: " << rows2 << endl;
+  size_t count = 0;
+  NTable::QueryFunc q3 =
+    [&](const nvar& r){
+
+    if(count > 100){
+      return 0;
+    }
+
+    //cout << "r is: " << r << endl;
+
+    ++count;
+    return 1;
+  };
+
+  // traverse the first 100 rows - they could be in any order
+  table->traverseStart(q3);
+
+  //cout << "rows2 is: " << rows2 << endl;
 
   double dt = NSys::now() - t1;
 
   //cout << "rows is: " << rows << endl;
 
-  cout << "u1 is: " << u1 << endl;
+  //cout << "u1 is: " << u1 << endl;
 
   cout << "queries took: " << dt << endl;
 

@@ -162,10 +162,10 @@ namespace neu{
                const nvar& start,
                QueryFunc f);
     
-    void indexQuery(const nstr& indexName,
-                    const nvar& start,
-                    const nvar& end,
-                    RowSet& rs);
+    void setQuery(const nstr& indexName,
+                  const nvar& start,
+                  const nvar& end,
+                  RowSet& rs);
     
     void traverseStart(QueryFunc f);
     
