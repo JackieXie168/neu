@@ -1389,12 +1389,7 @@ namespace neu{
             }
           }
           else{
-            uint32_t newDataId;
-            uint32_t newOffset =
-            t->insertNewData_(this, r.dataId(), r.rowId, r.offset(), newDataId);
-            r.set(r.rowId, newDataId, newOffset);
-            
-            ni.pushRecord(r);
+            t->insertNewData_(this, r.dataId(), r.rowId, r.offset());
           }
         });
       }
@@ -2370,11 +2365,12 @@ namespace neu{
       lastData_ = data;
     }
     
-    uint32_t insertNewData_(DataIndex* dataIndex,
-                            uint32_t dataId,
-                            RowId rowId,
-                            uint32_t offset,
-                            uint32_t& newDataId){
+    void insertNewData_(DataIndex* dataIndex,
+                        uint32_t dataId,
+                        RowId rowId,
+                        uint32_t offset){
+      
+      cout << "data id is: " << dataId << endl;
       
       auto itr = dataMap_.find(dataId);
       assert(itr != dataMap_.end());
@@ -2406,11 +2402,8 @@ namespace neu{
       }
       
       uint32_t newOffset = data->insert(rowId, buf, size);
-      dataIndex->insert(data->id(), offset, rowId);
+      dataIndex->insert(data->id(), newOffset, rowId);
       newLastData_ = data;
-      
-      newDataId = data->id();
-      return newOffset;
     }
     
     void update(nvar& row){
@@ -2460,6 +2453,8 @@ namespace neu{
       nstr oldPath = dataIndex_->path();
       nstr newPath = oldPath + ".new";
 
+      nextDataId_++;
+      
       newLastData_ = 0;
       DataIndex* newDataIndex = new DataIndex(d_, newPath, true);
       dataIndex_->mapCompact(this, *newDataIndex, rs, um);
