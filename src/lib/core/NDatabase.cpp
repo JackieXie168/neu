@@ -79,7 +79,7 @@ namespace{
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
-  static const size_t OVER_ALLOC = 65536;
+  static const size_t OVER_ALLOC = MAX_DATA_SIZE/16;
   
   static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
   static const size_t MIN_COMPRESS_SIZE = 1024;
