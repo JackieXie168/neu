@@ -202,6 +202,8 @@ namespace neu{
     NTable* addTable(const nstr& tableName);
     
     NTable* getTable(const nstr& tableName);
+
+    void eraseTable(const nstr& tableName);
     
     void save();
     

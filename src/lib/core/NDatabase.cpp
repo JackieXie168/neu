@@ -152,6 +152,8 @@ namespace neu{
     
     NTable* getTable(const nstr& tableName);
 
+    void eraseTable(const nstr& tableName);
+    
     RowId nextRowId(){
       return nextRowId_++;
     }
@@ -1950,6 +1952,24 @@ namespace neu{
       }
     }
     
+    void erase(){
+      d_->safeRemove(path_);
+    }
+    
+    void take_(NTable_* t){
+      NTable::QueryFunc f =
+      [&](const nvar& r) -> int{
+        RowId rowId = r["id"];
+        nvar rn = r;
+        insert_(rowId, rn);
+
+        return 1;
+      };
+      
+      t->traverseStart(f);
+      t->erase();
+    }
+    
     void setDataClean(bool flag){
       dataClean_ = flag;
     }
@@ -2715,6 +2735,19 @@ namespace neu{
     
     return itr->second->outer();
   }
+
+  void NDatabase_::eraseTable(const nstr& tableName){
+    auto itr = tableMap_.find(tableName);
+    if(itr == tableMap_.end()){
+      NERROR("invalid table: " + tableName);
+    }
+    
+    itr->second->erase();
+    
+    tableMap_.erase(itr);
+    
+    saveMeta();
+  }
   
   void NDatabase_::compact(){
     RowSet rs;
@@ -2894,6 +2927,10 @@ NTable* NDatabase::addTable(const nstr& tableName){
 
 NTable* NDatabase::getTable(const nstr& tableName){
   return x_->getTable(tableName);
+}
+
+void NDatabase::eraseTable(const nstr& tableName){
+  x_->eraseTable(tableName);
 }
 
 void NDatabase::compact(){
