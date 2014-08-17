@@ -2722,6 +2722,7 @@ namespace neu{
     
     void get(const RowSet& rs, NTable::QueryFunc qf){
       for(RowId findRowId : rs){
+        
         auto f = [&](RowId rowId, const nvar& v) -> int{
           if(v.some()){
             RowId toRowId = v;
@@ -2731,7 +2732,7 @@ namespace neu{
             }
             
             nvar row;
-            bool success = get(rowId, row);
+            bool success = get(findRowId, row);
             assert(success);
             qf(row);
           }

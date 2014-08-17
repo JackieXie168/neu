@@ -120,7 +120,7 @@ int main(int argc, char** argv){
   // a query func is a lambda which receives a const nvar& r for the
   // row - it returns 0 to stop querying, 1 to move forward, -1 to
   // return backwards
-  NTable::QueryFunc f =
+  NTable::QueryFunc q1 =
     [&](const nvar& r){
     if(r["norm"] < 50){
       rows << r;
@@ -129,10 +129,35 @@ int main(int argc, char** argv){
   };
 
   // find all rows whose rank >= 99.9 and norm < 50
-  table->query("rank", 99.9, f);
+  table->query("rank", 99.9, q1);
 
   nvar u1;
+  // get the user whose name is neu9999
   table->get("name", "neu9999", u1);
+
+  // do "index" queries - we will fetch row id's not the actual row
+
+  NTable::RowSet r1;
+  table->indexQuery("rank", 0, 0.01, r1);
+
+  NTable::RowSet r2;
+  table->indexQuery("rank", 50, 50.01, r2);
+  
+  // we can do set operations: unite() for union, intersect() for
+  // interesect, complement() for set difference
+  r1.unite(r2);
+
+  nvec rows2;
+  NTable::QueryFunc q2 =
+    [&](const nvar& r){
+    rows2 << r;
+    return 1;
+  };
+
+  // fetch the actual rows
+  table->get(r1, q2);
+
+  cout << "rows2 is: " << rows2 << endl;
 
   double dt = NSys::now() - t1;
 
