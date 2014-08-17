@@ -192,15 +192,15 @@ namespace neu{
     
     void rollback();
     
-    void safeRemoveAll(const nstr& path){
+    void safeRemoveAll(const nstr& dirPath){
       nvec files;
-      if(!NSys::dirFiles(path, files)){
-        cerr << "Error: removing files in: " << path << endl;
+      if(!NSys::dirFiles(dirPath, files)){
+        cerr << "Error: removing files in: " << dirPath << endl;
         exit(1);
       }
       
       for(const nstr& p : files){
-        nstr fullPath = path + "/" + p;
+        nstr fullPath = dirPath + "/" + p;
         safeRemove(fullPath);
       }
     }
@@ -212,7 +212,7 @@ namespace neu{
         exit(1);
       }
       
-      remove(path_.c_str());
+      remove(path.c_str());
     }
     
   private:
@@ -221,10 +221,10 @@ namespace neu{
     NDatabase* o_;
     nstr path_;
     nstr metaPath_;
-    atomic<RowId> nextRowId_;
     TableMap_ tableMap_;
-    atomic<uint64_t> tick_;
     size_t memoryLimit_;
+    atomic<RowId> nextRowId_;
+    atomic<uint64_t> tick_;
   }; // end class NDatabase_
   
   class NTable_{
@@ -789,9 +789,10 @@ namespace neu{
         p->memoryUsage_ = half;
         memoryUsage_ = half;
         
-        locked_ = true;
-        d_->checkMemory();
-        locked_ = false;
+        // ndm - needed?
+        //locked_ = true;
+        //d_->checkMemory();
+        //locked_ = false;
         
         return p;
       }
@@ -810,6 +811,7 @@ namespace neu{
       
       void traverse(TraverseFunc f){
         read();
+        
         locked_ = true;
         for(auto& itr : chunkMap_){
           itr.second->traverse(f);
@@ -875,14 +877,14 @@ namespace neu{
       
       IndexBase* index_;
       NDatabase_* d_;
+      nstr path_;
       uint64_t id_;
-      bool needsLoad_ : 1;
-      bool existed_ : 1;
       ChunkMap_ chunkMap_;
       Chunk* firstChunk_;
-      nstr path_;
       uint64_t tick_;
       size_t memoryUsage_;
+      bool needsLoad_ : 1;
+      bool existed_ : 1;
       bool current_ : 1;
       bool locked_ : 1;
       
@@ -1072,9 +1074,9 @@ namespace neu{
           }
         }
         
-        current_ = true;
         metaCurrent_ = true;
         clean_ = true;
+        current_ = true;
       }
       
       void clean(){
@@ -1187,7 +1189,7 @@ namespace neu{
               r.value = itr->second;
             }
             else{
-              if(autoErase()){
+              if(autoErase_){
                 return;
               }
               
@@ -1248,12 +1250,12 @@ namespace neu{
       typedef NMap<V, IndexPage*> PageMap_;
       
       NDatabase_* d_;
-      V min_;
-      uint64_t nextPageId_;
-      PageMap_ pageMap_;
-      IndexPage* firstPage_;
       nstr path_;
       nstr metaPath_;
+      PageMap_ pageMap_;
+      IndexPage* firstPage_;
+      V min_;
+      uint64_t nextPageId_;
       bool current_;
       bool metaCurrent_;
       bool clean_;
@@ -1383,8 +1385,8 @@ namespace neu{
       }
       
     private:
-      DataRecord record_;
       NDatabase_* d_;
+      DataRecord record_;
     };
 
     struct Int64Record{
@@ -1643,7 +1645,7 @@ namespace neu{
     public:
       Data(NTable_* table, uint64_t id, size_t size=0)
       : table_(table),
-      d_(table_->database()),
+      d_(table->database()),
       data_(0),
       size_(size),
       allocSize_(0),
@@ -1823,6 +1825,7 @@ namespace neu{
         cout << "###### DUMP DATA" << endl;
         
         read();
+        locked_ = true;
         
         size_t offset = 0;
         while(offset < size_){
@@ -1843,6 +1846,8 @@ namespace neu{
           
           offset += size;
         }
+        
+        locked_ = false;
       }
       
       void append(NTable_* table){
@@ -1875,13 +1880,13 @@ namespace neu{
     private:
       NTable_* table_;
       NDatabase_* d_;
+      nstr path_;
+      uint64_t id_;
+      char* data_;
       uint32_t size_;
       uint32_t allocSize_;
-      bool existed_ : 1;
-      char* data_;
-      uint64_t id_;
-      nstr path_;
       size_t tick_;
+      bool existed_ : 1;
       bool current_ : 1;
       bool locked_ : 1;
     }; // end class Data
@@ -1896,8 +1901,6 @@ namespace neu{
       
       new_ = path_.endsWith(".new") ? 0 :
       new NTable_(o_, d_, path_ + ".new", create);
-      
-      // ndm - implement below
       
       if(create){
         current_ = false;
@@ -2039,13 +2042,13 @@ namespace neu{
         delete itr.second;
       }
 
-      lastData_ = 0;
-      memoryUsage_ = 0;
-      
       dataMap_.clear();
-      
+
       d_->safeRemoveAll(path_ + "/__data");
       
+      lastData_ = 0;
+      memoryUsage_ = 0;
+
       current_ = false;
       saveMeta();
       dataClean_ = true;
@@ -2166,7 +2169,7 @@ namespace neu{
                   bool unique,
                   bool autoErase){
       if(new_){
-        addIndex(indexName, indexType, unique, autoErase);
+        new_->addIndex(indexName, indexType, unique, autoErase);
       }
       
       write();
@@ -2217,6 +2220,7 @@ namespace neu{
     }
     
     RowId insert(nvar& row){
+      assert(new_);
       write();
       
       RowId rowId = d_->nextRowId();
@@ -2369,9 +2373,12 @@ namespace neu{
     }
     
     void mapCompact(RowSet& rs, UpdateMap& um){
-      DataIndex* newDataIndex = new DataIndex(d_, "changme", true);
+      nstr oldPath = dataIndex_->path();
+      nstr newPath = oldPath + ".new";
+      DataIndex* newDataIndex = new DataIndex(d_, newPath, true);
       dataIndex_->mapCompact(*newDataIndex, rs, um);
       delete dataIndex_;
+      NSys::rename(newPath, oldPath);
       dataIndex_ = newDataIndex;
     }
 
@@ -2766,19 +2773,19 @@ namespace neu{
     typedef NMap<uint64_t, Data*> DataMap_;
     
     NTable* o_;
-    NTable_* new_;
     NDatabase_* d_;
-    IndexMap_ indexMap_;
-    uint32_t nextDataId_;
-    DataMap_ dataMap_;
-    Data* lastData_;
-    DataIndex* dataIndex_;
+    NTable_* new_;
     nstr path_;
     nstr dataPath_;
     nstr dataMetaPath_;
     nstr metaPath_;
-    size_t memoryUsage_;
     NRWMutex mutex_;
+    DataIndex* dataIndex_;
+    DataMap_ dataMap_;
+    IndexMap_ indexMap_;
+    Data* lastData_;
+    uint32_t nextDataId_;
+    size_t memoryUsage_;
     bool current_;
     bool dataClean_;
     bool clean_;
