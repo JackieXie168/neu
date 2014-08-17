@@ -120,6 +120,9 @@ int main(int argc, char** argv){
     // is destroyed it will autocommit anyways
     db.commit();
 
+    lock.release();
+    db.compact();
+
     cout << "run command again to query" << endl;
     
     return 0;
@@ -194,11 +197,11 @@ int main(int argc, char** argv){
   // traverse the first 100 rows - they could be in any order
   table->traverseStart(q3);
 
+  //cout << "rows is: " << rows << endl;
+
   //cout << "rows2 is: " << rows2 << endl;
 
   double dt = NSys::now() - t1;
-
-  //cout << "rows is: " << rows << endl;
 
   //cout << "u1 is: " << u1 << endl;
 

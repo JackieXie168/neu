@@ -278,6 +278,8 @@ namespace neu{
       virtual void dump(){}
       
       virtual const nstr& path() const = 0;
+
+      virtual void setPath(const nstr& path) = 0;
       
       virtual void rollback() = 0;
 
@@ -1106,6 +1108,11 @@ namespace neu{
         return path_;
       }
       
+      void setPath(const nstr& path){
+        path_ = path;
+        metaPath_ = path_ + "/meta.nvar";
+      }
+      
       void save(bool manual){
         if(current_){
           return;
@@ -1373,7 +1380,7 @@ namespace neu{
         return 0;
       }
       
-      void mapCompact(DataIndex& ni, RowSet& rs, UpdateMap& um){
+      void mapCompact(NTable_* t, DataIndex& ni, RowSet& rs, UpdateMap& um){
         traverse([&](DataRecord& r){
           if(r.remap){
             rs.insert(r.value);
@@ -1382,6 +1389,11 @@ namespace neu{
             }
           }
           else{
+            uint32_t newDataId;
+            uint32_t newOffset =
+            t->insertNewData_(this, r.dataId(), r.rowId, r.offset(), newDataId);
+            r.set(r.rowId, newDataId, newOffset);
+            
             ni.pushRecord(r);
           }
         });
@@ -1803,6 +1815,19 @@ namespace neu{
         v.unpack(data_ + offset, size);
       }
       
+      char* getRaw(uint32_t offset, uint32_t& size){
+        read();
+        
+        RowId rowId;
+        memcpy(&rowId, data_ + offset, 8);
+        offset += 8;
+        
+        memcpy(&size, data_ + offset, 4);
+        offset += 4;
+
+        return data_ + offset;
+      }
+      
       uint32_t compact(Data* newData, const RowSet& rs){
         RowId rowId;
         uint32_t size;
@@ -1899,6 +1924,7 @@ namespace neu{
     d_(d),
     path_(path),
     lastData_(0),
+    newLastData_(0),
     dataClean_(true),
     clean_(true){
       
@@ -2340,6 +2366,49 @@ namespace neu{
       lastData_ = data;
     }
     
+    uint32_t insertNewData_(DataIndex* dataIndex,
+                            uint32_t dataId,
+                            RowId rowId,
+                            uint32_t offset,
+                            uint32_t& newDataId){
+      
+      auto itr = dataMap_.find(dataId);
+      assert(itr != dataMap_.end());
+      
+      Data* oldData = itr->second;
+      uint32_t size;
+      char* buf = oldData->getRaw(offset, size);
+      
+      Data* data;
+      
+      if(newLastData_ && newLastData_->size() + size <= MAX_DATA_SIZE){
+        data = newLastData_;
+      }
+      else{
+        data = 0;
+        
+        for(auto& itr : newDataMap_){
+          Data* d = itr.second;
+          if(d->size() + size <= MAX_DATA_SIZE){
+            data = d;
+          }
+        }
+        
+        if(!data){
+          uint64_t id = nextDataId_++;
+          data = new Data(this, id);
+          newDataMap_.insert({id, data});
+        }
+      }
+      
+      uint32_t newOffset = data->insert(rowId, buf, size);
+      dataIndex->insert(data->id(), offset, rowId);
+      newLastData_ = data;
+      
+      newDataId = data->id();
+      return newOffset;
+    }
+    
     void update(nvar& row){
       write();
       
@@ -2386,11 +2455,26 @@ namespace neu{
     void mapCompact(RowSet& rs, UpdateMap& um){
       nstr oldPath = dataIndex_->path();
       nstr newPath = oldPath + ".new";
+
+      newLastData_ = 0;
       DataIndex* newDataIndex = new DataIndex(d_, newPath, true);
-      dataIndex_->mapCompact(*newDataIndex, rs, um);
+      dataIndex_->mapCompact(this, *newDataIndex, rs, um);
       delete dataIndex_;
+      newLastData_ = 0;
+      
+      newDataIndex->save(true);
+      newDataIndex->saveMeta();
+      
+      nstr op = oldPath + "/old";
+      d_->safeRemoveAll(op);
+      d_->safeRemove(op);
+      
+      d_->safeRemoveAll(oldPath);
+      d_->safeRemove(oldPath);
       NSys::rename(newPath, oldPath);
+      
       dataIndex_ = newDataIndex;
+      dataIndex_->setPath(oldPath);
     }
 
     void compact(const RowSet& rs, const UpdateMap& um){
@@ -2466,10 +2550,20 @@ namespace neu{
             NERROR("invalid index type");
         }
 
+        newIndex->save(true);
+        newIndex->saveMeta();
+        
+        nstr op = oldPath + "/old";
+        d_->safeRemoveAll(op);
+        d_->safeRemove(op);
+        
+        d_->safeRemoveAll(oldPath);
+        d_->safeRemove(oldPath);
         NSys::rename(newPath, oldPath);
         
         newIndex->setUnique(oldIndex->unique());
         newIndex->setAutoErase(oldIndex->autoErase());
+        newIndex->setPath(oldPath);
         
         delete oldIndex;
         newIndexMap_.insert({itr.first, newIndex});
@@ -2844,8 +2938,10 @@ namespace neu{
     NRWMutex mutex_;
     DataIndex* dataIndex_;
     DataMap_ dataMap_;
+    DataMap_ newDataMap_;
     IndexMap_ indexMap_;
     Data* lastData_;
+    Data* newLastData_;
     uint32_t nextDataId_;
     size_t memoryUsage_;
     bool current_;
@@ -2963,6 +3059,11 @@ namespace neu{
     for(auto& itr : tableMap_){
       NTable_* t = itr.second;
       t->compact(rs, um);
+    }
+    
+    for(auto& itr : tableMap_){
+      NTable_* t = itr.second;
+      t->saveMeta();
     }
     
     for(auto& itr : tableMap_){
