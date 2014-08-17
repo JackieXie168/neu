@@ -192,6 +192,19 @@ namespace neu{
     
     void rollback();
     
+    void safeRemoveAll(const nstr& path){
+      nvec files;
+      if(!NSys::dirFiles(path, files)){
+        cerr << "Error: removing files in: " << path << endl;
+        exit(1);
+      }
+      
+      for(const nstr& p : files){
+        nstr fullPath = path + "/" + p;
+        safeRemove(fullPath);
+      }
+    }
+    
     void safeRemove(const nstr& path){
       if(!path.beginsWith(path_)){
         cerr << "Error: attempted to remove file outside "
@@ -271,6 +284,8 @@ namespace neu{
       virtual void rollback() = 0;
 
       virtual void clean() = 0;
+
+      virtual void clear() = 0;
       
     private:
       uint8_t type_;
@@ -947,6 +962,17 @@ namespace neu{
         for(auto& itr : pageMap_){
           delete itr.second;
         }
+      }
+      
+      void clear(){
+        d_->safeRemoveAll(path_);
+        for(auto& itr : pageMap_){
+          delete itr.second;
+        }
+        
+        pageMap_.clear();
+        metaCurrent_ = false;
+        saveMeta();
       }
       
       void saveMeta(){
@@ -1823,6 +1849,11 @@ namespace neu{
     dataClean_(true),
     clean_(true){
       
+      new_ = path_.endsWith(".new") ? 0 :
+      new NTable_(o_, d_, path_ + ".new", create);
+      
+      // ndm - implement below
+      
       if(create){
         current_ = false;
         nextDataId_ = 0;
@@ -1952,11 +1983,28 @@ namespace neu{
       }
     }
     
+    void clear(){
+      dataIndex_->clear();
+      
+      for(auto& itr : indexMap_){
+        itr.second->clear();
+      }
+      
+      d_->safeRemoveAll(path_ + "/__data");
+
+      current_ = false;
+      saveMeta();
+    }
+    
     void erase(){
+      if(new_){
+        new_->erase();
+      }
+      
       d_->safeRemove(path_);
     }
     
-    void take_(NTable_* t){
+    void commit_(NTable_* t){
       NTable::QueryFunc f =
       [&](const nvar& r) -> int{
         RowId rowId = r["id"];
@@ -1966,8 +2014,11 @@ namespace neu{
         return 1;
       };
       
+      NTable_* n = new_;
+      new_ = 0;
       t->traverseStart(f);
-      t->erase();
+      new_ = n;
+      new_->clear();
     }
     
     void setDataClean(bool flag){
@@ -1996,6 +2047,9 @@ namespace neu{
     }
     
     void rollback(){
+      assert(new_);
+      new_->clear();
+      
       nstr oldPath = dataPath_ + "/old";
       
       nvec oldFiles;
@@ -2072,6 +2126,10 @@ namespace neu{
                   uint8_t indexType,
                   bool unique,
                   bool autoErase){
+      if(new_){
+        addIndex(indexName, indexType, unique, autoErase);
+      }
+      
       write();
       
       auto itr = indexMap_.find(indexName);
@@ -2128,6 +2186,11 @@ namespace neu{
     }
     
     void insert_(RowId rowId, nvar& row){
+      if(new_){
+        new_->insert_(rowId, row);
+        return;
+      }
+      
       write();
       
       const nmap& m = row;
@@ -2281,58 +2344,61 @@ namespace neu{
         IndexBase* oldIndex = itr.second;
         IndexBase* newIndex;
         
+        nstr oldPath = oldIndex->path();
+        nstr newPath = oldPath + ".new";
+        
         switch(oldIndex->type()){
           case NTable::Int32:{
-            Int32Index* ni = new Int32Index(d_, "changme", true);
+            Int32Index* ni = new Int32Index(d_, newPath, true);
             Int32Index* oi = static_cast<Int32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt32:{
-            UInt32Index* ni = new UInt32Index(d_, "changme", true);
+            UInt32Index* ni = new UInt32Index(d_, newPath, true);
             UInt32Index* oi = static_cast<UInt32Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Int64:{
-            Int64Index* ni = new Int64Index(d_, "changme", true);
+            Int64Index* ni = new Int64Index(d_, newPath, true);
             Int64Index* oi = static_cast<Int64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::UInt64:{
-            UInt64Index* ni = new UInt64Index(d_, "changme", true);
+            UInt64Index* ni = new UInt64Index(d_, newPath, true);
             UInt64Index* oi = static_cast<UInt64Index*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Float:{
-            FloatIndex* ni = new FloatIndex(d_, "changme", true);
+            FloatIndex* ni = new FloatIndex(d_, newPath, true);
             FloatIndex* oi = static_cast<FloatIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Double:{
-            DoubleIndex* ni = new DoubleIndex(d_, "changme", true);
+            DoubleIndex* ni = new DoubleIndex(d_, newPath, true);
             DoubleIndex* oi = static_cast<DoubleIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
             break;
           }
           case NTable::Row:{
-            RowIndex* ni = new RowIndex(d_, "changme", true);
+            RowIndex* ni = new RowIndex(d_, newPath, true);
             RowIndex* oi = static_cast<RowIndex*>(oldIndex);
             oi->compact(*ni, rs, um);
             newIndex = ni;
             break;
           }
           case NTable::Hash:{
-            HashIndex* ni = new HashIndex(d_, "changme", true);
+            HashIndex* ni = new HashIndex(d_, newPath, true);
             HashIndex* oi = static_cast<HashIndex*>(oldIndex);
             oi->compact(*ni, rs);
             newIndex = ni;
@@ -2342,6 +2408,8 @@ namespace neu{
             NERROR("invalid index type");
         }
 
+        NSys::rename(newPath, oldPath);
+        
         newIndex->setUnique(oldIndex->unique());
         newIndex->setAutoErase(oldIndex->autoErase());
         
@@ -2641,6 +2709,7 @@ namespace neu{
     typedef NMap<uint64_t, Data*> DataMap_;
     
     NTable* o_;
+    NTable_* new_;
     NDatabase_* d_;
     IndexMap_ indexMap_;
     uint32_t nextDataId_;
