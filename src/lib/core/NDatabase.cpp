@@ -2967,8 +2967,6 @@ namespace neu{
   }
   
   void NDatabase_::commit(){
-    commit();
-
     for(auto& itr : tableMap_){
       itr.second->writeLock_();
     }
@@ -2980,6 +2978,8 @@ namespace neu{
     for(auto& itr : tableMap_){
       itr.second->unlock_();
     }
+    
+    saveMeta();
   }
   
 } // end namespace neu
