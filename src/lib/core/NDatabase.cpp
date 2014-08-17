@@ -1850,7 +1850,7 @@ namespace neu{
         locked_ = false;
       }
       
-      void append(NTable_* table){
+      void appendToTable(NTable_* table){
         read();
         
         locked_ = true;
@@ -2147,6 +2147,8 @@ namespace neu{
       if(dataClean_){
         return;
       }
+      
+      dataIndex_->clean();
       
       nstr oldPath = dataPath_ + "/old";
       
@@ -2507,7 +2509,7 @@ namespace neu{
       
       for(auto& itr : new_->dataMap_){
         Data* data = itr.second;
-        data->append(this);
+        data->appendToTable(this);
       }
       
       for(auto& itr : indexMap_){
@@ -2530,7 +2532,10 @@ namespace neu{
         itr.second->save(true);
       }
 
+      clean();
+      
       saveMeta();
+      current_ = true;
     }
   
     void saveMeta(){
@@ -2960,10 +2965,6 @@ namespace neu{
     
     for(auto& itr : tableMap_){
       itr.second->commit();
-    }
-    
-    for(auto& itr : tableMap_){
-      itr.second->clean();
     }
     
     for(auto& itr : tableMap_){
