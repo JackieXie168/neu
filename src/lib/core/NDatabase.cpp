@@ -1678,6 +1678,10 @@ namespace neu{
         }
       }
       
+      void erase(){
+        d_->safeRemove(path_);
+      }
+      
       size_t size(){
         return size_;
       }
@@ -2460,7 +2464,13 @@ namespace neu{
       DataIndex* newDataIndex = new DataIndex(d_, newPath, true);
       dataIndex_->mapCompact(this, *newDataIndex, rs, um);
       delete dataIndex_;
-      newLastData_ = 0;
+
+      for(auto& itr : dataMap_){
+        itr.second->erase();
+        delete itr.second;
+      }
+      
+      dataMap_ = move(newDataMap_);
       
       newDataIndex->save(true);
       newDataIndex->saveMeta();
