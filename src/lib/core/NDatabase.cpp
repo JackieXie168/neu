@@ -2835,10 +2835,8 @@ void NTable::unlock_(){
   x_->unlock_();
 }
 
-NDatabase::NDatabase(){}
-
-NDatabase::NDatabase(const nstr& path){
-  x_ = new NDatabase_(this, path, false);
+NDatabase::NDatabase(const nstr& path, bool create){
+  x_ = new NDatabase_(this, path, create);
 }
 
 NTable* NDatabase::addTable(const nstr& tableName){
@@ -2847,13 +2845,6 @@ NTable* NDatabase::addTable(const nstr& tableName){
 
 NTable* NDatabase::getTable(const nstr& tableName){
   return x_->getTable(tableName);
-}
-
-NDatabase* NDatabase::create(const nstr& path){
-  NDatabase* db = new NDatabase;
-  db->x_ = new NDatabase_(db, path, true);
-  
-  return db;
 }
 
 void NDatabase::compact(){

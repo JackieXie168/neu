@@ -199,14 +199,12 @@ namespace neu{
   
   class NDatabase{
   public:
-    NDatabase(const nstr& path);
+    NDatabase(const nstr& path, bool create);
     
     NTable* addTable(const nstr& tableName);
     
     NTable* getTable(const nstr& tableName);
     
-    static NDatabase* create(const nstr& path);
-   
     void save();
     
     void compact();
@@ -216,8 +214,6 @@ namespace neu{
     void rollback();
     
   private:
-    NDatabase();
-    
     class NDatabase_* x_;
   };
   
