@@ -372,8 +372,11 @@ namespace neu{
             if(value < record->value){
               end = index;
             }
-            else{
+            else if(value > record->value){
               start = index + 1;
+            }
+            else{
+              return index;
             }
           }
 
@@ -2753,7 +2756,9 @@ namespace neu{
       bool success = false;
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
-        if(v != h){
+        size_t hv = v;
+
+        if(hv != h){
           return 0;
         }
         

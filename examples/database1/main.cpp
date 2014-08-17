@@ -9,8 +9,8 @@
 using namespace std;
 using namespace neu;
 
-static const size_t NUM_ROWS = 5000000;
-static const size_t COMMIT_INTERVAL = 1000000;
+static const size_t NUM_ROWS = 2000;
+static const size_t COMMIT_INTERVAL = 100;
 
 int main(int argc, char** argv){
   NProgram program(argc, argv);
@@ -84,19 +84,48 @@ int main(int argc, char** argv){
       }
     }
 
+    table->dump();
+
+    nvar u3;
+    // get the user whose name is neu123
+    table->get("name", "neu123", u3);  
+    // update the user's rank
+
+    cout << "u3 is: " << u3 << endl;
+
+    return 0;
+
     double dt = NSys::now() - t1;
 
     cout << "inserted " << NUM_ROWS << " rows in: " << dt << endl;
 
     // add some more rows
-    for(size_t i = 1; i < 10000; ++i){
-      row("rank") = rng.uniform(0, 100);
-      row("norm") = rng.uniform(0, 100);
-    }
+    //for(size_t i = 1; i < 10000; ++i){
+    //  row("rank") = rng.uniform(0, 100);
+    //  row("norm") = rng.uniform(0, 100);
+    // }
 
     // this time we will not commit the rows just added, instead
     // rollback
-    table->rollback();
+    //    table->rollback();
+
+    /*
+    nvar u2;
+    // get the user whose name is neu111
+    table->get("name", "neu111", u2);  
+    // erase this user
+    table->erase(u2["id"]);
+    */
+
+    //nvar u3;
+    // get the user whose name is neu123
+    //table->get("name", "neu123", u3);  
+    // update the user's rank
+
+    //cout << "u3 is: " << u3 << endl;
+
+    //u3["rank"] = 87.0;
+    //table->update(u3);
 
     // make sure everything is committed - when the NDatbase instance
     // is destroyed it will autocommit anyways

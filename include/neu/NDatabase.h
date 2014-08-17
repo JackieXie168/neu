@@ -80,12 +80,12 @@ namespace neu{
       Lock(std::initializer_list<NTable*> readTables,
            std::initializer_list<NTable*> writeTables){
         NMap<NTable*, bool> m;
-        
-        for(auto& itr : readTables){
+
+        for(auto& itr : writeTables){
           lockMap_.insert({itr, false});
         }
         
-        for(auto& itr : writeTables){
+        for(auto& itr : readTables){
           lockMap_.insert({itr, false});
         }
         
