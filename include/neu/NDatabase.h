@@ -187,8 +187,6 @@ namespace neu{
     
     void unlock_();
     
-    friend class NDatabase_;
-    
   private:
     friend class NDatabase_;
     

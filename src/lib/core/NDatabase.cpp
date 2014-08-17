@@ -71,10 +71,10 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  //static const size_t MAX_CHUNK_SIZE = 32768;
-  //static const size_t MAX_CHUNKS = 1024;
-  static const size_t MAX_CHUNK_SIZE = 10;
-  static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 256*8;
+  static const size_t MAX_CHUNKS = 4096/8;
+  //static const size_t MAX_CHUNK_SIZE = 10;
+  //static const size_t MAX_CHUNKS = 10;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
@@ -123,6 +123,8 @@ namespace{
     virtual size_t memoryUsage() = 0;
     
     virtual void store() = 0;
+    
+    virtual bool locked() = 0;
   };
   
   typedef NMap<uint64_t, pair<Pageable*, size_t>> PMap;
@@ -141,6 +143,10 @@ namespace neu{
   class NDatabase_{
   public:
     NDatabase_(NDatabase* o, const nstr& path, bool create);
+    
+    ~NDatabase_(){
+      save();
+    }
     
     NTable* addTable(const nstr& tableName);
     
@@ -165,7 +171,13 @@ namespace neu{
     }
 
     void setMemoryLimit(size_t limit){
-      memoryLimit_ = 1048576*limit;
+      size_t l = 1048576*limit;
+      
+      if(l <= MAX_DATA_SIZE){
+        NERROR("memory limit too low");
+      }
+      
+      memoryLimit_ = l;
     }
     
     size_t memoryUsage(PMap& pm);
@@ -500,7 +512,8 @@ namespace neu{
       current_(!create),
       firstChunk_(0),
       tick_(0),
-      memoryUsage_(0){
+      memoryUsage_(0),
+      locked_(false){
         path_ = index_->path() + "/" + nvar(id);
       }
       
@@ -511,11 +524,11 @@ namespace neu{
       }
       
       void read(){
+        tick_ = d_->read();
+        
         if(needsLoad_){
           load();
         }
-        
-        tick_ = d_->read();
       }
       
       uint64_t id(){
@@ -523,11 +536,12 @@ namespace neu{
       }
       
       void write(){
+        tick_ = d_->write();
+        
         if(needsLoad_){
           load();
         }
-        
-        tick_ = d_->write();
+
         current_ = false;
       }
       
@@ -564,7 +578,7 @@ namespace neu{
             index_->setClean(false);
           }
         }
-        
+
         FILE* file = fopen(path_.c_str(), "wb");
         
         if(!file){
@@ -602,6 +616,8 @@ namespace neu{
       }
       
       void load(){
+        tick_ = d_->read();
+        
         FILE* file = fopen(path_.c_str(), "rb");
         
         uint32_t numChunks;
@@ -642,7 +658,9 @@ namespace neu{
         
         needsLoad_ = false;
         
+        locked_ = true;
         d_->checkMemory();
+        locked_ = false;
       }
       
       bool handleFirst(const R& record){
@@ -752,6 +770,10 @@ namespace neu{
         p->memoryUsage_ = half;
         memoryUsage_ = half;
         
+        locked_ = true;
+        d_->checkMemory();
+        locked_ = false;
+        
         return p;
       }
       
@@ -777,6 +799,7 @@ namespace neu{
       
       int query(const V& start, QueryFunc_ f){
         read();
+        locked_ = true;
         
         auto itr = findChunk(start);
         assert(itr != chunkMap_.end());
@@ -787,11 +810,13 @@ namespace neu{
           if(s > 0){
             ++itr;
             if(itr == chunkMap_.end()){
+              locked_ = false;
               return s;
             }
           }
           else if(s < 0){
             if(itr == chunkMap_.begin()){
+              locked_ = false;
               return s;
             }
             else{
@@ -799,9 +824,13 @@ namespace neu{
             }
           }
           else{
+            locked_ = false;
             return 0;
           }
         }
+        
+        locked_ = false;
+        return 0;
       }
       
       uint64_t tick(){
@@ -815,6 +844,10 @@ namespace neu{
           cout << "@@@ CHUNK LOWER: " << itr.first << endl;
           itr.second->dump();
         }
+      }
+      
+      bool locked(){
+        return locked_;
       }
       
     private:
@@ -831,6 +864,7 @@ namespace neu{
       uint64_t tick_;
       size_t memoryUsage_;
       bool current_ : 1;
+      bool locked_ : 1;
       
       typename ChunkMap_::iterator findChunk(const V& v){
         auto itr = chunkMap_.upper_bound(v);
@@ -1566,7 +1600,8 @@ namespace neu{
       existed_(size > 0),
       current_(size > 0),
       id_(id),
-      tick_(0){
+      tick_(0),
+      locked_(false){
         path_ = table_->path() + "/__data/" + nvar(id);
       }
       
@@ -1581,7 +1616,7 @@ namespace neu{
       }
       
       size_t memoryUsage(){
-        return size_;
+        return data_ ? size_ : 0;
       }
       
       uint64_t id(){
@@ -1593,13 +1628,13 @@ namespace neu{
       }
       
       void read(){
-        load();
         tick_ = d_->read();
+        load();
       }
       
       void write(){
-        load();
         tick_ = d_->write();
+        load();
         current_ = false;
       }
       
@@ -1646,6 +1681,8 @@ namespace neu{
           return;
         }
         
+        tick_ = d_->read();
+        
         FILE* file = fopen(path_.c_str(), "rb");
         
         if(!file){
@@ -1663,7 +1700,9 @@ namespace neu{
         
         fclose(file);
         
+        locked_ = true;
         d_->checkMemory();
+        locked_ = false;
       }
 
       uint32_t insert(RowId rowId, char* buf, uint32_t size){
@@ -1756,6 +1795,10 @@ namespace neu{
         }
       }
       
+      bool locked(){
+        return locked_;
+      }
+      
     private:
       NTable_* table_;
       NDatabase_* d_;
@@ -1767,6 +1810,7 @@ namespace neu{
       nstr path_;
       size_t tick_;
       bool current_ : 1;
+      bool locked_ : 1;
     }; // end class Data
     
     NTable_(NTable* o, NDatabase_* d, const nstr& path, bool create)
@@ -2608,7 +2652,7 @@ namespace neu{
       NSys::makeDir(path);
       
       nextRowId_ = 1;
-      memoryLimit_ = DEFAULT_MEMORY_LIMIT;
+      setMemoryLimit(DEFAULT_MEMORY_LIMIT);
     }
     else{
       nvar m;
@@ -2716,10 +2760,8 @@ namespace neu{
   }
   
   void NDatabase_::checkMemory(){
-    // ndm - test
-    return;
-    
     PMap pm;
+    
     int64_t m = memoryUsage(pm);
     
     while(m > memoryLimit_){
@@ -2727,12 +2769,19 @@ namespace neu{
       if(itr == pm.end()){
         break;
       }
-    
+
       Pageable* p = itr->second.first;
+      if(p->locked()){
+        pm.erase(itr);
+        continue;
+      }
+      
       p->store();
       
       size_t mi = itr->second.second;
       m -= mi;
+      
+      pm.erase(itr);
     }
   }
   
