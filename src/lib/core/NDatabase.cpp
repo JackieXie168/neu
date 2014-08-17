@@ -923,21 +923,23 @@ namespace neu{
             NERROR("index path exists: " + path_);
           }
           
-          NSys::makeDir(path_);
+          if(!NSys::makeDir(path_)){
+            NERROR("failed to make directory: " + path_);
+          }
           
           metaPath_ = path_ + "/meta.nvar";
           if(NSys::exists(metaPath_)){
             NERROR("index meta path exists: " + metaPath_);
           }
           
-          NSys::makeDir(path_);
-          
           nstr oldPath = path_ + "/old";
           if(NSys::exists(oldPath)){
             NERROR("index old path exists: " + oldPath);
           }
           
-          NSys::makeDir(oldPath);
+          if(!NSys::makeDir(oldPath)){
+            NERROR("failed to make directory: " + oldPath);
+          }
         }
         else{
           firstPage_ = 0;
@@ -1910,7 +1912,9 @@ namespace neu{
           NERROR("table path exists: " + path_);
         }
         
-        NSys::makeDir(path_);
+        if(!NSys::makeDir(path_)){
+          NERROR("failed to make directory: " + path_);
+        }
         
         metaPath_ = path_ + "/meta.nvar";
         
@@ -1924,14 +1928,18 @@ namespace neu{
           NERROR("table data path exists: " + dataPath_);
         }
         
-        NSys::makeDir(dataPath_);
+        if(!NSys::makeDir(dataPath_)){
+          NERROR("failed to make directory: " + dataPath_);
+        }
         
         nstr op = dataPath_ + "/old";
         if(NSys::exists(op)){
           NERROR("table old data path exists: " + op);
         }
         
-        NSys::makeDir(op);
+        if(!NSys::makeDir(op)){
+          NERROR("failed to make directory: " + op);
+        }
         
         dataMetaPath_ = dataPath_ + "/meta.nvar";
         
@@ -2807,7 +2815,9 @@ namespace neu{
         NERROR("path exists: " + path_);
       }
       
-      NSys::makeDir(path);
+      if(!NSys::makeDir(path)){
+        NERROR("failed to make directory: " + path);
+      }
       
       nextRowId_ = 1;
       setMemoryLimit(DEFAULT_MEMORY_LIMIT);
