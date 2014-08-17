@@ -1389,7 +1389,7 @@ namespace neu{
             }
           }
           else{
-            t->insertNewData_(this, r.dataId(), r.rowId, r.offset());
+            t->insertNewData_(&ni, r.dataId(), r.rowId, r.offset());
           }
         });
       }
@@ -2369,9 +2369,7 @@ namespace neu{
                         uint32_t dataId,
                         RowId rowId,
                         uint32_t offset){
-      
-      cout << "data id is: " << dataId << endl;
-      
+
       auto itr = dataMap_.find(dataId);
       assert(itr != dataMap_.end());
       
