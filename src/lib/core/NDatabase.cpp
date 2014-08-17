@@ -145,7 +145,7 @@ namespace neu{
     NDatabase_(NDatabase* o, const nstr& path, bool create);
     
     ~NDatabase_(){
-      save();
+      commit();
     }
     
     NTable* addTable(const nstr& tableName);
@@ -186,7 +186,7 @@ namespace neu{
     
     void checkMemory();
     
-    void save();
+    void commit();
     
     void saveMeta();
     
@@ -286,6 +286,8 @@ namespace neu{
       virtual void clean() = 0;
 
       virtual void clear() = 0;
+      
+      virtual void append(IndexBase* index) = 0;
       
     private:
       uint8_t type_;
@@ -1011,6 +1013,19 @@ namespace neu{
         }
         
         return m;
+      }
+      
+      virtual void append(IndexBase* index){
+        Index* i = static_cast<Index*>(index);
+        
+        TraverseFunc f =
+        [&](R& r){
+          insertRecord(r);
+        };
+        
+        for(auto& itr : i->pageMap_){
+          itr.second->traverse(f);
+        }
       }
       
       void rollback(){
@@ -1823,6 +1838,29 @@ namespace neu{
         }
       }
       
+      void append(NTable_* table){
+        read();
+        
+        locked_ = true;
+        size_t offset = 0;
+
+        while(offset < size_){
+          RowId rowId;
+          memcpy(&rowId, data_ + offset, 8);
+          offset += 8;
+          
+          uint32_t size;
+          memcpy(&size, data_ + offset, 4);
+          offset += 4;
+          
+          table->insertData_(rowId, size, data_ + offset);
+          
+          offset += size;
+        }
+        
+        locked_ = false;
+      }
+      
       bool locked(){
         return locked_;
       }
@@ -2002,23 +2040,6 @@ namespace neu{
       }
       
       d_->safeRemove(path_);
-    }
-    
-    void commit_(NTable_* t){
-      NTable::QueryFunc f =
-      [&](const nvar& r) -> int{
-        RowId rowId = r["id"];
-        nvar rn = r;
-        insert_(rowId, rn);
-
-        return 1;
-      };
-      
-      NTable_* n = new_;
-      new_ = 0;
-      t->traverseStart(f);
-      new_ = n;
-      new_->clear();
     }
     
     void setDataClean(bool flag){
@@ -2252,10 +2273,13 @@ namespace neu{
       }
       
       row("id") = rowId;
-
       uint32_t size;
       char* buf = row.pack(size, MIN_COMPRESS_SIZE);
-      
+      insertData_(rowId, size, buf);
+      free(buf);
+    }
+    
+    void insertData_(RowId rowId, uint32_t size, char* buf){
       Data* data;
       
       if(lastData_ && lastData_->size() + size <= MAX_DATA_SIZE){
@@ -2279,8 +2303,6 @@ namespace neu{
       }
       
       uint32_t offset = data->insert(rowId, buf, size);
-      free(buf);
-      
       dataIndex_->insert(data->id(), offset, rowId);
       lastData_ = data;
     }
@@ -2451,9 +2473,24 @@ namespace neu{
       return m;
     }
     
-    void save(){
+    void commit(){
+      assert(new_);
+      
       if(current_){
         return;
+      }
+      
+      for(auto& itr : new_->dataMap_){
+        Data* data = itr.second;
+        data->append(this);
+      }
+      
+      for(auto& itr : indexMap_){
+        IndexBase* index = itr.second;
+        auto itr2 = new_->indexMap_.find(itr.first);
+        assert(itr2 != new_->indexMap_.end());
+        IndexBase* index2 = itr2->second;
+        index->append(index2);
       }
       
       dataIndex_->save(true);
@@ -2468,7 +2505,7 @@ namespace neu{
       
       current_ = true;
     }
-    
+  
     void saveMeta(){
       if(current_){
         return;
@@ -2887,15 +2924,23 @@ namespace neu{
     }
   }
   
-  void NDatabase_::save(){
-    saveMeta();
+  void NDatabase_::commit(){
+    commit();
+
+    for(auto& itr : tableMap_){
+      itr.second->writeLock_();
+    }
     
     for(auto& itr : tableMap_){
-      itr.second->save();
+      itr.second->commit();
     }
     
     for(auto& itr : tableMap_){
       itr.second->clean();
+    }
+    
+    for(auto& itr : tableMap_){
+      itr.second->unlock_();
     }
   }
   
@@ -2970,8 +3015,12 @@ void NTable::dump(){
   x_->dump();
 }
 
-void NTable::save(){
-  x_->save();
+void NTable::commit(){
+  x_->commit();
+}
+
+void NTable::rollback(){
+  x_->rollback();
 }
 
 void NTable::readLock_(){
@@ -3006,8 +3055,8 @@ void NDatabase::compact(){
   x_->compact();
 }
 
-void NDatabase::save(){
-  x_->save();
+void NDatabase::commit(){
+  x_->commit();
 }
 
 void NDatabase::setMemoryLimit(size_t megabytes){

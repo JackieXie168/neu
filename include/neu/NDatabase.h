@@ -177,7 +177,9 @@ namespace neu{
     
     bool getFirst(const nstr& indexName, const nvar& value, nvar& row);
     
-    void save();
+    void commit();
+    
+    void rollback();
     
     void dump();
     
@@ -205,13 +207,13 @@ namespace neu{
 
     void eraseTable(const nstr& tableName);
     
-    void save();
+    void commit();
+
+    void rollback();
     
     void compact();
     
     void setMemoryLimit(size_t megabytes);
-    
-    void rollback();
     
   private:
     class NDatabase_* x_;
