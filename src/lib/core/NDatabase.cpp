@@ -810,10 +810,11 @@ namespace neu{
       
       void traverse(TraverseFunc f){
         read();
-        
+        locked_ = true;
         for(auto& itr : chunkMap_){
           itr.second->traverse(f);
         }
+        locked_ = false;
       }
       
       int query(const V& start, QueryFunc_ f){
@@ -973,8 +974,14 @@ namespace neu{
         }
         
         pageMap_.clear();
+        
+        firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
+        pageMap_.insert({min_, firstPage_});
+        
         metaCurrent_ = false;
         saveMeta();
+        current_ = true;
+        clean_ = true;
       }
       
       void saveMeta(){
@@ -2027,11 +2034,22 @@ namespace neu{
       for(auto& itr : indexMap_){
         itr.second->clear();
       }
+
+      for(auto& itr : dataMap_){
+        delete itr.second;
+      }
+
+      lastData_ = 0;
+      memoryUsage_ = 0;
+      
+      dataMap_.clear();
       
       d_->safeRemoveAll(path_ + "/__data");
-
+      
       current_ = false;
       saveMeta();
+      dataClean_ = true;
+      clean_ = true;
     }
     
     void erase(){
@@ -2493,6 +2511,8 @@ namespace neu{
         index->append(index2);
       }
       
+      new_->clear();
+      
       dataIndex_->save(true);
       
       for(auto& itr : indexMap_){
@@ -2502,8 +2522,8 @@ namespace neu{
       for(auto& itr : dataMap_){
         itr.second->save(true);
       }
-      
-      current_ = true;
+
+      saveMeta();
     }
   
     void saveMeta(){
