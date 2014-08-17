@@ -71,10 +71,8 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
-  static const size_t MAX_CHUNK_SIZE = 256*8;
-  static const size_t MAX_CHUNKS = 4096/8;
-  //static const size_t MAX_CHUNK_SIZE = 10;
-  //static const size_t MAX_CHUNKS = 10;
+  static const size_t MAX_CHUNK_SIZE = 2048;
+  static const size_t MAX_CHUNKS = 512;
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
