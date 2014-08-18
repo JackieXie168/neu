@@ -5311,25 +5311,25 @@ namespace{
                    "_ZN3neu4nvar8pushBackERKS0_");
     
     createFunction("void nvar::touchVector(nvar*)",
-                   "_ZN3neu4nvar9touchVectorEv");
+                   "__ZN3neu4nvar11touchVectorEv");
     
     createFunction("void nvar::touchList(nvar*)",
                    "_ZN3neu4nvar9touchListEv");
 
     createFunction("void nvar::touchQueue(nvar*)",
-                   "_ZN3neu4nvar9touchQueueEv");
+                   "_ZN3neu4nvar10touchQueueEv");
     
     createFunction("void nvar::touchSet(nvar*)",
-                   "_ZN3neu4nvar9touchSetEv");
+                   "_ZN3neu4nvar8touchSetEv");
     
     createFunction("void nvar::touchHashSet(nvar*)",
-                   "_ZN3neu4nvar9touchHashSetEv");
+                   "_ZN3neu4nvar12touchHashSetEv");
     
     createFunction("void nvar::touchMap(nvar*)",
-                   "_ZN3neu4nvar9touchMapEv");
+                   "_ZN3neu4nvar8touchMapEv");
     
     createFunction("void nvar::touchHashMap(nvar*)",
-                   "_ZN3neu4nvar9touchHashMapEv");
+                   "_ZN3neu4nvar12touchHashMapEv");
     
     createFunction("void nvar::touchMultimap(nvar*)",
                    "_ZN3neu4nvar13touchMultimapEv");

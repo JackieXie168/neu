@@ -557,17 +557,17 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       switch(h_.hsm->s->t_){
         case Queue:
-          ostr <<  "@[" << m << ":" << hstr.str() << ", ";
+          ostr <<  "@[" << m << ":" << hstr.str() << ",";
           end = "]";
           streamOutputSequence_(ostr, *h_.hsm->s->h_.q, first, concise);
           break;
         case Vector:
-          ostr << "[" << m << ":" << hstr.str() << ", ";
+          ostr << "[" << m << ":" << hstr.str() << ",";
           end = "]";
           streamOutputSequence_(ostr, *h_.hsm->s->h_.v, first, concise);
           break;
         case List:
-          ostr << "(" << m << ":" << hstr.str() << ", ";
+          ostr << "(" << m << ":" << hstr.str() << ",";
           end = ")";
           streamOutputSequence_(ostr, *h_.hsm->s->h_.l, first, concise);
           break;
