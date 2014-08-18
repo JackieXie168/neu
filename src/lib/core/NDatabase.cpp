@@ -571,6 +571,10 @@ namespace neu{
         return memoryUsage_;
       }
       
+      void setParentPath(const nstr& path){
+        path_ = index_->path() + "/" + nvar(id_);
+      }
+      
       void store(){
         save(false);
         
@@ -1111,6 +1115,10 @@ namespace neu{
       void setPath(const nstr& path){
         path_ = path;
         metaPath_ = path_ + "/meta.nvar";
+        
+        for(auto& itr : pageMap_){
+          itr.second->setParentPath(path_);
+        }
       }
       
       void save(bool manual){
@@ -1380,7 +1388,10 @@ namespace neu{
         return 0;
       }
       
-      void mapCompact(NTable_* t, DataIndex& ni, RowSet& rs, UpdateMap& um){
+      void mapCompact(NTable_* t,
+                      DataIndex* newIndex,
+                      RowSet& rs,
+                      UpdateMap& um){
         traverse([&](DataRecord& r){
           if(r.remap){
             rs.insert(r.value);
@@ -1389,7 +1400,7 @@ namespace neu{
             }
           }
           else{
-            t->insertNewData_(&ni, r.dataId(), r.rowId, r.offset());
+            t->insertNewData_(newIndex, r.dataId(), r.value, r.offset());
           }
         });
       }
@@ -2372,8 +2383,8 @@ namespace neu{
 
       auto itr = dataMap_.find(dataId);
       assert(itr != dataMap_.end());
-      
       Data* oldData = itr->second;
+
       uint32_t size;
       char* buf = oldData->getRaw(offset, size);
       
@@ -2449,13 +2460,11 @@ namespace neu{
     
     void mapCompact(RowSet& rs, UpdateMap& um){
       nstr oldPath = dataIndex_->path();
-      nstr newPath = oldPath + ".new";
+      nstr newPath = oldPath + ".compact";
 
-      nextDataId_++;
-      
       newLastData_ = 0;
       DataIndex* newDataIndex = new DataIndex(d_, newPath, true);
-      dataIndex_->mapCompact(this, *newDataIndex, rs, um);
+      dataIndex_->mapCompact(this, newDataIndex, rs, um);
       delete dataIndex_;
 
       for(auto& itr : dataMap_){
@@ -2464,6 +2473,10 @@ namespace neu{
       }
       
       dataMap_ = move(newDataMap_);
+      
+      for(auto& itr : dataMap_){
+        itr.second->save(true);
+      }
       
       newDataIndex->save(true);
       newDataIndex->saveMeta();
@@ -2490,7 +2503,7 @@ namespace neu{
         IndexBase* newIndex;
         
         nstr oldPath = oldIndex->path();
-        nstr newPath = oldPath + ".new";
+        nstr newPath = oldPath + ".compact";
         
         switch(oldIndex->type()){
           case NTable::Int32:{
@@ -2552,9 +2565,6 @@ namespace neu{
           default:
             NERROR("invalid index type");
         }
-
-        newIndex->save(true);
-        newIndex->saveMeta();
         
         nstr op = oldPath + "/old";
         d_->safeRemoveAll(op);
@@ -2567,22 +2577,15 @@ namespace neu{
         newIndex->setUnique(oldIndex->unique());
         newIndex->setAutoErase(oldIndex->autoErase());
         newIndex->setPath(oldPath);
+
+        newIndex->save(true);
+        newIndex->saveMeta();
         
         delete oldIndex;
         newIndexMap_.insert({itr.first, newIndex});
       }
       
       indexMap_ = move(newIndexMap_);
-      
-      Data* newData;
-      Data* data;
-      
-      for(auto& itr : dataMap_){
-        newData = new Data(this, itr.first);
-        data = itr.second;
-        itr.second = newData;
-        delete data;
-      }
     }
     
     size_t memoryUsage(PMap& pm){
@@ -3050,28 +3053,23 @@ namespace neu{
     UpdateMap um;
 
     for(auto& itr : tableMap_){
-      NTable_* t = itr.second;
-      t->writeLock_();
+      itr.second->writeLock_();
     }
     
     for(auto& itr : tableMap_){
-      NTable_* t = itr.second;
-      t->mapCompact(rs, um);
+      itr.second->mapCompact(rs, um);
     }
     
     for(auto& itr : tableMap_){
-      NTable_* t = itr.second;
-      t->compact(rs, um);
+      itr.second->compact(rs, um);
     }
     
     for(auto& itr : tableMap_){
-      NTable_* t = itr.second;
-      t->saveMeta();
+      itr.second->saveMeta();
     }
     
     for(auto& itr : tableMap_){
-      NTable_* t = itr.second;
-      t->unlock_();
+      itr.second->unlock_();
     }
     
     saveMeta();

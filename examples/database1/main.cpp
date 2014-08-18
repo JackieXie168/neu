@@ -121,9 +121,12 @@ int main(int argc, char** argv){
     db.commit();
 
     lock.release();
+    
+    // normally you only want to compact the database when you have
+    // done several deletions or updates
     db.compact();
 
-    cout << "run command again to query" << endl;
+    cout << "run command again to query..." << endl;
     
     return 0;
   }
@@ -188,7 +191,7 @@ int main(int argc, char** argv){
       return 0;
     }
 
-    //cout << "r is: " << r << endl;
+    cout << "r is: " << r << endl;
 
     ++count;
     return 1;
@@ -197,13 +200,13 @@ int main(int argc, char** argv){
   // traverse the first 100 rows - they could be in any order
   table->traverseStart(q3);
 
-  //cout << "rows is: " << rows << endl;
+  cout << "rows is: " << rows << endl;
 
-  //cout << "rows2 is: " << rows2 << endl;
+  cout << "rows2 is: " << rows2 << endl;
 
   double dt = NSys::now() - t1;
 
-  //cout << "u1 is: " << u1 << endl;
+  cout << "u1 is: " << u1 << endl;
 
   cout << "queries took: " << dt << endl;
 
