@@ -15204,6 +15204,7 @@ bool nvar::hashEqual(const nvar& x) const{
       switch(x.t_){
         case Binary:
         case String:
+        case Symbol:
         case StringPointer:
           return *h_.s == *x.h_.s;
         case Reference:
