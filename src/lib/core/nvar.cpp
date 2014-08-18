@@ -22136,9 +22136,16 @@ void nvar::append(const nvar& x){
         case Queue:
           h_.q->append(*x.h_.q);
           break;
-        case Function:
-          h_.q->insert(h_.q->begin(), x.h_.f->v.begin(), x.h_.f->v.end());
+        case Function:{
+          const nvec& v = x.h_.f->v;
+          size_t size = v.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            h_.q->push_back(v[i]);
+          }
+         
           break;
+        }
         case HeadSequence:
           append(*x.h_.hs->s);
           break;
