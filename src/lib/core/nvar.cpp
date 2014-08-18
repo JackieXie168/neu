@@ -24036,7 +24036,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
 }
 
 void nvar::unpack(char* buf, uint32_t size, size_t headerSize){
-  assert(t_ == Undefined);
+  //assert(t_ == Undefined);
   
   size_t hs = headerSize + 1;
   
