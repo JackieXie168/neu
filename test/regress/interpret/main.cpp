@@ -6,6 +6,7 @@
 #include <neu/NObject.h>
 #include <neu/NMLParser.h>
 #include <neu/NMLGenerator.h>
+#include <neu/NLib.h>
 
 using namespace std;
 using namespace neu;
@@ -52,6 +53,8 @@ private:
 
 int main(int argc, char** argv){
   NProgram program(argc, argv);
+
+  double pi = NLib::pi();
 
   NMLParser parser;
   // parse the NML code into N code
