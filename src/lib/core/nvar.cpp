@@ -22126,7 +22126,7 @@ void nvar::append(const nvar& x){
           size_t size = v.size();
 
           for(size_t i = 0; i < size; ++i){
-            h.q->push_back(v[i]);
+            h_.q->push_back(v[i]);
           }
           break;
         }
