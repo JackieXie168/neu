@@ -22130,9 +22130,14 @@ void nvar::append(const nvar& x){
           }
           break;
         }
-        case List:
-          h_.q->insert(h_.q->begin(), x.h_.l->begin(), x.h_.l->end());
+        case List:{
+          const nlist& l = *x.h_.l;
+          
+          for(auto& itr : l){
+            h_.q->push_back(*itr);
+          }
           break;
+        }
         case Queue:
           h_.q->append(*x.h_.q);
           break;
