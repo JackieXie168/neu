@@ -747,41 +747,55 @@ namespace{
         }
       }
       else if(v.hasMap()){
-        vv = vv ? vv : toVar(h);
-        
-        globalCall("void nvar::touchMap(nvar*)", {vv});
-        
+        bool has = false;
         const nmap& m = v;
         for(auto& itr : m){
           const nvar& k = itr.first;
           const nvar& val = itr.second;
           
-          if(k.isHidden()){
-            continue;
+          if(!k.isHidden()){
+            has = true;
+            break;
           }
+        }
+
+        if(has){
+          vv = vv ? vv : toVar(h);
           
-          Value* kv;
+          globalCall("void nvar::touchMap(nvar*)", {vv});
           
-          if(k.hasString()){
-            kv = getString(k);
+          const nmap& m = v;
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+            const nvar& val = itr.second;
+            
+            if(k.isHidden()){
+              continue;
+            }
+            
+            Value* kv;
+            
+            if(k.hasString()){
+              kv = getString(k);
+            }
+            else{
+              kv = compile(k);
+            }
+            
+            if(!kv){
+              return 0;
+            }
+            
+            Value* p = put(vv, kv);
+            
+            Value* vc = compile(val);
+            
+            if(!vc){
+              return 0;
+            }
+            
+            store(vc, p);
           }
-          else{
-            kv = compile(k);
-          }
-          
-          if(!kv){
-            return 0;
-          }
-          
-          Value* p = put(vv, kv);
-          
-          Value* vc = compile(val);
-          
-          if(!vc){
-            return 0;
-          }
-          
-          store(vc, p);
         }
       }
       else if(v.hasHashMap()){
