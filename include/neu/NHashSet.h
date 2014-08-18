@@ -215,19 +215,11 @@ public:
     s_.clear();
   }
   
-  void swap(NHashSet& s)
-  noexcept((!allocator_type::propagate_on_container_swap::value ||
-            std::__is_nothrow_swappable<allocator_type>::value) &&
-           std::__is_nothrow_swappable<hasher>::value &&
-           std::__is_nothrow_swappable<key_equal>::value){
+  void swap(NHashSet& s){
     s_.swap(s.s_);
   }
 
-  void swap(HashSet& s)
-  noexcept((!allocator_type::propagate_on_container_swap::value ||
-            std::__is_nothrow_swappable<allocator_type>::value) &&
-           std::__is_nothrow_swappable<hasher>::value &&
-           std::__is_nothrow_swappable<key_equal>::value){
+  void swap(HashSet& s){
     s_.swap(s);
   }
   

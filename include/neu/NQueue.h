@@ -324,9 +324,7 @@ namespace neu{
       return q_.erase(f, l);
     }
     
-    void swap(NQueue& c)
-    noexcept(!allocator_type::propagate_on_container_swap::value ||
-             std::__is_nothrow_swappable<allocator_type>::value){
+    void swap(NQueue& c){
       q_.swap(c.q_);
     }
     

@@ -230,12 +230,9 @@ namespace neu{
       s_.clear();
     }
     
-    void swap(NSet& s)
-    noexcept(std::__is_nothrow_swappable<key_compare>::value &&
-             (!allocator_type::propagate_on_container_swap::value ||
-              std::__is_nothrow_swappable<allocator_type>::value)){
-               s_.swap(s);
-             }
+    void swap(NSet& s){
+      s_.swap(s);
+    }
     
     allocator_type get_allocator() const noexcept{
       return s_.get_allocator();

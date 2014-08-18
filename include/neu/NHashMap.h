@@ -213,11 +213,7 @@ namespace neu{
       m_.clear();
     }
     
-    void swap(NHashMap& m)
-    noexcept((!allocator_type::propagate_on_container_swap::value ||
-              std::__is_nothrow_swappable<allocator_type>::value) &&
-             std::__is_nothrow_swappable<hasher>::value &&
-             std::__is_nothrow_swappable<key_equal>::value){
+    void swap(NHashMap& m){
       m_.swap(m);
     }
     
