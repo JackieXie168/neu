@@ -33,8 +33,8 @@ int main(int argc, char** argv){
   // something like this:
   nvar planets2;
   nvar& earth = planets2("Earth");  // put a new keyed item Earth
-  earth << nput("mass", 5.97218e+24) << nput("radius", 6371) << 
-    nput("volume", 1.08321e+12);
+  earth << npair("mass", 5.97218e+24) << npair("radius", 6371) << 
+    npair("volume", 1.08321e+12);
   
   // an alternate way accomplishing what we did in the last step
   nvar& saturn = planets2("Saturn");

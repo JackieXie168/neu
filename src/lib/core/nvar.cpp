@@ -987,6 +987,19 @@ double nvar::toDouble() const{
   }
 }
 
+nvar& nvar::operator<<(const npair& p){
+  const nvar& k = p.key;
+  
+  if(k.isString()){
+    (*this)(k.str()) = p.val;
+  }
+  else{
+    (*this)(k) = p.val;
+  }
+  
+  return *this;
+}
+
 void nvar::pushBack(const nvar& x){
   switch(t_){
     case None:
