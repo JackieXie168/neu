@@ -3,7 +3,7 @@ include $(NEU_HOME)/Makefile.defs
 TARGET = test
 OBJECTS = main.o
 
-LIBS = -L$(NEU_LIB) -lneu_core -lneu
+LIBS = -L$(NEU_LIB) -lneu -lneu_core
 
 all: .depend $(TARGET)
 	./test &> test.out

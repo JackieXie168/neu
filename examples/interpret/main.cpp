@@ -54,7 +54,7 @@ private:
 int main(int argc, char** argv){
   NProgram program(argc, argv);
 
-  double pi = NLib::pi();
+  NLib lib;
 
   NMLParser parser;
   // parse the NML code into N code
