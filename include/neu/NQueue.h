@@ -336,8 +336,16 @@ namespace neu{
     iterator insert(const_iterator p, value_type&& v){
       return q_.insert(p, std::move(v));
     }
+
+    iterator insert(iterator p, value_type&& v){
+      return q_.insert(p, std::move(v));
+    }
     
     iterator insert(const_iterator p, size_type n, const value_type& v){
+      return q_.insert(p, n, v);
+    }
+
+    iterator insert(iterator p, size_type n, const value_type& v){
       return q_.insert(p, n, v);
     }
     
@@ -345,8 +353,17 @@ namespace neu{
     iterator insert(const_iterator p, InputIterator f, InputIterator l){
       return q_.insert(p, f, l);
     }
+
+    template<class InputIterator>
+    iterator insert(iterator p, InputIterator f, InputIterator l){
+      return q_.insert(p, f, l);
+    }
     
     iterator insert(const_iterator p, std::initializer_list<value_type> il){
+      return q_.insert(p, il);
+    }
+
+    iterator insert(iterator p, std::initializer_list<value_type> il){
       return q_.insert(p, il);
     }
     
