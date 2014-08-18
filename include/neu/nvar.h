@@ -4569,10 +4569,10 @@ namespace neu{
           return std::hash<std::string>()(h_.x->toStr().str());
         case Symbol:
         case String:
-          return std::hash<std::string>()(*h_.s);
+          return std::hash<std::string>()(h_.s->str());
         case StringPointer:
         case Binary:
-          return std::hash<std::string>()(*h_.s) + t_;
+          return std::hash<std::string>()(h_.s->str()) + t_;
         case RawPointer:
           return size_t(h_.p);
         case ObjectPointer:
