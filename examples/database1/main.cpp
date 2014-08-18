@@ -21,25 +21,25 @@ int main(int argc, char** argv){
   // if not, create it in the current directory
   NDatabase db("testdb", create);
 
-  // limit pageable memory use to 1024 MB
+  // limit pageable memory usage to 1024 MB.
   // larger sizes make reads and writes faster.
-  // the memory limit can be changed at any time
+  // the memory limit can be changed at any time.
   db.setMemoryLimit(1024);
 
   // test with lower values to see how reads/writes perform in the
   // presence of more page swapping
-  //db.setMemoryLimit(128);
+  // db.setMemoryLimit(128);
 
   if(create){
     // create a new table named "users"
     NTable* table = db.addTable("users");
 
-    // get a write lock on the table using NTable::Lock. you can
+    // get a write lock on the table using NTable::Lock. use Lock to
     // acquire multiple read and write locks in an order consistent
     // with how other locks are obtained by others clients of the
     // database to help prevent deadlocking, i.e: table locks will
     // always be acquired in the same relative order. the lock
-    // autoreleaes its locks on the underlying tables when the
+    // autoreleaes its underyling locks on the tables when the
     // NTable::Lock is destroyed
     NTable::Lock lock(table, true);
 
@@ -55,18 +55,16 @@ int main(int argc, char** argv){
 
     double t1 = NSys::now();
     
-    nvar row;
-
     // add some rows to the table
     size_t i;
+    nvar row;
     for(size_t i = 1; i < NUM_ROWS; ++i){
       row("rank") = rng.uniform(0, 100);
       row("name") = "neu" + nvar(i);
+      row("norm") = rng.uniform(0, 100);
 
       // extra unindexed payload data - can be any type of potentially
       // deep and nested nvar
-      row("norm") = rng.uniform(0, 100);
-
       if(i % 1000 == 0){
         nvar p;
         p("f1") = "t1";
@@ -75,10 +73,12 @@ int main(int argc, char** argv){
       }
 
       // note, any additional payload fields can be added on a per-row
-      // basis
+      // basis -- not all rows have to be the same
 
       table->insert(row);
       
+      // the databaes does not autocommit our changes, if we crash we
+      // can rollback
       if(i % COMMIT_INTERVAL == COMMIT_INTERVAL - 1){
         table->commit();
         cout << "commiting..." << endl;
@@ -98,8 +98,8 @@ int main(int argc, char** argv){
       ++i;
     }
 
-    // this time we will not commit the rows just added, instead
-    // rollback
+    // on second thought... we will not commit the rows just added,
+    // instead rollback
     table->rollback();
 
     nvar u1;
@@ -112,7 +112,6 @@ int main(int argc, char** argv){
     // get the user whose name is neu123
     table->get("name", "neu123", u2);  
     // update the user's rank
-
     u2["rank"] = 59.0;
     table->update(u2);
 
@@ -120,11 +119,14 @@ int main(int argc, char** argv){
     // is destroyed it will autocommit anyways
     db.commit();
 
+    // manually release our lock, if we didn't call this it would be
+    // released at the end of this scope
     lock.release();
     
     // normally you only want to compact the database when you have
-    // done several deletions or updates
-    db.compact();
+    // done several deletions or updates, but do it here for testing
+    // purposes
+    // db.compact();
 
     cout << "run command again to query..." << endl;
     
@@ -132,6 +134,8 @@ int main(int argc, char** argv){
   }
 
   // we opened the database, now perform some queries on it
+
+  // retrieve the "users" table
   NTable* table = db.getTable("users");
 
   // get a read lock on the table
@@ -149,6 +153,7 @@ int main(int argc, char** argv){
     if(r["norm"] < 50){
       rows << r;
     }
+
     return 1;
   };
 
@@ -159,7 +164,7 @@ int main(int argc, char** argv){
   // get the user whose name is neu9999
   table->get("name", "neu9999", u1);
 
-  // do "index" queries - we will fetch row id's not the actual row
+  // do "set" queries - we will fetch row id's not the actual row
 
   NTable::RowSet r1;
   // row ids of users whose: 0 <= rank <= 0.01
@@ -180,7 +185,7 @@ int main(int argc, char** argv){
     return 1;
   };
 
-  // fetch the actual rows
+  // fetch the actual row data into rows2
   table->get(r1, q2);
 
   size_t count = 0;
@@ -197,14 +202,14 @@ int main(int argc, char** argv){
     return 1;
   };
 
-  // traverse the first 100 rows - they could be in any order
+  // traverse the first 100 rows and output them
   table->traverseStart(q3);
+
+  double dt = NSys::now() - t1;
 
   cout << "rows is: " << rows << endl;
 
   cout << "rows2 is: " << rows2 << endl;
-
-  double dt = NSys::now() - t1;
 
   cout << "u1 is: " << u1 << endl;
 
