@@ -328,6 +328,10 @@ namespace neu{
     iterator insert(const_iterator p, const value_type& v){
       return q_.insert(p, v);
     }
+
+    iterator insert(iterator p, const value_type& v){
+      return q_.insert(p, v);
+    }
     
     iterator insert(const_iterator p, value_type&& v){
       return q_.insert(p, std::move(v));
