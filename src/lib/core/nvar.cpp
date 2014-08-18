@@ -22121,8 +22121,13 @@ void nvar::append(const nvar& x){
       break;
     case Queue:
       switch(x.t_){
-        case Vector:
-          h_.q->insert(h_.q->begin(), x.h_.v->begin(), x.h_.v->end());
+        case Vector:{
+          const nvec& v = *x.h_.v;
+          size_t size = v.size();
+
+          for(size_t i = 0; i < size; ++i){
+            h.q->push_back(v[i]);
+          }
           break;
         case List:
           h_.q->insert(h_.q->begin(), x.h_.l->begin(), x.h_.l->end());
