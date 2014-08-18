@@ -79,7 +79,6 @@ namespace{
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
   static const size_t OVER_ALLOC = MAX_DATA_SIZE/16;
   
-  static const size_t EXTRA_DATA_BUFFER_SIZE = 8192;
   static const size_t MIN_COMPRESS_SIZE = 1024;
   
   template<typename T>
@@ -109,7 +108,6 @@ namespace{
   }
   
   typedef typename NTable::RowId RowId;
-  
   typedef typename NTable::RowSet RowSet;
   
   typedef NHashMap<RowId, RowId> UpdateMap;
@@ -233,7 +231,6 @@ namespace neu{
     static const Action None = 0x0;
     static const Action Remap = 0x1;
     static const Action Split = 0x2;
-    static const Action RemapSplit = 0x3;
     static const Action Append = 0x4;
     
     class IndexBase{
@@ -795,11 +792,6 @@ namespace neu{
         
         p->memoryUsage_ = half;
         memoryUsage_ = half;
-        
-        // ndm - needed?
-        //locked_ = true;
-        //d_->checkMemory();
-        //locked_ = false;
         
         return p;
       }
@@ -1838,27 +1830,6 @@ namespace neu{
         return data_ + offset;
       }
       
-      uint32_t compact(Data* newData, const RowSet& rs){
-        RowId rowId;
-        uint32_t size;
-        uint32_t offset = 0;
-        
-        while(offset < size_){
-          memcpy(&rowId, data_ + offset, 8);
-          offset += 8;
-
-          memcpy(&size, data_ + offset, 4);
-          offset += 4;
-
-          if(!rs.hasKey(rowId)){
-            newData->insert(rowId, data_ + offset, size);
-          }
-          offset += size;
-        }
-        
-        return offset;
-      }
-      
       void dump(){
         cout << "###### DUMP DATA" << endl;
         
@@ -2283,6 +2254,8 @@ namespace neu{
       
       write();
       
+      IndexBase* index;
+      
       const nmap& m = row;
       for(auto& itr : m){
         const nvar& k = itr.first;
@@ -2291,7 +2264,7 @@ namespace neu{
         if(k.isSymbol()){
           auto iitr = indexMap_.find(k);
           if(iitr != indexMap_.end()){
-            IndexBase* index = iitr->second;
+            index = iitr->second;
             
             switch(index->type()){
               case NTable::Int32:{
