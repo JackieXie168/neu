@@ -22129,6 +22129,7 @@ void nvar::append(const nvar& x){
             h.q->push_back(v[i]);
           }
           break;
+        }
         case List:
           h_.q->insert(h_.q->begin(), x.h_.l->begin(), x.h_.l->end());
           break;
