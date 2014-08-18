@@ -282,7 +282,7 @@ expr: expr_num {
 }
 | '(' exprs ')' {
   if($2.size() == 1){
-    $$ = move($2[0]);
+    $$ = move($2[0][0]);
   }
   else{
     $$ = undef;
