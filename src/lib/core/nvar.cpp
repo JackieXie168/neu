@@ -24881,7 +24881,6 @@ void nvar::open(const nstr& path){
     NERROR("[2] failed to read file: " + path);
   }
   
-  *this = undef;
   unpack(buf, size, 4);
   uint32_t vid;
   memcpy(&vid, buf, 4);
