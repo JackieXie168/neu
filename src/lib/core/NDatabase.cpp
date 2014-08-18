@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NDatabase.h>
 
 #include <atomic>
+#include <cstring>
 
 #include <neu/NEncoder.h>
 #include <neu/NHashMap.h>
