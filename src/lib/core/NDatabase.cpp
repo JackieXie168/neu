@@ -1606,7 +1606,7 @@ namespace neu{
       }
     };
     
-    class FloatIndex : public Index<FloatRecord, double>{
+    class FloatIndex : public Index<FloatRecord, float>{
     public:
       FloatIndex(NDatabase_* d, const nstr& path, bool create)
       : Index(d, NTable::Float, path, create){
