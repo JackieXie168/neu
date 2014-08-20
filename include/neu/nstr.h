@@ -897,6 +897,48 @@ namespace neu{
       }
     }
     
+    template<typename T>
+    void splitSpace(T& out) const{
+      size_t i = 0;
+      size_t len = str_.length();
+      
+      nstr si;
+      bool match = false;
+      for(;;){
+        if(i >= len){
+          break;
+        }
+        
+        if(str_[i] == ' '){
+          if(match){
+            out.push_back(si);
+            si = "";
+            match = false;
+          }
+          
+          ++i;
+
+          for(;;){
+            if(i >= len){
+              return;
+            }
+            
+            if(str_[i] != ' '){
+              break;
+            }
+          }
+        }
+        else{
+          si += str_[i++];
+          match = true;
+        }
+      }
+      
+      if(match){
+        out.push_back(si);
+      }
+    }
+    
     void push_back(char c){
       str_.push_back(c);
     }
