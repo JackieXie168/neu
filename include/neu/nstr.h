@@ -347,7 +347,7 @@ namespace neu{
       return str_.substr(pos, n);
     }
     
-    nstr endstr(size_t pos){
+    nstr endStr(size_t pos){
       return str_.substr(pos, str_.length() - pos);
     }
     
