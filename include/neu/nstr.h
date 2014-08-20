@@ -347,6 +347,10 @@ namespace neu{
       return str_.substr(pos, n);
     }
     
+    nstr endstr(size_t pos){
+      return str_.substr(pos, str_.length() - pos);
+    }
+    
     const char* c_str() const{
       return str_.c_str();
     }
