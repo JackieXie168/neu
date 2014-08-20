@@ -377,7 +377,7 @@ namespace neu{
 
     value_type popFront(){
       T ret = std::move(*(q_.begin()));
-      q_.pop_back();
+      q_.pop_front();
       return ret;
     }
     
