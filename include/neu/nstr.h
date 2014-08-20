@@ -898,7 +898,7 @@ namespace neu{
     }
     
     template<typename T>
-    void splitSpace(T& out) const{
+    void splitOnSpace(T& out) const{
       size_t i = 0;
       size_t len = str_.length();
       
