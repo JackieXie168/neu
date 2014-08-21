@@ -80,6 +80,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define nget(X,Y) X[#Y].as(Y)
 #define nput(X,Y) X(#Y) = Y
+#define ndump(X) cout << #X << " = " << X << endl
 
 namespace neu{
 
