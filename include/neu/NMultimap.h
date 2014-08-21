@@ -335,7 +335,7 @@ namespace neu{
   template<typename K, typename T, typename C>
   std::ostream& operator<<(std::ostream& ostr, const NMultimap<K,T,C>& m){
     typename NMultimap<K,T,C>::const_iterator itr = m.begin();
-    ostr << "[|";
+    ostr << "[| ";
     while(itr != m.end()){
       if(itr != m.begin()){
         ostr << ", ";
