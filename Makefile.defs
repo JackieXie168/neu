@@ -44,5 +44,3 @@ endif
 
 # beginning of link command
 export LINK = $(CXX) $(STD_LIB)
-
-#test
