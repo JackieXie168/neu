@@ -153,9 +153,8 @@ namespace neu{
     
     class Queue{
     public:
-      Queue(){
-        
-      }
+      Queue()
+      : active_(true){}
       
       ~Queue(){
         while(!queue_.empty()){
@@ -180,13 +179,20 @@ namespace neu{
       
       Item* get(){
         sem_.acquire();
+        if(active_){
+          mutex_.lock();
+          Item* item = queue_.top();
+          queue_.pop();
+          mutex_.unlock();
+          return item;
+        }
         
-        mutex_.lock();
-        Item* item = queue_.top();
-        queue_.pop();
-        mutex_.unlock();
-        
-        return item;
+        return 0;
+      }
+
+      void setActive(bool flag){
+        active_ = flag;
+        sem_.release();
       }
       
     private:
@@ -201,6 +207,7 @@ namespace neu{
       Queue_ queue_;
       NVSemaphore sem_;
       NBasicMutex mutex_;
+      atomic_bool active_;
     };
     
     class Thread : public NThread{
@@ -214,13 +221,15 @@ namespace neu{
       void run(){
         while(active_){
           Item* item = queue_.get();
-          NProc_* np = item->np;
-          np->outer()->run(item->r);
-          
-          if(np->dequeued()){
-            delete np->outer();
+          if(item){
+            NProc_* np = item->np;
+            np->outer()->run(item->r);
+            
+            if(np->dequeued()){
+              delete np->outer();
+            }
+            delete item;
           }
-          delete item;
         }
       }
       
@@ -244,8 +253,13 @@ namespace neu{
     }
     
     ~NProcTask_(){
+      q_.setActive(false);
+      
       for(Thread* t : threadVec_){
         t->setActive(false);
+      }
+      
+      for(Thread* t : threadVec_){
         t->join();
         delete t;
       }
