@@ -4557,6 +4557,8 @@ namespace neu{
     
     void foldLeft();
     
+    void unfold();
+    
     size_t hash() const{
       switch(t_){
         case None:

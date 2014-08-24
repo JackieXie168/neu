@@ -26276,3 +26276,33 @@ void nvar::foldRight(){
     (*this) << move(f);
   }
 }
+
+void nvar::unfold(){
+  if(!isFunction()){
+    return;
+  }
+  
+  if(size() != 2){
+    return;
+  }
+  
+  const nstr& fs = *this;
+  
+  nvar nf = nfunc(fs);
+  
+  nvar& l = (*this)[0];
+  nvar& r = (*this)[1];
+  
+  if(l.isFunction(fs)){
+    l.unfold();
+    nf.append(l);
+    nf << move(r);
+    *this = move(nf);
+  }
+  else if(r.isFunction(fs)){
+    r.unfold();
+    nf << move(l);
+    nf.append(r);
+    *this = move(nf);
+  }
+}
