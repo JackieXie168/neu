@@ -4227,7 +4227,7 @@ namespace neu{
         case Pointer:
           return h_.vp->begin();
         default:
-          touchVector();
+          intoVector();
           return h_.v->begin();
       }
     }
@@ -4278,7 +4278,7 @@ namespace neu{
         case Pointer:
           return h_.vp->end();
         default:
-          touchVector();
+          intoVector();
           return h_.v->end();
       }
     }
@@ -4308,25 +4308,25 @@ namespace neu{
       }
     }
     
-    void touchVector();
+    void intoVector();
     
-    void touchVector(size_t size, const nvar& v=undef);
+    void intoVector(size_t size, const nvar& v=undef);
     
-    void touchQueue();
+    void intoQueue();
     
-    void touchQueue(size_t size, const nvar& v=undef);
+    void intoQueue(size_t size, const nvar& v=undef);
     
-    void touchList();
+    void intoList();
     
-    void touchSet();
+    void intoSet();
     
-    void touchHashSet();
+    void intoHashSet();
     
-    void touchMap();
+    void intoMap();
     
-    void touchHashMap();
+    void intoHashMap();
     
-    void touchMultimap();
+    void intoMultimap();
     
     nstr& createBuffer(size_t size){
       switch(t_){

@@ -450,7 +450,7 @@ namespace neu{
             NERROR("missing option: " + o->key);
           }
           else if(o->multi){
-            _args(o->key).touchVector();
+            _args(o->key).intoVector();
           }
           else{
             _args(o->key) = o->def;

@@ -483,13 +483,13 @@ namespace neu{
           if(noSeq){
             switch(seqType){
               case nvar::Vector:
-                v.touchVector();
+                v.intoVector();
                 break;
               case nvar::List:
-                v.touchList();
+                v.intoList();
                 break;
               case nvar::Queue:
-                v.touchQueue();
+                v.intoQueue();
                 break;
               default:
                 assert(false);
@@ -503,10 +503,10 @@ namespace neu{
           if(noMap){
             switch(mapType){
               case nvar::Map:
-                v.touchMap();
+                v.intoMap();
                 break;
               case nvar::HashMap:
-                v.touchHashMap();
+                v.intoHashMap();
                 break;
               default:
                 assert(false);
@@ -520,10 +520,10 @@ namespace neu{
           if(noMap){
             switch(mapType){
               case nvar::Set:
-                v.touchSet();
+                v.intoSet();
                 break;
               case nvar::HashSet:
-                v.touchHashSet();
+                v.intoHashSet();
                 break;
               default:
                 assert(false);

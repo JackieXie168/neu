@@ -85,8 +85,8 @@ namespace{
       nameMap_("catch") = true;
       
       varBuiltinMap_({"pushBack", 1}) = "PushBack";
-      varBuiltinMap_({"touchMultimap", 0}) = "TouchMultimap";
-      varBuiltinMap_({"touchList", 0}) = "TouchList";
+      varBuiltinMap_({"intoMultimap", 0}) = "TouchMultimap";
+      varBuiltinMap_({"intoList", 0}) = "TouchList";
       varBuiltinMap_({"keys", 0}) = "Keys";
       varBuiltinMap_({"pushFront", 1}) = "PushFront";
       varBuiltinMap_({"popBack", 0}) = "PopBack";
@@ -138,8 +138,8 @@ namespace{
       varBuiltinMap_({"hasMultimap", 0}) = "HasMultimap";
       varBuiltinMap_({"popFront", 0}) = "PopFront";
       varBuiltinMap_({"allKeys", 0}) = "AllKeys";
-      varBuiltinMap_({"touchVector", 0}) = "TouchVector";
-      varBuiltinMap_({"touchMap", 0}) = "TouchMap";
+      varBuiltinMap_({"intoVector", 0}) = "TouchVector";
+      varBuiltinMap_({"intoMap", 0}) = "TouchMap";
       varBuiltinMap_({"open", 1}) = "Open";
       varBuiltinMap_({"save", 1}) = "Save";
       varBuiltinMap_({"unite", 1}) = "Unite";

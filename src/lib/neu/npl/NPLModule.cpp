@@ -663,7 +663,7 @@ namespace{
       if(v.hasVector()){
         vv = toVar(h);
         
-        globalCall("void nvar::touchVector(nvar*)", {vv});
+        globalCall("void nvar::intoVector(nvar*)", {vv});
         
         const nvec& vec = v;
         for(size_t i = 0; i < vec.size(); ++i){
@@ -678,7 +678,7 @@ namespace{
       else if(v.hasList()){
         vv = toVar(h);
 
-        globalCall("void nvar::touchList(nvar*)", {vv});
+        globalCall("void nvar::intoList(nvar*)", {vv});
         
         const nlist& l = v;
         for(size_t i = 0; i < l.size(); ++i){
@@ -693,7 +693,7 @@ namespace{
       else if(v.hasQueue()){
         vv = toVar(h);
         
-        globalCall("void nvar::touchQueue(nvar*)", {vv});
+        globalCall("void nvar::intoQueue(nvar*)", {vv});
         
         const nqueue& q = v;
         for(size_t i = 0; i < q.size(); ++i){
@@ -709,7 +709,7 @@ namespace{
       if(v.hasSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::touchSet(nvar*)", {vv});
+        globalCall("void nvar::intoSet(nvar*)", {vv});
         
         const nset& s = v;
         for(auto& itr : s){
@@ -729,7 +729,7 @@ namespace{
       else if(v.hasHashSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::touchHashSet(nvar*)", {vv});
+        globalCall("void nvar::intoHashSet(nvar*)", {vv});
         
         const nhset& s = v;
         for(auto& itr : s){
@@ -762,7 +762,7 @@ namespace{
         if(has){
           vv = vv ? vv : toVar(h);
           
-          globalCall("void nvar::touchMap(nvar*)", {vv});
+          globalCall("void nvar::intoMap(nvar*)", {vv});
           
           const nmap& m = v;
           for(auto& itr : m){
@@ -801,7 +801,7 @@ namespace{
       else if(v.hasHashMap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::touchHashMap(nvar*)", {vv});
+        globalCall("void nvar::intoHashMap(nvar*)", {vv});
         
         const nhmap& m = v;
         for(auto& itr : m){
@@ -839,7 +839,7 @@ namespace{
       else if(v.hasMultimap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::touchMultimap(nvar*)", {vv});
+        globalCall("void nvar::intoMultimap(nvar*)", {vv});
         
         const nmmap& m = v;
         for(auto& itr : m){
@@ -4063,7 +4063,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchVector(nvar*)", {l});
+          return globalCall("void nvar::intoVector(nvar*)", {l});
         }
         case FKEY_TouchList_1:{
           Value* l = getLValue(n[0]);
@@ -4075,7 +4075,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchList(nvar*)", {l});
+          return globalCall("void nvar::intoList(nvar*)", {l});
         }
         case FKEY_TouchQueue_1:{
           Value* l = getLValue(n[0]);
@@ -4087,7 +4087,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchQueue(nvar*)", {l});
+          return globalCall("void nvar::intoQueue(nvar*)", {l});
         }
         case FKEY_TouchSet_1:{
           Value* l = getLValue(n[0]);
@@ -4099,7 +4099,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchSet(nvar*)", {l});
+          return globalCall("void nvar::intoSet(nvar*)", {l});
         }
         case FKEY_TouchHashSet_1:{
           Value* l = getLValue(n[0]);
@@ -4111,7 +4111,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchHashSet(nvar*)", {l});
+          return globalCall("void nvar::intoHashSet(nvar*)", {l});
         }
         case FKEY_TouchMap_1:{
           Value* l = getLValue(n[0]);
@@ -4123,7 +4123,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchMap(nvar*)", {l});
+          return globalCall("void nvar::intoMap(nvar*)", {l});
         }
         case FKEY_TouchHashMap_1:{
           Value* l = getLValue(n[0]);
@@ -4135,7 +4135,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::touchHashMap(nvar*)", {l});
+          return globalCall("void nvar::intoHashMap(nvar*)", {l});
         }
         case FKEY_TouchMultimap_1:{
           Value* l = getLValue(n[0]);
@@ -4147,7 +4147,7 @@ namespace{
             return error("not a var[0]", n);
           }
 
-          return globalCall("void nvar::touchMultimap(nvar*)", {l});
+          return globalCall("void nvar::intoMultimap(nvar*)", {l});
         }
         case FKEY_Keys_1:{
           Value* l = getLValue(n[0]);
@@ -5324,29 +5324,29 @@ namespace{
     createFunction("void nvar::pushBack(nvar*, nvar*)",
                    "_ZN3neu4nvar8pushBackERKS0_");
     
-    createFunction("void nvar::touchVector(nvar*)",
-                   "__ZN3neu4nvar11touchVectorEv");
+    createFunction("void nvar::intoVector(nvar*)",
+                   "_ZN3neu4nvar10intoVectorEv");
     
-    createFunction("void nvar::touchList(nvar*)",
-                   "_ZN3neu4nvar9touchListEv");
+    createFunction("void nvar::intoList(nvar*)",
+                   "_ZN3neu4nvar8intoListEv");
 
-    createFunction("void nvar::touchQueue(nvar*)",
-                   "_ZN3neu4nvar10touchQueueEv");
+    createFunction("void nvar::intoQueue(nvar*)",
+                   "_ZN3neu4nvar9intoQueueEv");
     
-    createFunction("void nvar::touchSet(nvar*)",
-                   "_ZN3neu4nvar8touchSetEv");
+    createFunction("void nvar::intoSet(nvar*)",
+                   "_ZN3neu4nvar7intoSetEv");
     
-    createFunction("void nvar::touchHashSet(nvar*)",
-                   "_ZN3neu4nvar12touchHashSetEv");
+    createFunction("void nvar::intoHashSet(nvar*)",
+                   "_ZN3neu4nvar11intoHashSetEv");
     
-    createFunction("void nvar::touchMap(nvar*)",
-                   "_ZN3neu4nvar8touchMapEv");
+    createFunction("void nvar::intoMap(nvar*)",
+                   "_ZN3neu4nvar7intoMapEv");
     
-    createFunction("void nvar::touchHashMap(nvar*)",
-                   "_ZN3neu4nvar12touchHashMapEv");
+    createFunction("void nvar::intoHashMap(nvar*)",
+                   "_ZN3neu4nvar11intoHashMapEv");
     
-    createFunction("void nvar::touchMultimap(nvar*)",
-                   "_ZN3neu4nvar13touchMultimapEv");
+    createFunction("void nvar::intoMultimap(nvar*)",
+                   "_ZN3neu4nvar13intoMultimapEv");
     
     createFunction("bool nvar::toBool(nvar*)",
                    "_ZNK3neu4nvar6toBoolEv");

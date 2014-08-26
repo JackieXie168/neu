@@ -13656,10 +13656,10 @@ bool nvar::less(const nvar& x) const{
           }
           
           nvar m1(*this);
-          m1.touchSet();
+          m1.intoSet();
           
           nvar m2(x);
-          m2.touchSet();
+          m2.intoSet();
           
           return m1.less(m2);
         }
@@ -13753,10 +13753,10 @@ bool nvar::less(const nvar& x) const{
           }
          
           nvar m1(*this);
-          m1.touchMap();
+          m1.intoMap();
           
           nvar m2(x);
-          m2.touchMap();
+          m2.intoMap();
           
           return m1.less(m2);
         }
@@ -14434,10 +14434,10 @@ bool nvar::greater(const nvar& x) const{
           }
           
           nvar m1(*this);
-          m1.touchSet();
+          m1.intoSet();
           
           nvar m2(x);
-          m2.touchSet();
+          m2.intoSet();
           
           return m1.greater(m2);
         }
@@ -14529,10 +14529,10 @@ bool nvar::greater(const nvar& x) const{
           }
           
           nvar m1(*this);
-          m1.touchMap();
+          m1.intoMap();
           
           nvar m2(x);
-          m2.touchMap();
+          m2.intoMap();
           
           return m1.greater(m2);
         }
@@ -16129,10 +16129,10 @@ nvar nvar::operator<(const nvar& x) const{
           }
           
           nvar s1(*this);
-          s1.touchSet();
+          s1.intoSet();
           
           nvar s2(x);
-          s2.touchSet();
+          s2.intoSet();
           
           return s1 < s2;
         }
@@ -16914,10 +16914,10 @@ nvar nvar::operator<=(const nvar& x) const{
           }
           
           nvar s1(*this);
-          s1.touchSet();
+          s1.intoSet();
           
           nvar s2(x);
-          s2.touchSet();
+          s2.intoSet();
           
           return s1 <= s2;
         }
@@ -17704,10 +17704,10 @@ nvar nvar::operator>(const nvar& x) const{
           }
           
           nvar s1(*this);
-          s1.touchSet();
+          s1.intoSet();
           
           nvar s2(x);
-          s2.touchSet();
+          s2.intoSet();
           
           return s1 > s2;
         }
@@ -18495,10 +18495,10 @@ nvar nvar::operator>=(const nvar& x) const{
           }
           
           nvar s1(*this);
-          s1.touchSet();
+          s1.intoSet();
           
           nvar s2(x);
-          s2.touchSet();
+          s2.intoSet();
           
           return s1 >= s2;
         }
@@ -21036,7 +21036,7 @@ nvar nvar::allKeys() const{
   return nvar(move(ks));
 }
 
-void nvar::touchVector(){
+void nvar::intoVector(){
   switch(t_){
     case None:
     case Undefined:
@@ -21080,7 +21080,7 @@ void nvar::touchVector(){
       break;
     }
     case HeadSequence:
-      h_.hs->s->touchVector();
+      h_.hs->s->intoVector();
       break;
     case Set:
     case HashSet:
@@ -21104,23 +21104,23 @@ void nvar::touchVector(){
       break;
     }
     case SequenceMap:
-      h_.sm->s->touchVector();
+      h_.sm->s->intoVector();
       break;
     case HeadSequenceMap:
-      h_.hsm->s->touchVector();
+      h_.hsm->s->intoVector();
       break;
     case Reference:
-      h_.ref->v->touchVector();
+      h_.ref->v->intoVector();
       break;
     case Pointer:
-      h_.vp->touchVector();
+      h_.vp->intoVector();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchVector(size_t size, const nvar& v){
+void nvar::intoVector(size_t size, const nvar& v){
   switch(t_){
     case None:
     case Undefined:
@@ -21169,17 +21169,17 @@ void nvar::touchVector(size_t size, const nvar& v){
       break;
     }
     case Reference:
-      h_.ref->v->touchVector(size, v);
+      h_.ref->v->intoVector(size, v);
       break;
     case Pointer:
-      h_.vp->touchVector(size, v);
+      h_.vp->intoVector(size, v);
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchList(){
+void nvar::intoList(){
   switch(t_){
     case None:
     case Undefined:
@@ -21223,7 +21223,7 @@ void nvar::touchList(){
       break;
     }
     case HeadSequence:
-      h_.hs->s->touchList();
+      h_.hs->s->intoList();
       break;
     case Set:
     case HashSet:
@@ -21247,23 +21247,23 @@ void nvar::touchList(){
       break;
     }
     case SequenceMap:
-      h_.sm->s->touchList();
+      h_.sm->s->intoList();
       break;
     case HeadSequenceMap:
-      h_.hsm->s->touchList();
+      h_.hsm->s->intoList();
       break;
     case Reference:
-      h_.ref->v->touchList();
+      h_.ref->v->intoList();
       break;
     case Pointer:
-      h_.vp->touchList();
+      h_.vp->intoList();
       break;
     default:
       NERROR("invalid operand: " + *this);
   }
 }
 
-void nvar::touchMap(){
+void nvar::intoMap(){
   switch(t_){
     case None:
     case Undefined:
@@ -21366,26 +21366,26 @@ void nvar::touchMap(){
       break;
     }
     case HeadMap:
-      h_.hm->m->touchMap();
+      h_.hm->m->intoMap();
       break;
     case SequenceMap:
-      h_.sm->m->touchMap();
+      h_.sm->m->intoMap();
       break;
     case HeadSequenceMap:
-      h_.hsm->m->touchMap();
+      h_.hsm->m->intoMap();
       break;
     case Reference:
-      h_.ref->v->touchMap();
+      h_.ref->v->intoMap();
       break;
     case Pointer:
-      h_.vp->touchMap();
+      h_.vp->intoMap();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchMultimap(){
+void nvar::intoMultimap(){
   switch(t_){
     case None:
     case Undefined:
@@ -21472,25 +21472,25 @@ void nvar::touchMultimap(){
     case Multimap:
       break;
     case HeadMap:
-      h_.hm->m->touchMultimap();
+      h_.hm->m->intoMultimap();
     case SequenceMap:
-      h_.sm->m->touchMultimap();
+      h_.sm->m->intoMultimap();
       break;
     case HeadSequenceMap:
-      h_.hsm->m->touchMultimap();
+      h_.hsm->m->intoMultimap();
       break;
     case Reference:
-      h_.ref->v->touchMultimap();
+      h_.ref->v->intoMultimap();
       break;
     case Pointer:
-      h_.vp->touchMultimap();
+      h_.vp->intoMultimap();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchQueue(){
+void nvar::intoQueue(){
   switch(t_){
     case None:
     case Undefined:
@@ -21535,7 +21535,7 @@ void nvar::touchQueue(){
     case Queue:
       break;
     case HeadSequence:
-      h_.hs->s->touchQueue();
+      h_.hs->s->intoQueue();
       break;
     case Set:
     case HashSet:
@@ -21559,23 +21559,23 @@ void nvar::touchQueue(){
       break;
     }
     case SequenceMap:
-      h_.sm->s->touchQueue();
+      h_.sm->s->intoQueue();
       break;
     case HeadSequenceMap:
-      h_.hsm->s->touchQueue();
+      h_.hsm->s->intoQueue();
       break;
     case Reference:
-      h_.ref->v->touchQueue();
+      h_.ref->v->intoQueue();
       break;
     case Pointer:
-      h_.vp->touchQueue();
+      h_.vp->intoQueue();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchQueue(size_t size, const nvar& v){
+void nvar::intoQueue(size_t size, const nvar& v){
   switch(t_){
     case None:
     case Undefined:
@@ -21624,17 +21624,17 @@ void nvar::touchQueue(size_t size, const nvar& v){
       break;
     }
     case Reference:
-      h_.ref->v->touchQueue(size, v);
+      h_.ref->v->intoQueue(size, v);
       break;
     case Pointer:
-      h_.vp->touchQueue(size, v);
+      h_.vp->intoQueue(size, v);
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchSet(){
+void nvar::intoSet(){
   switch(t_){
     case None:
     case Undefined:
@@ -21720,26 +21720,26 @@ void nvar::touchSet(){
       break;
     }
     case HeadMap:
-      h_.hm->m->touchSet();
+      h_.hm->m->intoSet();
       break;
     case SequenceMap:
-      h_.sm->m->touchSet();
+      h_.sm->m->intoSet();
       break;
     case HeadSequenceMap:
-      h_.hsm->m->touchSet();
+      h_.hsm->m->intoSet();
       break;
     case Reference:
-      h_.ref->v->touchSet();
+      h_.ref->v->intoSet();
       break;
     case Pointer:
-      h_.vp->touchSet();
+      h_.vp->intoSet();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchHashSet(){
+void nvar::intoHashSet(){
   switch(t_){
     case None:
     case Undefined:
@@ -21831,26 +21831,26 @@ void nvar::touchHashSet(){
       break;
     }
     case HeadMap:
-      h_.hm->m->touchHashSet();
+      h_.hm->m->intoHashSet();
       break;
     case SequenceMap:
-      h_.sm->m->touchHashSet();
+      h_.sm->m->intoHashSet();
       break;
     case HeadSequenceMap:
-      h_.hsm->m->touchHashSet();
+      h_.hsm->m->intoHashSet();
       break;
     case Reference:
-      h_.ref->v->touchHashSet();
+      h_.ref->v->intoHashSet();
       break;
     case Pointer:
-      h_.vp->touchHashSet();
+      h_.vp->intoHashSet();
       break;
     default:
       NERROR("invalid operand");
   }
 }
 
-void nvar::touchHashMap(){
+void nvar::intoHashMap(){
   switch(t_){
     case None:
     case Undefined:
@@ -21947,19 +21947,19 @@ void nvar::touchHashMap(){
       break;
     }
     case HeadMap:
-      h_.hm->m->touchHashMap();
+      h_.hm->m->intoHashMap();
       break;
     case SequenceMap:
-      h_.sm->m->touchHashMap();
+      h_.sm->m->intoHashMap();
       break;
     case HeadSequenceMap:
-      h_.hsm->m->touchHashMap();
+      h_.hsm->m->intoHashMap();
       break;
     case Reference:
-      h_.ref->v->touchHashMap();
+      h_.ref->v->intoHashMap();
       break;
     case Pointer:
-      h_.vp->touchHashMap();
+      h_.vp->intoHashMap();
       break;
     default:
       NERROR("invalid operand");
@@ -23030,7 +23030,7 @@ void nvar::merge(const nvar& x){
           break;
         case HashSet:{
           nvar s(x);
-          s.touchSet();
+          s.intoSet();
           h_.set->unite(*s.h_.set);
           break;
         }
@@ -23051,7 +23051,7 @@ void nvar::merge(const nvar& x){
           break;
         case Function:
           if(x.h_.f->m){
-            touchMap();
+            intoMap();
             h_.m->merge(*x.h_.f->m);
           }
           break;
@@ -23075,7 +23075,7 @@ void nvar::merge(const nvar& x){
       switch(x.t_){
         case Set:{
           nvar s(x);
-          s.touchHashSet();
+          s.intoHashSet();
           h_.hset->unite(*s.h_.hset);
           break;
         }
@@ -23099,7 +23099,7 @@ void nvar::merge(const nvar& x){
           break;
         case Function:
           if(x.h_.f->m){
-            touchMap();
+            intoMap();
             h_.m->merge(*x.h_.f->m);
           }
           break;
@@ -23138,7 +23138,7 @@ void nvar::merge(const nvar& x){
           h_.m->insert(x.h_.h->begin(), x.h_.h->end());
           break;
         case Multimap:
-          touchMultimap();
+          intoMultimap();
           h_.mm->merge(*x.h_.mm);
           break;
         case Function:
@@ -23181,7 +23181,7 @@ void nvar::merge(const nvar& x){
           h_.h->merge(*x.h_.h);
           break;
         case Multimap:
-          touchMultimap();
+          intoMultimap();
           h_.mm->merge(*x.h_.mm);
           break;
         case Function:
@@ -23353,7 +23353,7 @@ void nvar::merge(const nvar& x){
         case Function:
         case HeadMap:
         case HeadSequenceMap:
-          touchMap();
+          intoMap();
           merge(x);
           break;
         case Reference:
@@ -23376,7 +23376,7 @@ void nvar::outerMerge(const nvar& x){
           h_.m->outerMerge(*x.h_.m);
           break;
         case Multimap:
-          touchMultimap();
+          intoMultimap();
           h_.mm->merge(*x.h_.mm);
           break;
         case Function:
@@ -23487,7 +23487,7 @@ void nvar::outerMerge(const nvar& x){
         case Function:
         case HeadMap:
         case HeadSequenceMap:
-          touchMap();
+          intoMap();
           outerMerge(x);
           break;
         case Reference:
@@ -26146,7 +26146,7 @@ nvar& nvar::unite(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchSet();
+          s.intoSet();
           h_.set->unite(*s.h_.set);
           break;
         }
@@ -26159,14 +26159,14 @@ nvar& nvar::unite(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchHashSet();
+          s.intoHashSet();
           h_.hset->unite(*s.h_.hset);
           break;
         }
       }
       break;
     default:
-      touchSet();
+      intoSet();
       unite(x);
   }
 
@@ -26182,7 +26182,7 @@ nvar& nvar::intersect(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchSet();
+          s.intoSet();
           h_.set->intersect(*s.h_.set);
           break;
         }
@@ -26195,14 +26195,14 @@ nvar& nvar::intersect(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchHashSet();
+          s.intoHashSet();
           h_.hset->intersect(*s.h_.hset);
           break;
         }
       }
       break;
     default:
-      touchSet();
+      intoSet();
       intersect(x);
   }
   
@@ -26218,7 +26218,7 @@ nvar& nvar::complement(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchSet();
+          s.intoSet();
           h_.set->complement(*s.h_.set);
           break;
         }
@@ -26231,14 +26231,14 @@ nvar& nvar::complement(const nvar& x){
           break;
         default:{
           nvar s(x);
-          s.touchHashSet();
+          s.intoHashSet();
           h_.hset->complement(*s.h_.hset);
           break;
         }
       }
       break;
     default:
-      touchSet();
+      intoSet();
       complement(x);
   }
   

@@ -193,7 +193,7 @@ namespace neu{
     
     static nvar listRange(const nvar& a, const nvar& b, const nvar& inc){
       nvar ret;
-      ret.touchList();
+      ret.intoList();
       nvar pos = a;
       
       while(pos <= b){

@@ -1217,7 +1217,7 @@ namespace neu{
     nvar TouchVector(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchVector();
+      p1.intoVector();
       
       return none;
     }
@@ -1225,7 +1225,7 @@ namespace neu{
     nvar TouchList(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchList();
+      p1.intoList();
       
       return none;
     }
@@ -1233,7 +1233,7 @@ namespace neu{
     nvar TouchQueue(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchQueue();
+      p1.intoQueue();
       
       return none;
     }
@@ -1241,7 +1241,7 @@ namespace neu{
     nvar TouchSet(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchSet();
+      p1.intoSet();
       
       return none;
     }
@@ -1249,7 +1249,7 @@ namespace neu{
     nvar TouchHashSet(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchHashSet();
+      p1.intoHashSet();
       
       return none;
     }
@@ -1257,7 +1257,7 @@ namespace neu{
     nvar TouchMap(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchMap();
+      p1.intoMap();
       
       return none;
     }
@@ -1265,7 +1265,7 @@ namespace neu{
     nvar TouchHashMap(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchHashMap();
+      p1.intoHashMap();
       
       return none;
     }
@@ -1273,7 +1273,7 @@ namespace neu{
     nvar TouchMultimap(const nvar& v1){
       nvar p1 = process(v1);
       
-      p1.touchMultimap();
+      p1.intoMultimap();
       
       return none;
     }

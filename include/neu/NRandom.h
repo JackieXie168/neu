@@ -162,7 +162,7 @@ namespace neu{
         NERROR("b < a");
       }
       
-      seq.touchVector();
+      seq.intoVector();
       nvec& v = seq;
       v.reserve(b - a);
       

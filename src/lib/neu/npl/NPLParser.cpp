@@ -124,8 +124,8 @@ namespace{
       builtinMap_({"uniform", 2}) = "Uniform";
       
       varBuiltinMap_({"pushBack", 1}) = "PushBack";
-      varBuiltinMap_({"touchMultimap", 0}) = "TouchMultimap";
-      varBuiltinMap_({"touchList", 0}) = "TouchList";
+      varBuiltinMap_({"intoMultimap", 0}) = "TouchMultimap";
+      varBuiltinMap_({"intoList", 0}) = "TouchList";
       varBuiltinMap_({"keys", 0}) = "Keys";
       varBuiltinMap_({"pushFront", 1}) = "PushFront";
       varBuiltinMap_({"popBack", 0}) = "PopBack";
