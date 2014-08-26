@@ -106,7 +106,9 @@ namespace neu{
   public:
     NProcTask(size_t threads);
     
-    ~NProcTask();
+    virtual ~NProcTask();
+    
+    virtual void dealloc(nvar& r){}
     
     void queue(NProc* proc, nvar& r, double priority=0);
     

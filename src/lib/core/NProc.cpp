@@ -156,10 +156,14 @@ namespace neu{
       Queue()
       : active_(true){}
       
-      ~Queue(){
+      ~Queue(){}
+      
+      void dealloc(NProcTask* task){
         while(!queue_.empty()){
           Item* item = queue_.top();
           queue_.pop();
+          
+          task->dealloc(item->r);
           
           if(item->np->dequeued()){
             delete item->np->outer();
@@ -263,6 +267,8 @@ namespace neu{
         t->join();
         delete t;
       }
+      
+      q_.dealloc(o_);
     }
     
     void queue(NProc_* proc, nvar& r, double priority){
