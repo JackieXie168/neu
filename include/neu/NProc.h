@@ -58,53 +58,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/nvar.h>
 
 namespace neu{
-  
-  class NProcTask;
-  
-  class NProc{
-  public:
-    NProc(NProcTask* task);
-    
-    NProc();
-    
-    virtual ~NProc();
-    
-    virtual bool handle(nvar& v, nvar& r){
-      return true;
-    }
-    
-    virtual void run(nvar& r) = 0;
-    
-    void signal(NProc* proc, nvar& v, double priority=0);
-    
-    void signal(NProc* proc){
-      nvar v;
-      signal(proc, v);
-    }
-    
-    NProcTask* task();
-    
-    void setTask(NProcTask* task);
 
-    bool terminate();
-    
-    void queue(nvar& r, double priority=0);
-    
-    void queue();
-    
-    NProc& operator=(const NProc&) = delete;
-    
-    NProc(const NProc&) = delete;
-    
-    friend class NProcTask;
-    
-  private:
-    class NProc_* x_;
-  };
+  class NProc;
   
   class NProcTask{
   public:
     NProcTask(size_t threads);
+    
+    void shutdown();
     
     virtual ~NProcTask();
     
@@ -117,8 +78,39 @@ namespace neu{
       queue(proc, r);
     }
     
+    bool terminate(NProc* proc);
+    
   private:
     class NProcTask_* x_;
+  };
+  
+  class NProc{
+  public:
+    NProc(){}
+    
+    virtual ~NProc(){}
+    
+    virtual bool handle(nvar& v, nvar& r){
+      return true;
+    }
+    
+    virtual void run(nvar& r) = 0;
+    
+    void signal(NProcTask* task, NProc* proc, nvar& v, double priority=0){
+      nvar r;
+      if(proc->handle(v, r)){
+        task->queue(proc, r, priority);
+      }
+    }
+    
+    void signal(NProcTask* task, NProc* proc){
+      nvar v;
+      signal(task, proc, v);
+    }
+    
+    NProc& operator=(const NProc&) = delete;
+    
+    NProc(const NProc&) = delete;
   };
   
 } // end namespace neu

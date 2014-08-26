@@ -64,46 +64,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 using namespace neu;
 
-namespace neu{
+namespace{
   
-  class NProc_{
+  class State{
   public:
-    NProc_(NProc* o, NProcTask* task)
-    : o_(o),
-    task_(task),
+    NProc* np;
+    
+    State(NProc* np)
+    : np(np),
     queueCount_(0),
-    terminated_(false){
-      
-    }
-    
-    NProc_(NProc* o)
-    : o_(o),
-    task_(0),
-    queueCount_(0),
-    terminated_(false){
-      
-    }
-    
-    ~NProc_(){
-      
-    }
-    
-    void signal(NProc_* proc, nvar& v, double priority){
-      assert(proc->task_ && "NProc has no task");
-      
-      nvar r;
-      if(proc->o_->handle(v, r)){
-        proc->task_->queue(proc->o_, r, priority);
-      }
-    }
-    
-    void setTask(NProcTask* task){
-      task_ = task;
-    }
-    
-    NProcTask* task(){
-      return task_;
-    }
+    terminated_(false){}
     
     void queued(){
       ++queueCount_;
@@ -111,10 +81,6 @@ namespace neu{
     
     bool dequeued(){
       return --queueCount_ == 0 && terminated_;
-    }
-    
-    NProc* outer(){
-      return o_;
     }
     
     bool terminate(){
@@ -127,26 +93,27 @@ namespace neu{
     }
     
   private:
-    NProc* o_;
-    NProcTask* task_;
-    NVSemaphore finishSem_;
     atomic<uint32_t> queueCount_;
     atomic_bool terminated_;
   };
+  
+} // end namespace
+
+namespace neu{
   
   class NProcTask_{
   public:
     
     class Item{
     public:
-      Item(NProc_* np, nvar& r, double p)
-      : np(np),
+      Item(State* s, nvar& r, double p)
+      : s(s),
       r(move(r)),
       p(p){
 
       }
       
-      NProc_* np;
+      State* s;
       nvar r;
       double p;
     };
@@ -159,14 +126,19 @@ namespace neu{
       ~Queue(){}
       
       void dealloc(NProcTask* task){
+        Item* item;
+        State* s;
+        
         while(!queue_.empty()){
-          Item* item = queue_.top();
+          item = queue_.top();
           queue_.pop();
           
           task->dealloc(item->r);
           
-          if(item->np->dequeued()){
-            delete item->np->outer();
+          s = item->s;
+          
+          if(s->dequeued()){
+            delete s->np;
           }
           
           delete item;
@@ -223,15 +195,21 @@ namespace neu{
       }
       
       void run(){
+        State* s;
+        Item* item;
+        
         while(active_){
-          Item* item = queue_.get();
+          item = queue_.get();
+
           if(item){
-            NProc_* np = item->np;
-            np->outer()->run(item->r);
+            s = item->s;
             
-            if(np->dequeued()){
-              delete np->outer();
+            s->np->run(item->r);
+            
+            if(s->dequeued()){
+              delete s->np;
             }
+          
             delete item;
           }
         }
@@ -247,7 +225,8 @@ namespace neu{
     };
     
     NProcTask_(NProcTask* o, size_t threads)
-    : o_(o){
+    : o_(o),
+    active_(true){
       
       for(size_t i = 0; i < threads; ++i){
         Thread* thread = new Thread(q_);
@@ -257,6 +236,16 @@ namespace neu{
     }
     
     ~NProcTask_(){
+      shutdown();
+    }
+    
+    void shutdown(){
+      if(!active_){
+        return;
+      }
+      
+      active_ = false;
+      
       q_.setActive(false);
       
       for(Thread* t : threadVec_){
@@ -269,63 +258,60 @@ namespace neu{
       }
       
       q_.dealloc(o_);
+      
+      for(auto& itr : stateMap_){
+        delete itr.second;
+      }
     }
     
-    void queue(NProc_* proc, nvar& r, double priority){
-      if(proc->terminated()){
+    void queue(NProc* proc, nvar& r, double priority){
+      State* s = getState(proc);
+      
+      if(s->terminated()){
         return;
       }
       
-      proc->queued();
-      Item* item = new Item(proc, r, priority);
+      s->queued();
+      Item* item = new Item(s, r, priority);
       q_.put(item);
+    }
+    
+    State* getState(NProc* np){
+      auto itr = stateMap_.find(np);
+      
+      if(itr == stateMap_.end()){
+        State* state = new State(np);
+        stateMap_.insert({np, state});
+        return state;
+      }
+      
+      return itr->second;
+    }
+    
+    bool terminate(NProc* np){
+      auto itr = stateMap_.find(np);
+      if(itr == stateMap_.end()){
+        return true;
+      }
+      
+      State* s = itr->second;
+      
+      return s->terminate();
     }
     
   private:
     typedef NVector<Thread*> ThreadVec_;
+    typedef NHashMap<NProc*, State*> StateMap_;
     
     NProcTask* o_;
     Queue q_;
     ThreadVec_ threadVec_;
+    bool active_;
+    StateMap_ stateMap_;
   };
   
 } // end namespace neu
 
-NProc::NProc(NProcTask* task){
-  x_ = new NProc_(this, task);
-}
-
-NProc::NProc(){
-  x_ = new NProc_(this);
-}
-
-NProc::~NProc(){
-  delete x_;
-}
-
-void NProc::signal(NProc* proc, nvar& v, double priority){
-  x_->signal(proc->x_, v, priority);
-}
-
-void NProc::setTask(NProcTask* task){
-  x_->setTask(task);
-}
-
-bool NProc::terminate(){
-  return x_->terminate();
-}
-
-NProcTask* NProc::task(){
-  return x_->task();
-}
-
-void NProc::queue(nvar& r, double priority){
-  x_->task()->queue(this, r, priority);
-}
-
-void NProc::queue(){
-  x_->task()->queue(this);
-}
 
 NProcTask::NProcTask(size_t threads){
   x_ = new NProcTask_(this, threads);
@@ -335,6 +321,15 @@ NProcTask::~NProcTask(){
   delete x_;
 }
 
+void NProcTask::shutdown(){
+  x_->shutdown();
+}
+
 void NProcTask::queue(NProc* proc, nvar& r, double priority){
-  x_->queue(proc->x_, r, priority);
+  x_->queue(proc, r, priority);
+}
+
+
+bool NProcTask::terminate(NProc* proc){
+  return x_->terminate(proc);
 }

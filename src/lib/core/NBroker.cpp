@@ -86,6 +86,7 @@ namespace{
     void run(nvar& r);
     
   private:
+    NProcTask* task_;
     NBroker_* broker_;
     DistributedObject* obj_;
   };
@@ -94,6 +95,7 @@ namespace{
   public:
     Server(NProcTask* task, NBroker_* broker)
     : NServer(task),
+    task_(task),
     broker_(broker){
       
     }
@@ -105,6 +107,7 @@ namespace{
     bool authenticate(NCommunicator* comm, const nvar& auth);
 
   private:
+    NProcTask* task_;
     NBroker_* broker_;
   };
   
@@ -129,6 +132,9 @@ namespace{
   
   class DistributedObject{
   public:
+    DistributedObject(NProcTask* task)
+    : task_(task){}
+    
     nstr className;
     NObject* obj;
     
@@ -153,7 +159,7 @@ namespace{
       for(auto& itr : serverProcMap_){
         ServerProc* serverProc = itr.first;
         serverProc->close();
-        if(serverProc->terminate()){
+        if(task_->terminate(serverProc)){
           delete serverProc;
         }
       }
@@ -163,6 +169,7 @@ namespace{
   private:
     typedef NMap<ServerProc*, bool> ServerProcMap_;
 
+    NProcTask* task_;
     ServerProcMap_ serverProcMap_;
     NBasicMutex mutex_;
   };
@@ -206,7 +213,7 @@ namespace neu{
     void distribute(NObject* object,
                     const nstr& className,
                     const nstr& objectName){
-      DistributedObject* o = new DistributedObject;
+      DistributedObject* o = new DistributedObject(task_);
       o->className = className;
       o->obj = object;
       
@@ -380,7 +387,7 @@ namespace neu{
 void ServerProc::run(nvar& r){
   nvar req;
   if(!receive(req, _timeout)){
-    signal(this);
+    signal(task_, this);
     return;
   }
   
@@ -427,11 +434,12 @@ void ServerProc::run(nvar& r){
     }
   }
   
-  signal(this);
+  signal(task_, this);
 }
 
 ServerProc::ServerProc(NProcTask* task, NBroker_* broker)
 : NServerProc(task),
+task_(task),
 broker_(broker),
 obj_(0){
   setEncoder(broker_->encoder());
@@ -448,7 +456,7 @@ bool Server::authenticate(NCommunicator* comm, const nvar& auth){
   }
 
   ServerProc* proc = static_cast<ServerProc*>(comm);
-  proc->queue();
+  task_->queue(proc);
   
   return true;
 }

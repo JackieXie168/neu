@@ -63,13 +63,12 @@ namespace neu{
   class NServerProc : public NCommunicator, public NProc{
   public:
     NServerProc(NProcTask* task)
-    : NCommunicator(task),
-    NProc(task){
+    : NCommunicator(task){
       
     }
     
     NProcTask* task(){
-      return NProc::task();
+      return NCommunicator::task();
     }
   };
   

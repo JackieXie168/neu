@@ -24,14 +24,19 @@ public:
     if(i_ % 1000000 == 0){
       //cout << "i is: " << i_ << endl;
     }
-    signal(pn_);
+    signal(task_, pn_);
   }
 
   void setNext(NProc* pn){
     pn_ = pn;
   }
 
+  void setTask(NProcTask* task){
+    task_ = task;
+  }
+
 private:
+  NProcTask* task_;
   NProc* pn_;
   size_t i_;
 };
@@ -43,14 +48,19 @@ public:
   }
 
   void run(nvar& r){
-    signal(pn_);
+    signal(task_, pn_);
   }
 
   void setNext(NProc* pn){
     pn_ = pn;
   }
 
+  void setTask(NProcTask* task){
+    task_ = task;
+  }
+
 private:
+  NProcTask* task_;
   NProc* pn_;
 };
 

@@ -81,7 +81,7 @@ int main(int argc, char** argv){
       // can rollback
       if(i % COMMIT_INTERVAL == COMMIT_INTERVAL - 1){
         table->commit();
-        cout << "commiting..." << endl;
+        cout << "committing..." << endl;
       }
     }
 

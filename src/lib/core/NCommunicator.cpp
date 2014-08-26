@@ -70,22 +70,24 @@ namespace{
   
   class ReceiveProc : public NProc{
   public:
-    ReceiveProc(NCommunicator_* c);
+    ReceiveProc(NProcTask* task, NCommunicator_* c);
     
     void run(nvar& r);
     
   private:
+    NProcTask* task_;
     NCommunicator_* c_;
     NSocket* s_;
   };
   
   class SendProc : public NProc{
   public:
-    SendProc(NCommunicator_* c);
+    SendProc(NProcTask* task, NCommunicator_* c);
     
     void run(nvar& r);
     
   private:
+    NProcTask* task_;
     NCommunicator_* c_;
     NSocket* s_;
   };
@@ -108,11 +110,11 @@ namespace neu{
     
     ~NCommunicator_(){
       if(socket_){
-        if(sendProc_->terminate()){
+        if(task_->terminate(sendProc_)){
           delete sendProc_;
         }
         
-        if(receiveProc_->terminate()){
+        if(task_->terminate(receiveProc_)){
           delete receiveProc_;
         }
         
@@ -128,14 +130,11 @@ namespace neu{
     void init(){
       connected_ = true;
       
-      sendProc_ = new SendProc(this);
-      sendProc_->setTask(task_);
-      
-      receiveProc_ = new ReceiveProc(this);
-      receiveProc_->setTask(task_);
-      
-      sendProc_->queue();
-      receiveProc_->queue();
+      sendProc_ = new SendProc(task_, this);
+      receiveProc_ = new ReceiveProc(task_, this);
+
+      task_->queue(sendProc_);
+      task_->queue(receiveProc_);
     }
     
     bool connect(const nstr& host, int port){
@@ -276,8 +275,9 @@ namespace neu{
   
 } // end namespace neu
 
-ReceiveProc::ReceiveProc(NCommunicator_* c)
-: c_(c),
+ReceiveProc::ReceiveProc(NProcTask* task, NCommunicator_* c)
+: task_(task),
+c_(c),
 s_(c_->socket()){
   
 }
@@ -295,7 +295,7 @@ void ReceiveProc::run(nvar& r){
     char* hbuf = (char*)malloc(size);
     n = s_->receive(hbuf, size, _timeout);
     if(n == -1){
-      signal(this);
+      signal(task_, this);
       return;
     }
     
@@ -318,7 +318,7 @@ void ReceiveProc::run(nvar& r){
   else{
     n = s_->receive((char*)&size, 4, _timeout);
     if(n == -1){
-      signal(this);
+      signal(task_, this);
       return;
     }
   }
@@ -352,11 +352,12 @@ void ReceiveProc::run(nvar& r){
   
   c_->put(msg);
   
-  signal(this);
+  signal(task_, this);
 }
 
-SendProc::SendProc(NCommunicator_* c)
-: c_(c),
+SendProc::SendProc(NProcTask* task, NCommunicator_* c)
+: task_(task),
+c_(c),
 s_(c_->socket()){
   
 }
@@ -368,7 +369,7 @@ void SendProc::run(nvar& r){
   
   nvar msg;
   if(!c_->get(msg, _timeout)){
-    signal(this);
+    signal(task_, this);
     return;
   }
   
@@ -404,7 +405,7 @@ void SendProc::run(nvar& r){
     return;
   }
   
-  signal(this);
+  signal(task_, this);
 }
 
 NCommunicator::NCommunicator(NProcTask* task){

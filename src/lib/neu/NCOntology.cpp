@@ -1462,10 +1462,11 @@ private:
 
 class Proc : public NProc{
 public:
-  Proc(NCCodeGen_* codeGen, Method* method)
-    : codeGen_(codeGen),
-      method_(method){
-
+  Proc(NProcTask* task, NCCodeGen_* codeGen, Method* method)
+  : task_(task),
+  codeGen_(codeGen),
+  method_(method){
+    
     if(method->name() == "<<start>>"){
       type_ = 0;
     }
@@ -1478,22 +1479,22 @@ public:
     
     random_.timeSeed();
   }
-
+  
   ~Proc(){
-
+    
   }
-
+  
   Method* method(){
     return method_;
   }
-
+  
   bool handle(nvar& v, nvar& r){
     r = move(v);
     return true;
   }
   
   void run(nvar& r);
-
+  
   int chooseOut(nvar& state, bool initial);
 
   uint32_t id() const{
@@ -1517,12 +1518,13 @@ public:
   }
   
   void signal(int id, nvar& v){
-    NProc::signal(idMap_[id], v);
+    NProc::signal(task_, idMap_[id], v);
   }
   
 private:
   typedef NMap<int, Proc*> IdMap_;
   
+  NProcTask* task_;
   Method* method_;
   NRandom random_;
   NMutex randomMutex_;
@@ -2206,9 +2208,8 @@ public:
   Proc* connect(Method* method,
                 const MethodParamMap& inMap,
                 const ParamMethodMap& outMap){
-    Proc* proc = new Proc(this, method);
-    proc->setTask(task_);
-    ++numProcs_; 
+    Proc* proc = new Proc(task_, this, method);
+    ++numProcs_;
 
     methodMap_[method->id()] = method;
     procMap_[method] = proc;
@@ -2355,7 +2356,7 @@ public:
 
   void generate(){
     init_();
-    start_->queue();
+    task_->queue(start_);
   }
 
   void next(){
@@ -2371,12 +2372,13 @@ public:
       ++totalMisses_;
       ++totalSolutions_;
     }
-    start_->queue();
+    
+    task_->queue(start_);
   }
 
   void queue(nvar& state, size_t methodId){
     Proc* proc = procMap_[methodMap_[methodId]];
-    proc->queue(state);
+    task_->queue(proc, state);
   }
 
   bool run(){
@@ -2661,7 +2663,7 @@ public:
       size_t id = choices[random_.equilikely(0, choices.size() - 1)];
 
       Proc* proc = procMap_[methodMap_[id]];
-      proc->queue(state);
+      task_->queue(proc, state);
     }
     else{
       queue();

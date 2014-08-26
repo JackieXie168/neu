@@ -68,8 +68,9 @@ namespace{
 
   class AuthProc : public NProc{
   public:
-    AuthProc(NServer* server)
-    : server_(server){
+    AuthProc(NProcTask* task, NServer* server)
+    : task_(task),
+    server_(server){
       
     }
     
@@ -91,14 +92,16 @@ namespace{
     }
     
   private:
+    NProcTask* task_;
     NServer* server_;
     NVSemaphore f_;
   };
   
   class AcceptProc : public NProc{
   public:
-    AcceptProc(AuthProc* authProc, NListener& listener, int port)
-    : authProc_(authProc),
+    AcceptProc(NProcTask* task, AuthProc* authProc, NListener& listener, int port)
+    : task_(task),
+    authProc_(authProc),
     listener_(listener){
       
     }
@@ -107,13 +110,14 @@ namespace{
       NSocket* socket = listener_.accept(_timeout);
       if(socket){
         nvar ar = socket;
-        authProc_->queue(ar);
+        task_->queue(authProc_, ar);
       }
       
-      signal(this);
+      signal(task_, this);
     }
     
   private:
+    NProcTask* task_;
     AuthProc* authProc_;
     NListener& listener_;
   };
@@ -134,13 +138,13 @@ namespace neu{
     
     ~NServer_(){
       if(acceptProc_){
-        if(acceptProc_->terminate()){
+        if(task_->terminate(acceptProc_)){
           delete acceptProc_;
         }
       }
       
       if(authProc_){
-        if(authProc_->terminate()){
+        if(task_->terminate(authProc_)){
           delete authProc_;
         }
       }
@@ -155,12 +159,10 @@ namespace neu{
         return false;
       }
       
-      authProc_ = new AuthProc(o_);
-      authProc_->setTask(task_);
+      authProc_ = new AuthProc(task_, o_);
       
-      acceptProc_ = new AcceptProc(authProc_, listener_, port);
-      acceptProc_->setTask(task_);
-      acceptProc_->queue();
+      acceptProc_ = new AcceptProc(task_, authProc_, listener_, port);
+      task_->queue(acceptProc_);
 
       return true;
     }
