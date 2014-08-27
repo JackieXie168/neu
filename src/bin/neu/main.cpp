@@ -75,10 +75,8 @@ public:
   
   void handleSignal(int signal, bool fatal){
     if(fatal){
-      if(signal == NProgram::SIG_INT){
-        cout << endl;
-        NProgram::exit(0);
-      }
+      cout << endl;
+      NProgram::exit(0);
     }
   }
 };
