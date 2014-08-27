@@ -329,7 +329,6 @@ void NProcTask::queue(NProc* proc, nvar& r, double priority){
   x_->queue(proc, r, priority);
 }
 
-
 bool NProcTask::terminate(NProc* proc){
   return x_->terminate(proc);
 }

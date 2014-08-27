@@ -124,7 +124,7 @@ namespace neu{
     : q_(c.q_, a){}
     
     NQueue(NQueue&& c, const allocator_type& a)
-    : q_(std::move(c), a){}
+    : q_(std::move(c.q_), a){}
     
     NQueue(const Queue& c, const allocator_type& a)
     : q_(c, a){}
