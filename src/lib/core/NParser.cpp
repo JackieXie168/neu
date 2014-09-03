@@ -276,7 +276,7 @@ namespace neu{
                 ret = false;
                 break;
               case Integer:
-                ret = atoll(m.c_str());
+                ret = int64_t(atoll(m.c_str()));
                 break;
               case Float:
                 ret = atof(m.c_str());
