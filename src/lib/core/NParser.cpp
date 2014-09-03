@@ -1392,13 +1392,12 @@ namespace neu{
                   state->stack = move(ret->stack);
                   state->stack.emplace_back(move(rt));
                   
-                  delete ret;
-
                   if(reduced(state)){
                     ++state->priority;
                   }
                   
                   endSignal(ret->caller, state);
+                  delete ret;
                   return;
                 }
                 else if(ruleType_ == RulePrime && n == nonTerm_){
