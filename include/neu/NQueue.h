@@ -472,7 +472,7 @@ namespace neu{
       ostr << *itr;
       ++itr;
     }
-    ostr << "]]";
+    ostr << "]";
     return ostr;
   }
   
