@@ -64,276 +64,260 @@ namespace neu{
   template<typename T, class A=std::allocator<T> >
   class NVector{
   public:
-    typedef std::vector<T,A> Vector_;
+    typedef std::vector<T,A> Vector;
     
     typedef T value_type;
-    typedef typename Vector_::iterator iterator;
-    typedef typename Vector_::const_iterator const_iterator;
-    typedef typename Vector_::reverse_iterator reverse_iterator;
-    typedef typename Vector_::const_reverse_iterator const_reverse_iterator;
-    typedef typename Vector_::reference reference;
-    typedef typename Vector_::const_reference const_reference;
-    typedef typename Vector_::allocator_type allocator_type;
+    typedef typename Vector::iterator iterator;
+    typedef typename Vector::const_iterator const_iterator;
+    typedef typename Vector::reverse_iterator reverse_iterator;
+    typedef typename Vector::const_reverse_iterator const_reverse_iterator;
+    typedef typename Vector::reference reference;
+    typedef typename Vector::const_reference const_reference;
+    typedef typename Vector::allocator_type allocator_type;
     
     explicit NVector(const A& allocator=A())
-    : vec_(allocator){
-      
-    }
+    : v_(allocator){}
     
     explicit NVector(size_t n,
                      const T& value=T(),
                      const A& allocator=A())
-    : vec_(n, value, allocator){
-      
-    }
+    : v_(n, value, allocator){}
     
     template<class InputIterator>
     NVector(InputIterator first,
             InputIterator last,
             const A& allocator=A())
-    : vec_(first, last, allocator){
-      
-    }
+    : v_(first, last, allocator){}
     
     NVector(const NVector<T,A>& x)
-    : vec_(x.vec_){
-      
-    }
+    : v_(x.v_){}
     
     NVector(NVector&& x)
-    : vec_(std::move(x.vec_)){
-      
-    }
+    : v_(std::move(x.v_)){}
 
     NVector(std::initializer_list<value_type> il)
-      : vec_(il){
-      
-    }
+      : v_(il){}
 
     NVector(std::initializer_list<value_type> il, const allocator_type& a)
-      : vec_(il, a){
-      
-    }
+      : v_(il, a){}
 
-    ~NVector(){
-      
+    ~NVector(){}
+    
+    const Vector& vector() const{
+      return v_;
     }
     
-    const Vector_& vector() const{
-      return vec_;
-    }
-    
-    Vector_& vector(){
-      return vec_;
+    Vector& vector(){
+      return v_;
     }
     
     template<class InputIterator>
     void assign(InputIterator first, InputIterator last){
-      return vec_.assign(first, last);
+      return v_.assign(first, last);
     }
     
     void assign(size_t n, const T& u){
-      vec_.assign(n, u);
+      v_.assign(n, u);
     }
     
     const_reference at(size_t n) const{
-      return vec_.at(n);
+      return v_.at(n);
     }
     
     reference at(size_t n){
-      return vec_.at(n);
+      return v_.at(n);
     }
     
     reference back(){
-      return vec_.back();
+      return v_.back();
     }
     
     const_reference back() const{
-      return vec_.back();
+      return v_.back();
     }
     
     iterator begin(){
-      return vec_.begin();
+      return v_.begin();
     }
     
     const_iterator begin() const{
-      return vec_.begin();
+      return v_.begin();
     }
     
     size_t capacity() const{
-      return vec_.capacity();
+      return v_.capacity();
     }
     
     void clear(){
-      vec_.clear();
+      v_.clear();
     }
     
     bool empty() const{
-      return vec_.empty();
+      return v_.empty();
     }
     
     bool isEmpty() const{
-      return vec_.empty();
+      return v_.empty();
     }
     
     iterator end(){
-      return vec_.end();
+      return v_.end();
     }
     
     const_iterator end() const{
-      return vec_.end();
+      return v_.end();
     }
     
     iterator erase(iterator position){
-      return vec_.erase(position);
+      return v_.erase(position);
     }
     
     iterator erase(iterator first, iterator last){
-      return vec_.erase(first, last);
+      return v_.erase(first, last);
     }
 
     iterator erase(size_t index){
-      iterator itr = vec_.begin();
+      iterator itr = v_.begin();
       itr += index;
-      return vec_.erase(itr);
+      return v_.erase(itr);
     }
 
     reference front(){
-      return vec_.front();
+      return v_.front();
     }
     
     const_reference front() const{
-      return vec_.front();
+      return v_.front();
     }
     
     allocator_type get_allocator() const{
-      return vec_.get_allocator();
+      return v_.get_allocator();
     }
     
     iterator insert(iterator position, const T& x){
-      return vec_.insert(position, x);
+      return v_.insert(position, x);
     }
     
     void insert(iterator position, size_t n, const T& x){
-      vec_.insert(position, n, x);
+      v_.insert(position, n, x);
     }
     
     void append(const NVector<T>& v){
-      vec_.insert(vec_.end(), v.begin(), v.end());
+      v_.insert(v_.end(), v.begin(), v.end());
     }
         
     template<class InputIterator>
     void insert(iterator position, InputIterator first, InputIterator last){
-      vec_.insert(position, first, last);
+      v_.insert(position, first, last);
     }
     
     size_t max_size() const{
-      return vec_.max_size();
+      return v_.max_size();
     }
     
     NVector<T,A>& operator=(const NVector<T, A>& x){
-      vec_.operator=(x.vec_);
+      v_.operator=(x.v_);
       return *this;
     }
     
     NVector<T, A>& operator=(NVector<T, A>&& x){
-      vec_.operator=(std::move(x.vec_));
+      v_.operator=(std::move(x.v_));
 
       return *this;
     }
 
     NVector<T, A>& operator=(std::initializer_list<value_type> il){
-      vec_.operator=(il);
+      v_.operator=(il);
 
       return *this;
     }
 
     reference operator[](size_t n){
-      return vec_.operator[](n);
+      return v_.operator[](n);
     }
     
     const_reference operator[](size_t n) const{
-      return vec_.operator[](n);
+      return v_.operator[](n);
     }
     
     const T& uget(size_t n, const T& def) const{
-      if(n >= vec_.size()){
+      if(n >= v_.size()){
         return def;
       }
-      return vec_[n];
+      return v_[n];
     }
 
     value_type* data() noexcept{
-      return vec_.data();
+      return v_.data();
     }
 
     const value_type* data() const noexcept{
-      return vec_.data();
+      return v_.data();
     }
 
     void pop_back(){
-      vec_.pop_back();
+      v_.pop_back();
     }
     
     T popBack(){
-      T ret = std::move(*(--vec_.end()));
-      vec_.pop_back();
+      T ret = std::move(*(--v_.end()));
+      v_.pop_back();
       return ret;
     }
     
     T popFront(){
-      T ret = std::move(*vec_.begin());
-      vec_.erase(vec_.begin());
+      T ret = std::move(*v_.begin());
+      v_.erase(v_.begin());
       return ret;
     }
     
     void pop_front(){
-      vec_.erase(vec_.begin());
+      v_.erase(v_.begin());
     }
     
     void push_back(const T& x){
-      vec_.push_back(x);
+      v_.push_back(x);
     }
 
     template <class... Args>
     void emplace_back(Args&&... args){
-      return vec_.emplace_back(std::forward<Args>(args)...);
+      return v_.emplace_back(std::forward<Args>(args)...);
     } 
 
     void pushFront(const T& x){
-      vec_.insert(vec_.begin(), x);
+      v_.insert(v_.begin(), x);
     }
 
     reverse_iterator rbegin(){
-      return vec_.rbegin();
+      return v_.rbegin();
     }
     
     const_reverse_iterator rbegin() const{
-      return vec_.rbegin();
+      return v_.rbegin();
     }
     
     reverse_iterator rend(){
-      return vec_.rend();
+      return v_.rend();
     }
     
     const_reverse_iterator rend() const{
-      return vec_.rend();
+      return v_.rend();
     }
     
     void reserve(size_t n){
-      vec_.reserve(n);
+      v_.reserve(n);
     }
     
     void resize(size_t sz, T c=T()){
-      vec_.resize(sz, c);
+      v_.resize(sz, c);
     }
     
     size_t size() const{
-      return vec_.size();
+      return v_.size();
     }
     
     void swap(NVector<T,A>& vec){
-      vec_.swap(vec);
+      v_.swap(vec);
     }
     
     NVector<T,A> operator-() const{
@@ -349,12 +333,12 @@ namespace neu{
     }
     
     NVector<T,A>& operator+=(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), addBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), addBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& operator+=(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     addBy2_()); 
       return *this;
     }
@@ -372,12 +356,12 @@ namespace neu{
     }
     
     NVector<T,A>& operator-=(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), subBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), subBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& operator-=(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     subBy2_()); 
       return *this;
     }
@@ -395,12 +379,12 @@ namespace neu{
     }
     
     NVector<T,A>& operator*=(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), mulBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), mulBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& operator*=(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     mulBy2_()); 
       return *this;
     }
@@ -418,12 +402,12 @@ namespace neu{
     }
     
     NVector<T,A>& operator/=(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), divBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), divBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& operator/=(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     divBy2_()); 
       return *this;
     }
@@ -441,12 +425,12 @@ namespace neu{
     }
 
     NVector<T,A>& operator%=(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), modBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), modBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& operator%=(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     modBy2_()); 
       return *this;
     }
@@ -464,12 +448,12 @@ namespace neu{
     }
 
     NVector<T,A>& andBy(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), andBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), andBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& andBy(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     andBy2_()); 
       return *this;
     }
@@ -487,12 +471,12 @@ namespace neu{
     }    
 
     NVector<T,A>& orBy(const T& x){
-      std::transform(vec_.begin(), vec_.end(), vec_.begin(), orBy1_(x)); 
+      std::transform(v_.begin(), v_.end(), v_.begin(), orBy1_(x)); 
       return *this;
     }
     
     NVector<T,A>& orBy(const NVector<T,A>& v){
-      std::transform(vec_.begin(), vec_.end(), v.begin(), vec_.begin(),
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     orBy2_()); 
       return *this;
     }
@@ -510,12 +494,12 @@ namespace neu{
     }   
 
     NVector<T,A>& operator<<(const T& x){
-      vec_.push_back(x);
+      v_.push_back(x);
       return *this;
     }
     
   private:
-    Vector_ vec_;
+    Vector v_;
     
     class neg_ : public std::unary_function<T,T>{
     public:
