@@ -106,15 +106,15 @@ namespace neu{
     
     ~NMultimap(){}
     
-    iterator begin(){
+    iterator begin() noexcept{
       return m_.begin();
     }
     
-    const_iterator begin() const{
+    const_iterator begin() const noexcept{
       return m_.begin();
     }
     
-    void clear(){
+    void clear() noexcept{
       m_.clear();
     }
     
@@ -122,7 +122,7 @@ namespace neu{
       return m_.count(x);
     }
     
-    bool empty() const{
+    bool empty() const noexcept{
       return m_.empty();
     }
     
@@ -164,7 +164,7 @@ namespace neu{
       return m_.find(x);
     }
     
-    allocator_type get_allocator() const{
+    allocator_type get_allocator() const noexcept{
       return m_.get_allocator();
     }
     
@@ -221,7 +221,7 @@ namespace neu{
       return m_.lower_bound(x);
     }
     
-    size_t max_size() const{
+    size_t max_size() const noexcept{
       return m_.max_size();
     }
     
@@ -240,19 +240,19 @@ namespace neu{
       return *this;
     }
     
-    reverse_iterator rbegin(){
+    reverse_iterator rbegin() noexcept{
       return m_.rbegin();
     }
     
-    const_reverse_iterator rbegin() const{
+    const_reverse_iterator rbegin() const noexcept{
       return m_.rbegin();
     }
     
-    reverse_iterator rend(){
+    reverse_iterator rend() noexcept{
       return m_.rend();
     }
     
-    const_reverse_iterator rend() const{
+    const_reverse_iterator rend() const noexcept{
       return m_.rend();
     }
     
@@ -272,7 +272,7 @@ namespace neu{
       return m_.crend();
     }
     
-    size_t size() const{
+    size_t size() const noexcept{
       return m_.size();
     }
     

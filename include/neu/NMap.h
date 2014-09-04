@@ -118,15 +118,15 @@ namespace neu{
       return m_;
     }
     
-    iterator begin(){
+    iterator begin() noexcept{
       return m_.begin();
     }
     
-    const_iterator begin() const{
+    const_iterator begin() const noexcept{
       return m_.begin();
     }
     
-    void clear(){
+    void clear() noexcept{
       m_.clear();
     }
     
@@ -134,15 +134,15 @@ namespace neu{
       return m_.count(x);
     }
     
-    bool empty() const{
+    bool empty() const noexcept{
       return m_.empty();
     }
     
-    iterator end(){
+    iterator end() noexcept{
       return m_.end();
     }
     
-    const_iterator end() const{
+    const_iterator end() const noexcept{
       return m_.end();
     }
     
@@ -235,7 +235,7 @@ namespace neu{
       return *this;
     }
     
-    key_compare key_comp() const{
+    key_compare key_comp() const noexcept{
       return m_.key_comp();
     }
     
@@ -247,7 +247,7 @@ namespace neu{
       return m_.lower_bound(x);
     }
     
-    size_t max_size() const{
+    size_t max_size() const noexcept{
       return m_.max_size();
     }
     
@@ -293,19 +293,19 @@ namespace neu{
       return itr == m_.end() ? def : itr->second;
     }
     
-    reverse_iterator rbegin(){
+    reverse_iterator rbegin() noexcept{
       return m_.rbegin();
     }
     
-    const_reverse_iterator rbegin() const{
+    const_reverse_iterator rbegin() const noexcept{
       return m_.rbegin();
     }
     
-    reverse_iterator rend(){
+    reverse_iterator rend() noexcept{
       return m_.rend();
     }
     
-    const_reverse_iterator rend() const{
+    const_reverse_iterator rend() const noexcept{
       return m_.rend();
     }
     
@@ -325,7 +325,7 @@ namespace neu{
       return m_.crend();
     }
     
-    size_t size() const{
+    size_t size() const noexcept{
       return m_.size();
     }
     
@@ -341,7 +341,7 @@ namespace neu{
       return m_.upper_bound(x);
     }
     
-    value_compare value_comp() const{
+    value_compare value_comp() const noexcept{
       return m_.value_comp();
     }
     

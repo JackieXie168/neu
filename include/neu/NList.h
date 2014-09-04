@@ -140,28 +140,28 @@ namespace neu{
       return l_.back();
     }
     
-    iterator begin(){
+    iterator begin() noexcept{
       return l_.begin();
     }
     
-    const_iterator begin () const{
+    const_iterator begin () const noexcept{
       return l_.begin();
     }
     
-    void clear(){
+    void clear() noexcept{
       l_.clear();
       i_ = -1;
     }
     
-    bool empty() const{
+    bool empty() const noexcept{
       return l_.empty();
     }
     
-    iterator end(){
+    iterator end() noexcept{
       return l_.end();
     }
     
-    const_iterator end() const{
+    const_iterator end() const noexcept{
       return l_.end();
     }
     
@@ -183,7 +183,7 @@ namespace neu{
       return l_.front();
     }
     
-    allocator_type get_allocator() const{
+    allocator_type get_allocator() const noexcept{
       return l_.get_allocator();
     }
     
@@ -212,7 +212,7 @@ namespace neu{
       l_.insert(l_.end(), l.begin(), l.end());
     }
     
-    size_t max_size() const{
+    size_t max_size() const noexcept{
       return l_.max_size();
     }
     
@@ -286,11 +286,11 @@ namespace neu{
       return l_.emplace_front(std::forward<Args>(args)...);
     }
     
-    reverse_iterator rbegin(){
+    reverse_iterator rbegin() noexcept{
       return l_.rbegin();
     }
     
-    const_reverse_iterator rbegin() const{
+    const_reverse_iterator rbegin() const noexcept{
       return l_.rbegin();
     }
     
@@ -305,11 +305,11 @@ namespace neu{
       l_.remove_if(pred);
     }
     
-    reverse_iterator rend(){
+    reverse_iterator rend() noexcept{
       return l_.rend();
     }
     
-    const_reverse_iterator rend() const{
+    const_reverse_iterator rend() const noexcept{
       return l_.rend();
     }
     
@@ -334,11 +334,11 @@ namespace neu{
       l_.resize(sz, c);
     }
     
-    void reverse(){
+    void reverse() noexcept{
       l_.reverse();
     }
     
-    size_t size() const{
+    size_t size() const noexcept{
       return l_.size();
     }
     
