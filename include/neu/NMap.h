@@ -67,21 +67,21 @@ namespace neu{
   class Allocator = std::allocator<std::pair<const Key,T> > >
   class NMap{
   public:
-    typedef std::map<Key, T, Compare, Allocator> Map_;
+    typedef std::map<Key, T, Compare, Allocator> Map;
     
-    typedef typename Map_::iterator iterator;
-    typedef typename Map_::const_iterator const_iterator;
-    typedef typename Map_::key_type key_type;
-    typedef typename Map_::allocator_type allocator_type;
-    typedef typename Map_::value_type value_type;
-    typedef typename Map_::key_compare key_compare;
-    typedef typename Map_::reverse_iterator reverse_iterator;
-    typedef typename Map_::const_reverse_iterator const_reverse_iterator;
-    typedef typename Map_::value_compare value_compare;
+    typedef typename Map::iterator iterator;
+    typedef typename Map::const_iterator const_iterator;
+    typedef typename Map::key_type key_type;
+    typedef typename Map::allocator_type allocator_type;
+    typedef typename Map::value_type value_type;
+    typedef typename Map::key_compare key_compare;
+    typedef typename Map::reverse_iterator reverse_iterator;
+    typedef typename Map::const_reverse_iterator const_reverse_iterator;
+    typedef typename Map::value_compare value_compare;
     
     explicit NMap(const Compare& comp=Compare(),
                   const Allocator& allocator=Allocator())
-    : map_(comp, allocator){
+    : m_(comp, allocator){
       
     }
     
@@ -90,141 +90,128 @@ namespace neu{
          InputIterator last,
          const Compare& comp=Compare(),
          const Allocator& allocator=Allocator())
-    : map_(first, last, comp, allocator){
-      
-    }
+    : m_(first, last, comp, allocator){}
     
-    NMap(const NMap<Key, T, Compare, Allocator>& x)
-    : map_(x.map_){
-    }
+    NMap(const NMap& x)
+    : m_(x.m_){}
     
     NMap(NMap&& x)
-    : map_(std::move(x.map_)){
-      
-    }
+    : m_(std::move(x.m_)){}
     
     NMap(NMap&& x, const allocator_type& a)
-    : map_(std::move(x.map_), a){
-      
-    }
+    : m_(std::move(x.m_), a){}
     
     NMap(std::initializer_list<value_type> il,
          const key_compare& comp = key_compare())
-    : map_(il, comp){
-      
-    }
+    : m_(il, comp){}
     
     NMap(std::initializer_list<value_type> il,
          const key_compare& comp,
          const allocator_type& a)
-    : map_(il, comp, a){
-      
+    : m_(il, comp, a){}
+    
+    ~NMap(){}
+    
+    const Map map() const{
+      return m_;
     }
     
-    virtual ~NMap(){
-      
-    }
-    
-    const Map_ map() const{
-      return map_;
-    }
-    
-    Map_ map(){
-      return map_;
+    Map map(){
+      return m_;
     }
     
     iterator begin(){
-      return map_.begin();
+      return m_.begin();
     }
     
     const_iterator begin() const{
-      return map_.begin();
+      return m_.begin();
     }
     
     void clear(){
-      map_.clear();
+      m_.clear();
     }
     
     size_t count(const key_type& x) const{
-      return map_.count(x);
+      return m_.count(x);
     }
     
     bool empty() const{
-      return map_.empty();
+      return m_.empty();
     }
     
     iterator end(){
-      return map_.end();
+      return m_.end();
     }
     
     const_iterator end() const{
-      return map_.end();
+      return m_.end();
     }
     
     std::pair<iterator,iterator>
     equal_range(const key_type& x){
-      return map_.equal_range(x);
+      return m_.equal_range(x);
     }
     
     std::pair<const_iterator,const_iterator>
     equal_range(const key_type& x) const{
-      return map_.equal_range(x);
+      return m_.equal_range(x);
     }
     
     void erase(iterator position){
-      map_.erase(position);
+      m_.erase(position);
     }
     
     size_t erase(const key_type& x){
-      return map_.erase(x);
+      return m_.erase(x);
     }
     
     void erase(iterator first, iterator last){
-      map_.erase(first, last);
+      m_.erase(first, last);
     }
     
     iterator find(const key_type& x){
-      return map_.find(x);
+      return m_.find(x);
     }
     
     bool hasKey(const key_type& x) const{
-      return map_.find(x) != map_.end();
+      return m_.find(x) != m_.end();
     }
     
     const_iterator find(const key_type& x) const{
-      return map_.find(x);
+      return m_.find(x);
     }
     
     allocator_type get_allocator() const{
-      return map_.get_allocator();
+      return m_.get_allocator();
     }
     
     std::pair<iterator, bool> insert(const value_type& x){
-      return map_.insert(x);
+      return m_.insert(x);
     }
     
     iterator insert(iterator position, const value_type& x){
-      return map_.insert(position, x);
+      return m_.insert(position, x);
     }
     
     template <class... Args>
     std::pair<iterator, bool> emplace(Args&&... args){
-      return map_.emplace(std::forward<Args>(args)...);
+      return m_.emplace(std::forward<Args>(args)...);
     }
     
-    void merge(const NMap<Key,T,Compare,Allocator>& m){
-      map_.insert(m.begin(), m.end());
+    void merge(const NMap& m){
+      m_.insert(m.begin(), m.end());
     }
     
-    void outerMerge(const NMap<Key,T,Compare,Allocator>& m){
-      typename NMap<Key,T,Compare,Allocator>::const_iterator i = m.begin();
+    void outerMerge(const NMap& m){
+      typename NMap::const_iterator i = m.begin();
       while(i != m.end()){
-        typename NMap<Key,T,Compare,Allocator>::iterator j = map_.find(i->first);
-        if(j != map_.end()){
+        typename NMap::iterator j = m_.find(i->first);
+        if(j != m_.end()){
           j->second = i->second;
         }
         else{
-          map_.insert(std::pair<Key,T>(i->first, i->second));
+          m_.insert(std::pair<Key,T>(i->first, i->second));
         }
         ++i;
       }
@@ -232,106 +219,102 @@ namespace neu{
     
     template<class InputIterator>
     void insert(InputIterator first, InputIterator last){
-      map_.insert(first, last);
+      m_.insert(first, last);
     }
     
-    NMap<Key,T,Compare,Allocator>&
-    add(const Key& k, const T& t){
-      map_.insert({k, t});
+    NMap& add(const Key& k, const T& t){
+      m_.insert({k, t});
       return *this;
     }
     
     key_compare key_comp() const{
-      return map_.key_comp();
+      return m_.key_comp();
     }
     
     iterator lower_bound(const key_type& x){
-      return map_.lower_bound(x);
+      return m_.lower_bound(x);
     }
     
     const_iterator lower_bound(const key_type& x) const{
-      return map_.lower_bound(x);
+      return m_.lower_bound(x);
     }
     
     size_t max_size() const{
-      return map_.max_size();
+      return m_.max_size();
     }
     
-    NMap<Key,T,Compare,Allocator>&
-    operator=(const NMap<Key,T,Compare,Allocator>& x){
-      map_ = x.map_;
+    NMap& operator=(const NMap<Key,T,Compare,Allocator>& x){
+      m_ = x.m_;
       return *this;
     }
     
-    NMap<Key,T,Compare,Allocator>&
-    operator=(NMap<Key,T,Compare,Allocator>&& x){
-      map_ = std::move(x.map_);
+    NMap& operator=(NMap<Key,T,Compare,Allocator>&& x){
+      m_ = std::move(x.m_);
       return *this;
     }
     
-    NMap<Key,T,Compare,Allocator>&
-    operator=(std::initializer_list<value_type> il){
-      map_ = il;
+    NMap& operator=(std::initializer_list<value_type> il){
+      m_ = il;
       
       return *this;
     }
     
     T& operator[](const key_type& x){
-      return map_[x];
+      return m_[x];
     }
     
     const T& get(const key_type& x, const T& def) const{
-      auto itr = map_.find(x);
-      return itr == map_.end() ? def : itr->second;
+      auto itr = m_.find(x);
+      return itr == m_.end() ? def : itr->second;
     }
     
     T& get(const key_type& x, T& def){
-      auto itr = map_.find(x);
-      return itr == map_.end() ? def : itr->second;
+      auto itr = m_.find(x);
+      return itr == m_.end() ? def : itr->second;
     }
     
     reverse_iterator rbegin(){
-      return map_.rbegin();
+      return m_.rbegin();
     }
     
     const_reverse_iterator rbegin() const{
-      return map_.rbegin();
+      return m_.rbegin();
     }
     
     reverse_iterator rend(){
-      return map_.rend();
+      return m_.rend();
     }
     
     const_reverse_iterator rend() const{
-      return map_.rend();
+      return m_.rend();
     }
     
     size_t size() const{
-      return map_.size();
+      return m_.size();
     }
     
-    void swap(NMap<Key,T,Compare,Allocator>& mp){
-      map_.swap(mp);
+    void swap(NMap& mp){
+      m_.swap(mp);
     }
     
     iterator upper_bound(const key_type& x){
-      return map_.upper_bound(x);
+      return m_.upper_bound(x);
     }
     
     const_iterator upper_bound(const key_type& x) const{
-      return map_.upper_bound(x);
+      return m_.upper_bound(x);
     }
     
     value_compare value_comp() const{
-      return map_.value_comp();
+      return m_.value_comp();
     }
     
     value_compare valueCompare() const{
-      return map_.value_comp();
+      return m_.value_comp();
     }
     
     Key keyForValue(const T& value){
-      for(iterator itr = map_.begin(), itrEnd = map_.end();
+      for(iterator itr = m_.begin(), itrEnd = m_.end();
           itr != itrEnd; ++itr){
         if(itr->second == value){
           return itr->first;
@@ -342,7 +325,7 @@ namespace neu{
     }
     
   private:
-    Map_ map_;
+    Map m_;
   };
   
   template<class Key, class T, class Compare, class Allocator>
