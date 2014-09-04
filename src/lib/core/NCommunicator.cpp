@@ -110,6 +110,9 @@ namespace neu{
     
     ~NCommunicator_(){
       if(socket_){
+        sendSem_.disable();
+        receiveSem_.disable();
+        
         if(task_->terminate(sendProc_)){
           delete sendProc_;
         }
@@ -204,7 +207,9 @@ namespace neu{
     }
     
     bool receive(nvar& msg){
-      receiveSem_.acquire();
+      if(!receiveSem_.acquire()){
+        return false;
+      }
       
       receiveMutex_.lock();
       msg = move(receiveQueue_.front());

@@ -94,7 +94,6 @@ namespace{
   private:
     NProcTask* task_;
     NServer* server_;
-    NVSemaphore f_;
   };
   
   class AcceptProc : public NProc{

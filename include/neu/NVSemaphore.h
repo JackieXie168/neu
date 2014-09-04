@@ -65,16 +65,18 @@ namespace neu{
   public:
     
     NVSemaphore(int count=0)
-      : count_(count),
-        maxCount_(0){
+    : count_(count),
+    maxCount_(0),
+    disabled_(false){
 
       pthread_mutex_init(&mutex_, 0);
       pthread_cond_init(&condition_, 0);
     }
     
     NVSemaphore(int count, int maxCount)
-      : count_(count),
-        maxCount_(maxCount){
+    : count_(count),
+    maxCount_(maxCount),
+    disabled_(false){
 
       pthread_mutex_init(&mutex_, 0);
       pthread_cond_init(&condition_, 0);
@@ -93,7 +95,12 @@ namespace neu{
       t += timeout;
       
       pthread_mutex_lock(&mutex_);
-
+      
+      if(disabled_){
+        pthread_mutex_unlock(&mutex_);
+        return false;
+      }
+      
       double sec = std::floor(t);
       double fsec = t - sec;
 
@@ -110,26 +117,48 @@ namespace neu{
         }
       }
 
+      if(disabled_){
+        pthread_mutex_unlock(&mutex_);
+        return false;
+      }
+      
       --count_;
       pthread_mutex_unlock(&mutex_);
       
       return true;
     }
     
-    void acquire(){
+    bool acquire(){
       pthread_mutex_lock(&mutex_);
 
+      if(disabled_){
+        pthread_mutex_unlock(&mutex_);
+        return false;
+      }
+      
       while(count_ <= 0){
         pthread_cond_wait(&condition_, &mutex_);
       }
 
+      if(disabled_){
+        pthread_mutex_unlock(&mutex_);
+        return false;
+      }
+      
       --count_;
       pthread_mutex_unlock(&mutex_);
+      
+      return true;
     }
     
     bool tryAcquire(){
       pthread_mutex_lock(&mutex_);
 
+      if(disabled_){
+        pthread_mutex_unlock(&mutex_);
+        return false;
+      }
+      
       if(count_ > 0){
         --count_;
         pthread_mutex_unlock(&mutex_);
@@ -151,6 +180,19 @@ namespace neu{
       pthread_mutex_unlock(&mutex_);
     }
 
+    void enable(){
+      disabled_ = false;
+    }
+    
+    void disable(){
+      pthread_mutex_lock(&mutex_);
+
+      disabled_ = true;
+      
+      pthread_cond_broadcast(&condition_);
+      pthread_mutex_unlock(&mutex_);
+    }
+    
     NVSemaphore& operator=(const NVSemaphore&) = delete;
     
     NVSemaphore(const NVSemaphore&) = delete;
@@ -161,6 +203,7 @@ namespace neu{
 
     int count_;
     int maxCount_;
+    bool disabled_;
   };
   
 } // end namespace neu

@@ -120,8 +120,7 @@ namespace neu{
     
     class Queue{
     public:
-      Queue()
-      : active_(true){}
+      Queue(){}
       
       ~Queue(){}
       
@@ -154,21 +153,23 @@ namespace neu{
       }
       
       Item* get(){
-        sem_.acquire();
-        if(active_){
-          mutex_.lock();
-          Item* item = queue_.top();
-          queue_.pop();
-          mutex_.unlock();
-          return item;
+        if(!sem_.acquire()){
+          return 0;
         }
-        
-        return 0;
+
+        mutex_.lock();
+        Item* item = queue_.top();
+        queue_.pop();
+        mutex_.unlock();
+        return item;
       }
 
-      void setActive(bool flag){
-        active_ = flag;
-        sem_.release();
+      void enable(){
+        sem_.enable();
+      }
+      
+      void disable(){
+        sem_.disable();
       }
       
     private:
@@ -183,24 +184,20 @@ namespace neu{
       Queue_ queue_;
       NVSemaphore sem_;
       NBasicMutex mutex_;
-      atomic_bool active_;
     };
     
     class Thread : public NThread{
     public:
       Thread(Queue& queue)
-      : queue_(queue),
-      active_(true){
-        
-      }
+      : queue_(queue){}
       
       void run(){
         State* s;
         Item* item;
         
-        while(active_){
+        for(;;){
           item = queue_.get();
-
+          
           if(item){
             s = item->s;
             
@@ -212,16 +209,14 @@ namespace neu{
           
             delete item;
           }
+          else{
+            break;
+          }
         }
-      }
-      
-      void setActive(bool flag){
-        active_ = flag;
       }
       
     private:
       Queue& queue_;
-      atomic_bool active_;
     };
     
     NProcTask_(NProcTask* o, size_t threads)
@@ -246,11 +241,7 @@ namespace neu{
       
       active_ = false;
       
-      q_.setActive(false);
-      
-      for(Thread* t : threadVec_){
-        t->setActive(false);
-      }
+      q_.disable();
       
       for(Thread* t : threadVec_){
         t->join();
