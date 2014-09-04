@@ -86,7 +86,7 @@ namespace neu{
               const Allocator& allocator=Allocator())
     : m_(first, last, comp, allocator){}
     
-    NMultimap(const NMultimap<Key,T,Compare,Allocator>& x)
+    NMultimap(const NMultimap& x)
     : m_(x.m_){}
     
     NMultimap(NMultimap&& x)
@@ -152,7 +152,7 @@ namespace neu{
       return m_.erase(x);
     }
     
-    void erase(iterator first, iterator last){
+    void erase(const_iterator first, const_iterator last){
       m_.erase(first, last);
     }
     
@@ -181,9 +181,23 @@ namespace neu{
       m_.insert(first, last);
     }
     
+    template <class P>
+    iterator insert(const_iterator position, P&& p){
+      return m_.insert(position, std::move(p));
+    }
+    
+    void insert(std::initializer_list<value_type> il){
+      m_.insert(il);
+    }
+    
     template<class... Args>
     iterator emplace(Args&&... args){
       return m_.emplace(std::forward<Args>(args)...);
+    }
+    
+    template <class... Args>
+    iterator emplace_hint(const_iterator position, Args&&... args){
+      return m_.emplace_hint(position, std::forward<Args>(args)...);
     }
     
     NMultimap& add(const Key& k, const T& t){
@@ -199,10 +213,6 @@ namespace neu{
       return m_.key_comp();
     }
     
-    key_compare keyCompare() const{
-      return m_.key_comp();
-    }
-    
     iterator lower_bound(const key_type& x){
       return m_.lower_bound(x);
     }
@@ -215,12 +225,12 @@ namespace neu{
       return m_.max_size();
     }
     
-    NMultimap& operator=(const NMultimap<Key,T,Compare,Allocator>& x){
+    NMultimap& operator=(const NMultimap& x){
       m_ = x.m_;
       return *this;
     }
     
-    NMultimap& operator=(NMultimap<Key,T,Compare,Allocator>&& x){
+    NMultimap& operator=(NMultimap&& x){
       m_ = std::move(x.m_);
       return *this;
     }
@@ -244,6 +254,22 @@ namespace neu{
     
     const_reverse_iterator rend() const{
       return m_.rend();
+    }
+    
+    const_iterator cbegin() const noexcept{
+      return m_.cbegin();
+    }
+    
+    const_iterator cend() const noexcept{
+      return m_.cend();
+    }
+    
+    const_reverse_iterator crbegin() const noexcept{
+      return m_.crbegin();
+    }
+    
+    const_reverse_iterator crend() const noexcept{
+      return m_.crend();
     }
     
     size_t size() const{
