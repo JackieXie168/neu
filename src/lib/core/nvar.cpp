@@ -7690,8 +7690,11 @@ nvar& nvar::operator+=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case HeadMap:
-      return *h_.hm->h += x;
+    case HeadMap:{
+      nvar y = *h_.hm->h += x;
+      *this = move(y);
+      return *this;
+    }
     case SequenceMap:
       switch(x.t_){
         case None:
@@ -8831,8 +8834,11 @@ nvar& nvar::operator-=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case HeadMap:
-      return *h_.hm->h -= x;
+    case HeadMap:{
+      nvar y = *h_.hm->h -= x;
+      *this = move(y);
+      return *this;
+    }
     case SequenceMap:
       switch(x.t_){
         case None:
@@ -9947,8 +9953,11 @@ nvar& nvar::operator*=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case HeadMap:
-      return *h_.hm->h *= x;
+    case HeadMap:{
+      nvar y = *h_.hm->h *= x;
+      *this = move(y);
+      return *this;
+    }
     case SequenceMap:
       switch(x.t_){
         case None:
@@ -11139,8 +11148,11 @@ nvar& nvar::operator/=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case HeadMap:
-      return *h_.hm->h /= x;
+    case HeadMap:{
+      nvar y = *h_.hm->h /= x;
+      *this = move(y);
+      return *this;
+    }
     case SequenceMap:
       switch(x.t_){
         case None:
@@ -12411,8 +12423,11 @@ nvar& nvar::operator%=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case HeadMap:
-      return *h_.hm->h %= x;
+    case HeadMap:{
+      nvar y = *h_.hm->h %= x;
+      *this = move(y);
+      return *this;
+    }
     case SequenceMap:
       switch(x.t_){
         case None:
