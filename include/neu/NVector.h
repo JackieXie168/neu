@@ -304,6 +304,22 @@ namespace neu{
       return v_.rend();
     }
     
+    const_iterator cbegin() const noexcept{
+      return v_.cbegin();
+    }
+    
+    const_iterator cend() const noexcept{
+      return v_.cend();
+    }
+
+    const_reverse_iterator crbegin() const noexcept{
+      return v_.crbegin();
+    }
+    
+    const_reverse_iterator crend() const noexcept{
+      return v_.crend();
+    }
+    
     void reserve(size_t n){
       v_.reserve(n);
     }

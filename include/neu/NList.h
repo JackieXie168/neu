@@ -95,7 +95,7 @@ namespace neu{
     : l_(first, last, allocator),
     i_(-1){}
     
-    NList(const NList<T, Allocator>& x)
+    NList(const NList& x)
     : l_(x.l_),
     i_(-1){}
     
@@ -311,6 +311,22 @@ namespace neu{
     
     const_reverse_iterator rend() const{
       return l_.rend();
+    }
+    
+    const_iterator cbegin() const noexcept{
+      return l_.cbegin();
+    }
+
+    const_iterator cend() const noexcept{
+      return l_.cend();
+    }
+
+    const_reverse_iterator crbegin() const noexcept{
+      return l_.crbegin();
+    }
+
+    const_reverse_iterator crend() const noexcept{
+      return l_.crend();
     }
     
     void resize(size_t sz, T c=T()){

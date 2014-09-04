@@ -192,9 +192,19 @@ namespace neu{
       return m_.insert(position, x);
     }
     
+    template <class P>
+    std::pair<iterator, bool> insert(P&& p){
+      return m_.insert(std::move(p));
+    }
+    
     template <class... Args>
     std::pair<iterator, bool> emplace(Args&&... args){
       return m_.emplace(std::forward<Args>(args)...);
+    }
+    
+    template <class... Args>
+    iterator emplace_hint(const_iterator position, Args&&... args){
+      return m_.emplace_hint(position, std::forward<Args>(args)...);
     }
     
     void merge(const NMap& m){
@@ -241,12 +251,12 @@ namespace neu{
       return m_.max_size();
     }
     
-    NMap& operator=(const NMap<Key,T,Compare,Allocator>& x){
+    NMap& operator=(const NMap& x){
       m_ = x.m_;
       return *this;
     }
     
-    NMap& operator=(NMap<Key,T,Compare,Allocator>&& x){
+    NMap& operator=(NMap&& x){
       m_ = std::move(x.m_);
       return *this;
     }
@@ -259,6 +269,18 @@ namespace neu{
     
     T& operator[](const key_type& x){
       return m_[x];
+    }
+    
+    T& operator[](key_type&& k){
+      return m_[std::move(k)];
+    }
+    
+    T& at(const key_type& k){
+      return m_.at(k);
+    }
+
+    const T& at(const key_type& k) const{
+      return m_.at(k);
     }
     
     const T& get(const key_type& x, const T& def) const{
@@ -287,6 +309,22 @@ namespace neu{
       return m_.rend();
     }
     
+    const_iterator cbegin() const noexcept{
+      return m_.cbegin();
+    }
+
+    const_iterator cend() const noexcept{
+      return m_.cend();
+    }
+
+    const_reverse_iterator crbegin() const noexcept{
+      return m_.crbegin();
+    }
+
+    const_reverse_iterator crend() const noexcept{
+      return m_.crend();
+    }
+    
     size_t size() const{
       return m_.size();
     }
@@ -304,10 +342,6 @@ namespace neu{
     }
     
     value_compare value_comp() const{
-      return m_.value_comp();
-    }
-    
-    value_compare valueCompare() const{
       return m_.value_comp();
     }
     
