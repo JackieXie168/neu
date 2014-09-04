@@ -81,9 +81,7 @@ namespace neu{
     
     explicit NMap(const Compare& comp=Compare(),
                   const Allocator& allocator=Allocator())
-    : m_(comp, allocator){
-      
-    }
+    : m_(comp, allocator){}
     
     template<class InputIterator>
     NMap(InputIterator first,

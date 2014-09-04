@@ -64,236 +64,218 @@ namespace neu{
   class Allocator = std::allocator<std::pair<const Key,T> > >
   class NMultimap{
   public:
-    typedef std::multimap<Key, T, Compare, Allocator> Map_;
+    typedef std::multimap<Key, T, Compare, Allocator> Map;
     
-    typedef typename Map_::iterator iterator;
-    typedef typename Map_::const_iterator const_iterator;
-    typedef typename Map_::key_type key_type;
-    typedef typename Map_::allocator_type allocator_type;
-    typedef typename Map_::value_type value_type;
-    typedef typename Map_::key_compare key_compare;
-    typedef typename Map_::reverse_iterator reverse_iterator;
-    typedef typename Map_::const_reverse_iterator const_reverse_iterator;
-    typedef typename Map_::value_compare value_compare;
+    typedef typename Map::iterator iterator;
+    typedef typename Map::const_iterator const_iterator;
+    typedef typename Map::key_type key_type;
+    typedef typename Map::allocator_type allocator_type;
+    typedef typename Map::value_type value_type;
+    typedef typename Map::key_compare key_compare;
+    typedef typename Map::reverse_iterator reverse_iterator;
+    typedef typename Map::const_reverse_iterator const_reverse_iterator;
+    typedef typename Map::value_compare value_compare;
     
     explicit NMultimap(const Compare& comp=Compare(),
                        const Allocator& allocator=Allocator())
-    : map_(comp, allocator){
-    }
+    : m_(comp, allocator){}
     
     template<class InputIterator>
     NMultimap(InputIterator first, InputIterator last,
               const Compare& comp=Compare(),
               const Allocator& allocator=Allocator())
-    : map_(first, last, comp, allocator){
-    }
+    : m_(first, last, comp, allocator){}
     
     NMultimap(const NMultimap<Key,T,Compare,Allocator>& x)
-    : map_(x.map_){
-      
-    }
+    : m_(x.m_){}
     
     NMultimap(NMultimap&& x)
-    : map_(std::move(x.map_)){
-      
-    }
+    : m_(std::move(x.m_)){}
     
     NMultimap(NMultimap&& x, const allocator_type& a)
-    : map_(std::move(x.map_), a){
-      
-    }
+    : m_(std::move(x.m_), a){}
     
     NMultimap(std::initializer_list<value_type> il,
               const key_compare& comp = key_compare())
-    : map_(il, comp){
-      
-    }
+    : m_(il, comp){}
     
     NMultimap(std::initializer_list<value_type> il,
               const key_compare& comp,
               const allocator_type& a)
-    : map_(il, comp, a){
-      
-    }
+    : m_(il, comp, a){}
     
-    virtual ~NMultimap(){
-      
-    }
+    ~NMultimap(){}
     
     iterator begin(){
-      return map_.begin();
+      return m_.begin();
     }
     
     const_iterator begin() const{
-      return map_.begin();
+      return m_.begin();
     }
     
     void clear(){
-      map_.clear();
+      m_.clear();
     }
     
     size_t count(const key_type& x) const{
-      return map_.count(x);
+      return m_.count(x);
     }
     
     bool empty() const{
-      return map_.empty();
+      return m_.empty();
     }
     
     iterator end(){
-      return map_.end();
+      return m_.end();
     }
     
     const_iterator end() const{
-      return map_.end();
+      return m_.end();
     }
     
     std::pair<iterator,iterator>
     equal_range(const key_type& x){
-      return map_.equal_range(x);
+      return m_.equal_range(x);
     }
     
     std::pair<const_iterator,const_iterator>
     equal_range(const key_type& x) const{
-      return map_.equal_range(x);
+      return m_.equal_range(x);
     }
     
     void erase(iterator position){
-      map_.erase(position);
+      m_.erase(position);
     }
     
     size_t erase(const key_type& x){
-      return map_.erase(x);
+      return m_.erase(x);
     }
     
     void erase(iterator first, iterator last){
-      map_.erase(first, last);
+      m_.erase(first, last);
     }
     
     iterator find(const key_type& x){
-      return map_.find(x);
+      return m_.find(x);
     }
     
     const_iterator find(const key_type& x) const{
-      return map_.find(x);
+      return m_.find(x);
     }
     
     allocator_type get_allocator() const{
-      return map_.get_allocator();
+      return m_.get_allocator();
     }
     
     iterator insert(const value_type& x){
-      return map_.insert(x);
+      return m_.insert(x);
     }
     
     iterator insert(iterator position, const value_type& x){
-      return map_.insert(position, x);
+      return m_.insert(position, x);
     }
     
     template<class InputIterator>
     void insert(InputIterator first, InputIterator last){
-      map_.insert(first, last);
+      m_.insert(first, last);
     }
     
     template<class... Args>
     iterator emplace(Args&&... args){
-      return map_.emplace(std::forward<Args>(args)...);
+      return m_.emplace(std::forward<Args>(args)...);
     }
     
-    NMultimap<Key,T,Compare,Allocator>&
-    add(const Key& k, const T& t){
-      map_.insert({k, t});
+    NMultimap& add(const Key& k, const T& t){
+      m_.insert({k, t});
       return *this;
     }
     
-    void merge(const NMultimap<Key,T,Compare,Allocator>& m){
-      map_.insert(m.begin(), m.end());
+    void merge(const NMultimap& m){
+      m_.insert(m.begin(), m.end());
     }
     
     key_compare key_comp() const{
-      return map_.key_comp();
+      return m_.key_comp();
     }
     
     key_compare keyCompare() const{
-      return map_.key_comp();
+      return m_.key_comp();
     }
     
     iterator lower_bound(const key_type& x){
-      return map_.lower_bound(x);
+      return m_.lower_bound(x);
     }
     
     const_iterator lower_bound(const key_type& x) const{
-      return map_.lower_bound(x);
+      return m_.lower_bound(x);
     }
     
     size_t max_size() const{
-      return map_.max_size();
+      return m_.max_size();
     }
     
-    NMultimap<Key,T,Compare,Allocator>&
-    operator=(const NMultimap<Key,T,Compare,Allocator>& x){
-      map_ = x.map_;
+    NMultimap& operator=(const NMultimap<Key,T,Compare,Allocator>& x){
+      m_ = x.m_;
       return *this;
     }
     
-    NMultimap<Key,T,Compare,Allocator>&
-    operator=(NMultimap<Key,T,Compare,Allocator>&& x){
-      map_ = std::move(x.map_);
+    NMultimap& operator=(NMultimap<Key,T,Compare,Allocator>&& x){
+      m_ = std::move(x.m_);
       return *this;
     }
     
-    NMultimap<Key,T,Compare,Allocator>&
-    operator=(std::initializer_list<value_type> il){
-      map_ = il;
+    NMultimap& operator=(std::initializer_list<value_type> il){
+      m_ = il;
       return *this;
     }
     
     reverse_iterator rbegin(){
-      return map_.rbegin();
+      return m_.rbegin();
     }
     
     const_reverse_iterator rbegin() const{
-      return map_.rbegin();
+      return m_.rbegin();
     }
     
     reverse_iterator rend(){
-      return map_.rend();
+      return m_.rend();
     }
     
     const_reverse_iterator rend() const{
-      return map_.rend();
+      return m_.rend();
     }
     
     size_t size() const{
-      return map_.size();
+      return m_.size();
     }
     
-    void swap(NMultimap<Key,T,Compare,Allocator>& m){
-      map_.swap(m.map_);
+    void swap(NMultimap& m){
+      m_.swap(m.m_);
     }
     
     iterator upper_bound(const key_type& x){
-      return map_.upper_bound(x);
+      return m_.upper_bound(x);
     }
     
     const_iterator upper_bound(const key_type& x) const{
-      return map_.upper_bound(x);
+      return m_.upper_bound(x);
     }
     
     value_compare value_comp() const{
-      return map_.value_comp();
+      return m_.value_comp();
     }
     
-    const Map_& map() const{
-      return map_;
+    const Map& map() const{
+      return m_;
     }
     
-    Map_& map(){
-      return map_;
+    Map& map(){
+      return m_;
     }
     
   private:
-    Map_ map_;
+    Map m_;
   };
   
   template <class Key, class T, class Compare, class Allocator>
