@@ -136,35 +136,31 @@ namespace neu{
       return v_.back();
     }
     
-    iterator begin(){
+    iterator begin() noexcept{
       return v_.begin();
     }
     
-    const_iterator begin() const{
+    const_iterator begin() const noexcept{
       return v_.begin();
     }
     
-    size_t capacity() const{
+    size_t capacity() const noexcept{
       return v_.capacity();
     }
     
-    void clear(){
+    void clear() noexcept{
       v_.clear();
     }
     
-    bool empty() const{
+    bool empty() const noexcept{
       return v_.empty();
     }
     
-    bool isEmpty() const{
-      return v_.empty();
-    }
-    
-    iterator end(){
+    iterator end() noexcept{
       return v_.end();
     }
     
-    const_iterator end() const{
+    const_iterator end() const noexcept{
       return v_.end();
     }
     
@@ -190,7 +186,7 @@ namespace neu{
       return v_.front();
     }
     
-    allocator_type get_allocator() const{
+    allocator_type get_allocator() const noexcept{
       return v_.get_allocator();
     }
     
@@ -211,7 +207,7 @@ namespace neu{
       v_.insert(position, first, last);
     }
     
-    size_t max_size() const{
+    size_t max_size() const noexcept{
       return v_.max_size();
     }
     
@@ -288,19 +284,19 @@ namespace neu{
       v_.insert(v_.begin(), x);
     }
 
-    reverse_iterator rbegin(){
+    reverse_iterator rbegin() noexcept{
       return v_.rbegin();
     }
     
-    const_reverse_iterator rbegin() const{
+    const_reverse_iterator rbegin() const noexcept{
       return v_.rbegin();
     }
     
-    reverse_iterator rend(){
+    reverse_iterator rend() noexcept{
       return v_.rend();
     }
     
-    const_reverse_iterator rend() const{
+    const_reverse_iterator rend() const noexcept{
       return v_.rend();
     }
     
@@ -332,12 +328,16 @@ namespace neu{
       v_.resize(sz, c);
     }
     
-    size_t size() const{
+    size_t size() const noexcept{
       return v_.size();
     }
     
     void swap(NVector& vec){
       v_.swap(vec);
+    }
+    
+    void flip() noexcept{
+      v_.flip();
     }
     
     NVector operator-() const{
