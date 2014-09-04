@@ -67,334 +67,316 @@ namespace neu{
   template<typename T, class Allocator = std::allocator<T> >
   class NList{
   public:
-    typedef std::list<T, Allocator> List_;
+    typedef std::list<T, Allocator> List;
     
     typedef T value_type;
-    typedef typename List_::reference reference;
-    typedef typename List_::const_reference const_reference;
-    typedef typename List_::iterator iterator;
-    typedef typename List_::const_iterator const_iterator;
-    typedef typename List_::allocator_type allocator_type;
-    typedef typename List_::reverse_iterator reverse_iterator;
-    typedef typename List_::const_reverse_iterator const_reverse_iterator;
+    typedef typename List::reference reference;
+    typedef typename List::const_reference const_reference;
+    typedef typename List::iterator iterator;
+    typedef typename List::const_iterator const_iterator;
+    typedef typename List::allocator_type allocator_type;
+    typedef typename List::reverse_iterator reverse_iterator;
+    typedef typename List::const_reverse_iterator const_reverse_iterator;
     
     explicit NList(const Allocator& allocator=Allocator())
-    : list_(allocator),
-    i_(-1){
-      
-    }
+    : l_(allocator),
+    i_(-1){}
     
     explicit NList(size_t n,
                    const T& value=T(),
                    const Allocator& allocator=Allocator())
-    : list_(n, value, allocator),
-    i_(-1){
-      
-    }
+    : l_(n, value, allocator),
+    i_(-1){}
     
     template<class InputIterator>
     NList(InputIterator first,
           InputIterator last,
           const Allocator& allocator=Allocator())
-    : list_(first, last, allocator),
-    i_(-1){
-      
-    }
+    : l_(first, last, allocator),
+    i_(-1){}
     
     NList(const NList<T, Allocator>& x)
-    : list_(x.list_),
-    i_(-1){
-      
-    }
+    : l_(x.l_),
+    i_(-1){}
     
     NList(NList&& x)
-    : list_(std::move(x.list_)){
-      
-    }
+    : l_(std::move(x.l_)){}
     
     NList(NList&& x, const allocator_type& a)
-    : list_(std::move(x), a){
-      
-    }
+    : l_(std::move(x), a){}
     
     NList(std::initializer_list<value_type> il)
-    : list_(il){
-      
-    }
+    : l_(il){}
     
     NList(std::initializer_list<value_type> il, const allocator_type& a)
-    : list_(il, a){
-      
+    : l_(il, a){}
+    
+    ~NList(){}
+    
+    const List list() const{
+      return l_;
     }
     
-    virtual ~NList(){
-      
-    }
-    
-    const List_ list() const{
-      return list_;
-    }
-    
-    List_ list(){
-      return list_;
+    List list(){
+      return l_;
     }
     
     template<class InputIterator>
     void assign(InputIterator first, InputIterator last){
-      list_.assign(first, last);
+      l_.assign(first, last);
       i_ = -1;
     }
     
     void assign(size_t n, const T& u){
-      list_.assign(n, u);
+      l_.assign(n, u);
       i_ = -1;
     }
     
     reference back(){
-      return list_.back();
+      return l_.back();
     }
     
     const_reference back() const{
-      return list_.back();
+      return l_.back();
     }
     
     iterator begin(){
-      return list_.begin();
+      return l_.begin();
     }
     
     const_iterator begin () const{
-      return list_.begin();
+      return l_.begin();
     }
     
     void clear(){
-      list_.clear();
+      l_.clear();
       i_ = -1;
     }
     
     bool empty() const{
-      return list_.empty();
+      return l_.empty();
     }
     
     iterator end(){
-      return list_.end();
+      return l_.end();
     }
     
     const_iterator end() const{
-      return list_.end();
+      return l_.end();
     }
     
     iterator erase(iterator position){
       i_ = -1;
-      return list_.erase(position);
+      return l_.erase(position);
     }
     
     iterator erase(iterator first, iterator last){
       i_ = -1;
-      return list_.erase(first, last);
+      return l_.erase(first, last);
     }
     
     reference front(){
-      return list_.front();
+      return l_.front();
     }
     
     const_reference front() const{
-      return list_.front();
+      return l_.front();
     }
     
     allocator_type get_allocator() const{
-      return list_.get_allocator();
+      return l_.get_allocator();
     }
     
     iterator insert(iterator position, const T& x){
       i_ = -1;
-      return list_.insert(position, x);
+      return l_.insert(position, x);
     }
     
     void insert(iterator position, size_t n, const T& x){
       i_ = -1;
-      return list_.insert(position, n, x);
+      return l_.insert(position, n, x);
     }
     
     template <class InputIterator>
     void insert(iterator position, InputIterator first, InputIterator last){
       i_ = -1;
-      list_.insert(position, first, last);
+      l_.insert(position, first, last);
     }
     
     void append(const NList<T> l){
-      list_.insert(list_.end(), l.begin(), l.end());
+      l_.insert(l_.end(), l.begin(), l.end());
     }
     
     template<class S>
     void append(const NList<S> l){
-      list_.insert(list_.end(), l.begin(), l.end());
+      l_.insert(l_.end(), l.begin(), l.end());
     }
     
     size_t max_size() const{
-      return list_.max_size();
+      return l_.max_size();
     }
     
     void merge(NList<T, Allocator>& x){
       i_ = -1;
-      list_.merge(x.list_);
+      l_.merge(x.l_);
     }
     
     template<class Compare>
     void merge(NList<T, Allocator>& x, Compare comp){
       i_ = -1;
-      list_.merge(x.list_, comp);
+      l_.merge(x.l_, comp);
     }
     
-    NList<T, Allocator>& operator=(const NList<T, Allocator>& x){
+    NList& operator=(const NList& x){
       i_ = -1;
-      list_ = x.list_;
+      l_ = x.l_;
       return *this;
     }
     
-    NList<T, Allocator>& operator=(NList<T, Allocator>&& x){
+    NList& operator=(NList&& x){
       i_ = -1;
-      list_ = std::move(x.list_);
+      l_ = std::move(x.l_);
       return *this;
     }
     
     NList<T, Allocator>& operator=(std::initializer_list<value_type> il){
       i_ = -1;
-      list_ = il;
+      l_ = il;
       return *this;
     }
     
     void pop_back(){
-      list_.pop_back();
+      l_.pop_back();
     }
     
     T popBack(){
-      T ret = std::move(*(--list_.end()));
-      list_.pop_back();
+      T ret = std::move(*(--l_.end()));
+      l_.pop_back();
       return ret;
     }
     
     void pop_front(){
       i_ = -1;
-      list_.pop_front();
+      l_.pop_front();
     }
     
     T popFront(){
       i_ = -1;
-      T ret = std::move(*list_.begin());
-      list_.pop_front();
+      T ret = std::move(*l_.begin());
+      l_.pop_front();
       return ret;
     }
     
     void push_back(const T& x){
-      list_.push_back(x);
+      l_.push_back(x);
     }
     
     template <class... Args>
     void emplace_back(Args&&... args){
-      return list_.emplace_back(std::forward<Args>(args)...);
+      return l_.emplace_back(std::forward<Args>(args)...);
     }
     
     void push_front(const T& x){
       i_ = -1;
-      list_.push_front(x);
+      l_.push_front(x);
     }
     
     template <class... Args>
     void emplace_front(Args&&... args){
-      return list_.emplace_front(std::forward<Args>(args)...);
+      return l_.emplace_front(std::forward<Args>(args)...);
     }
     
     reverse_iterator rbegin(){
-      return list_.rbegin();
+      return l_.rbegin();
     }
     
     const_reverse_iterator rbegin() const{
-      return list_.rbegin();
+      return l_.rbegin();
     }
     
     void remove(const T& value){
       i_ = -1;
-      list_.remove(value);
+      l_.remove(value);
     }
     
     template <class Predicate>
     void remove_if(Predicate pred){
       i_ = -1;
-      list_.remove_if(pred);
+      l_.remove_if(pred);
     }
     
     reverse_iterator rend(){
-      return list_.rend();
+      return l_.rend();
     }
     
     const_reverse_iterator rend() const{
-      return list_.rend();
+      return l_.rend();
     }
     
     void resize(size_t sz, T c=T()){
       i_ = -1;
-      list_.resize(sz, c);
+      l_.resize(sz, c);
     }
     
     void reverse(){
-      list_.reverse();
+      l_.reverse();
     }
     
     size_t size() const{
-      return list_.size();
+      return l_.size();
     }
     
     void sort(){
-      list_.sort();
+      l_.sort();
     }
     
     template<class Compare>
     void sort(Compare comp){
-      list_.sort(comp);
+      l_.sort(comp);
     }
     
-    void splice(iterator position, NList<T, Allocator>& x){
+    void splice(iterator position, NList& x){
       i_ = -1;
-      list_.splice(position, x);
+      l_.splice(position, x);
     }
     
-    void splice(iterator position, NList<T,Allocator>& x, iterator i){
+    void splice(iterator position, NList& x, iterator i){
       i_ = -1;
-      list_.splice(position, x, i);
+      l_.splice(position, x, i);
     }
     
     void splice(iterator position,
-                NList<T,Allocator>& x,
+                NList& x,
                 iterator first,
                 iterator last){
       i_ = -1;
-      list_.splice(position, x, first, last);
+      l_.splice(position, x, first, last);
     }
     
-    void swap(NList<T, Allocator>& lst){
+    void swap(NList& lst){
       i_ = -1;
-      list_.swap(lst);
+      l_.swap(lst);
     }
     
     void unique(){
       i_ = -1;
-      list_.unique();
+      l_.unique();
     }
     
     template<class BinaryPredicate>
     void unique(BinaryPredicate binary_pred){
       i_ = -1;
-      list_.unique(binary_pred);
+      l_.unique(binary_pred);
     }
     
     NList<T,Allocator>& operator<<(const T& x){
-      list_.push_back(x);
+      l_.push_back(x);
       return *this;
     }
     
     reference operator[](size_t i){
       if(i_ < 0){
-        itr_ = list_.begin();
+        itr_ = l_.begin();
         advance(itr_, i);
       }
       else{
@@ -412,7 +394,7 @@ namespace neu{
     }
     
   private:
-    List_ list_;
+    List l_;
     iterator itr_;
     int32_t i_;
   };

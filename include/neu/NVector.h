@@ -215,18 +215,18 @@ namespace neu{
       return v_.max_size();
     }
     
-    NVector<T,A>& operator=(const NVector<T, A>& x){
+    NVector& operator=(const NVector& x){
       v_.operator=(x.v_);
       return *this;
     }
     
-    NVector<T, A>& operator=(NVector<T, A>&& x){
+    NVector& operator=(NVector&& x){
       v_.operator=(std::move(x.v_));
 
       return *this;
     }
 
-    NVector<T, A>& operator=(std::initializer_list<value_type> il){
+    NVector& operator=(std::initializer_list<value_type> il){
       v_.operator=(il);
 
       return *this;
@@ -320,180 +320,180 @@ namespace neu{
       v_.swap(vec);
     }
     
-    NVector<T,A> operator-() const{
-      NVector<T,A> ret(*this);
+    NVector operator-() const{
+      NVector ret(*this);
       std::transform(ret.begin(), ret.end(), ret.begin(), neg_()); 
       return ret;
     }
 
-    NVector<T,A> operator!() const{
-      NVector<T,A> ret(*this);
+    NVector operator!() const{
+      NVector ret(*this);
       std::transform(ret.begin(), ret.end(), ret.begin(), not_()); 
       return ret;
     }
     
-    NVector<T,A>& operator+=(const T& x){
+    NVector& operator+=(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), addBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& operator+=(const NVector<T,A>& v){
+    NVector& operator+=(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     addBy2_()); 
       return *this;
     }
         
-    NVector<T,A> operator+(const T& x) const{
-      NVector<T,A> ret = *this;
+    NVector operator+(const T& x) const{
+      NVector ret = *this;
       ret += x;
       return ret;
     }
     
-    NVector<T,A> operator+(const NVector<T,A>& v) const{
-      NVector<T,A> ret = *this;
+    NVector operator+(const NVector& v) const{
+      NVector ret = *this;
       ret += v;
       return ret;
     }
     
-    NVector<T,A>& operator-=(const T& x){
+    NVector& operator-=(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), subBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& operator-=(const NVector<T,A>& v){
+    NVector& operator-=(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     subBy2_()); 
       return *this;
     }
     
-    NVector<T,A> operator-(const T& x) const{
+    NVector operator-(const T& x) const{
       NVector<T,A> ret = *this;
       ret -= x;
       return ret;
     }
     
-    NVector<T,A> operator-(const NVector<T,A>& v) const{
+    NVector operator-(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret -= v;
       return ret;
     }
     
-    NVector<T,A>& operator*=(const T& x){
+    NVector& operator*=(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), mulBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& operator*=(const NVector<T,A>& v){
+    NVector& operator*=(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     mulBy2_()); 
       return *this;
     }
     
-    NVector<T,A> operator*(const T& x) const{
+    NVector operator*(const T& x) const{
       NVector<T,A> ret = *this;
       ret *= x;
       return ret;
     }
     
-    NVector<T,A> operator*(const NVector<T,A>& v) const{
+    NVector operator*(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret *= v;
       return ret;
     }
     
-    NVector<T,A>& operator/=(const T& x){
+    NVector& operator/=(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), divBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& operator/=(const NVector<T,A>& v){
+    NVector& operator/=(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     divBy2_()); 
       return *this;
     }
     
-    NVector<T,A> operator/(const T& x) const{
+    NVector operator/(const T& x) const{
       NVector<T,A> ret = *this;
       ret /= x;
       return ret;
     }
     
-    NVector<T,A> operator/(const NVector<T,A>& v) const{
+    NVector operator/(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret /= v;
       return ret;
     }
 
-    NVector<T,A>& operator%=(const T& x){
+    NVector& operator%=(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), modBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& operator%=(const NVector<T,A>& v){
+    NVector& operator%=(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     modBy2_()); 
       return *this;
     }
 
-    NVector<T,A> operator%(const T& x) const{
+    NVector operator%(const T& x) const{
       NVector<T,A> ret = *this;
       ret %= x;
       return ret;
     }
     
-    NVector<T,A> operator%(const NVector<T,A>& v) const{
+    NVector operator%(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret %= v;
       return ret;
     }
 
-    NVector<T,A>& andBy(const T& x){
+    NVector& andBy(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), andBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& andBy(const NVector<T,A>& v){
+    NVector& andBy(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     andBy2_()); 
       return *this;
     }
 
-    NVector<T,A> operator&&(const T& x) const{
+    NVector operator&&(const T& x) const{
       NVector<T,A> ret = *this;
       ret.andBy(x);
       return ret;
     }
     
-    NVector<T,A> operator&&(const NVector<T,A>& v) const{
+    NVector operator&&(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret.andBy(v);
       return ret;
     }    
 
-    NVector<T,A>& orBy(const T& x){
+    NVector& orBy(const T& x){
       std::transform(v_.begin(), v_.end(), v_.begin(), orBy1_(x)); 
       return *this;
     }
     
-    NVector<T,A>& orBy(const NVector<T,A>& v){
+    NVector& orBy(const NVector& v){
       std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
 		     orBy2_()); 
       return *this;
     }
 
-    NVector<T,A> operator||(const T& x) const{
+    NVector operator||(const T& x) const{
       NVector<T,A> ret = *this;
       ret.orBy(x);
       return ret;
     }
     
-    NVector<T,A> operator||(const NVector<T,A>& v) const{
+    NVector operator||(const NVector& v) const{
       NVector<T,A> ret = *this;
       ret.orBy(v);
       return ret;
     }   
 
-    NVector<T,A>& operator<<(const T& x){
+    NVector& operator<<(const T& x){
       v_.push_back(x);
       return *this;
     }
