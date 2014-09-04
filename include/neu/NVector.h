@@ -308,6 +308,10 @@ namespace neu{
       v_.reserve(n);
     }
     
+    void shrink_to_fit() noexcept{
+      v_.shrink_to_fit();
+    }
+    
     void resize(size_t sz, T c=T()){
       v_.resize(sz, c);
     }
@@ -316,7 +320,7 @@ namespace neu{
       return v_.size();
     }
     
-    void swap(NVector<T,A>& vec){
+    void swap(NVector& vec){
       v_.swap(vec);
     }
     
