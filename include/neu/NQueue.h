@@ -237,7 +237,7 @@ namespace neu{
     }
     
     void resize(size_type n){
-      q_.resize();
+      q_.resize(n);
     }
     
     void resize(size_type n, const value_type& v){
@@ -312,12 +312,12 @@ namespace neu{
     
     template<class... Args>
     void emplace_front(Args&&... args){
-      return q_.emplace_front(std::forward<Args>(args)...);
+      q_.emplace_front(std::forward<Args>(args)...);
     }
     
     template<class... Args>
     void emplace_back(Args&&... args){
-      return q_.emplace_back(std::forward<Args>(args)...);
+      q_.emplace_back(std::forward<Args>(args)...);
     }
     
     template<class... Args>
@@ -367,7 +367,7 @@ namespace neu{
       return q_.insert(p, il);
     }
     
-    void append(const NQueue<T>& q){
+    void append(const NQueue& q){
       q_.insert(q_.end(), q.begin(), q.end());
     }
     
