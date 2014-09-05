@@ -144,20 +144,19 @@ namespace{
     
     void addServerProc(ServerProc* proc){
       mutex_.lock();
-      serverProcMap_.insert({proc, true});
+      serverProcs_.add(proc);
       mutex_.unlock();
     }
     
     void removeServerProc(ServerProc* proc){
       mutex_.lock();
-      serverProcMap_.erase(proc);
+      serverProcs_.erase(proc);
       mutex_.unlock();
     }
     
     void revoke(){
       mutex_.lock();
-      for(auto& itr : serverProcMap_){
-        ServerProc* serverProc = itr.first;
+      for(ServerProc* serverProc : serverProcs_){
         serverProc->close();
         if(task_->terminate(serverProc)){
           delete serverProc;
@@ -167,10 +166,10 @@ namespace{
     }
     
   private:
-    typedef NMap<ServerProc*, bool> ServerProcMap_;
+    typedef NHashSet<ServerProc*> ServerProcSet_;
 
     NProcTask* task_;
-    ServerProcMap_ serverProcMap_;
+    ServerProcSet_ serverProcs_;
     NBasicMutex mutex_;
   };
   
@@ -368,8 +367,8 @@ namespace neu{
     }
     
   private:
-    typedef NMap<NObject*, Client*> ObjectClientMap_;
-    typedef NMap<nstr, DistributedObject*> DistributedObjectMap_;
+    typedef NHashMap<NObject*, Client*> ObjectClientMap_;
+    typedef NHashMap<nstr, DistributedObject*> DistributedObjectMap_;
     
     NBroker* o_;
     NProcTask* task_;
