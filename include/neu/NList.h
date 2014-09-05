@@ -203,12 +203,12 @@ namespace neu{
       l_.insert(position, first, last);
     }
     
-    void append(const NList<T> l){
+    void append(const NList& l){
       l_.insert(l_.end(), l.begin(), l.end());
     }
     
     template<class S>
-    void append(const NList<S> l){
+    void append(const NList<S>& l){
       l_.insert(l_.end(), l.begin(), l.end());
     }
     
@@ -216,13 +216,13 @@ namespace neu{
       return l_.max_size();
     }
     
-    void merge(NList<T, Allocator>& x){
+    void merge(NList& x){
       i_ = -1;
       l_.merge(x.l_);
     }
     
     template<class Compare>
-    void merge(NList<T, Allocator>& x, Compare comp){
+    void merge(NList& x, Compare comp){
       i_ = -1;
       l_.merge(x.l_, comp);
     }
@@ -385,7 +385,7 @@ namespace neu{
       l_.unique(binary_pred);
     }
     
-    NList<T,Allocator>& operator<<(const T& x){
+    NList& operator<<(const T& x){
       l_.push_back(x);
       return *this;
     }
