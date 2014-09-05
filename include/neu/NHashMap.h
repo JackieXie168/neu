@@ -115,10 +115,10 @@ namespace neu{
     noexcept(std::is_nothrow_move_constructible<hasher>::value &&
              std::is_nothrow_move_constructible<key_equal>::value &&
              std::is_nothrow_move_constructible<allocator_type>::value)
-    : m_(m.m_){}
+    : m_(std::move(m.m_)){}
     
     NHashMap(NHashMap&& m, const Alloc& a)
-    : m_(m.m_, a){}
+    : m_(std::move(m.m_), a){}
     
     NHashMap(const HashMap& m)
     : m_(m){}
@@ -154,7 +154,7 @@ namespace neu{
              std::is_nothrow_move_assignable<allocator_type>::value &&
              std::is_nothrow_move_assignable<hasher>::value &&
              std::is_nothrow_move_assignable<key_equal>::value){
-      m_ = m.m_;
+      m_ = std::move(m.m_);
       return *this;
     }
     
@@ -369,7 +369,7 @@ namespace neu{
     }
     
     void rehash(size_type n){
-      m_.rehash();
+      m_.rehash(n);
     }
     
     void reserve(size_type n){
