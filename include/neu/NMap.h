@@ -146,12 +146,11 @@ namespace neu{
       return m_.end();
     }
     
-    std::pair<iterator,iterator>
-    equal_range(const key_type& x){
+    std::pair<iterator, iterator> equal_range(const key_type& x){
       return m_.equal_range(x);
     }
     
-    std::pair<const_iterator,const_iterator>
+    std::pair<const_iterator, const_iterator>
     equal_range(const key_type& x) const{
       return m_.equal_range(x);
     }
