@@ -3931,10 +3931,10 @@ namespace neu{
     void addKey(const nvar& key){
       switch(t_){
         case Set:
-          h_.set->insert(key);
+          h_.set->add(key);
           break;
         case HashSet:
-          h_.hset->insert(key);
+          h_.hset->add(key);
           break;
         case Map:
           h_.m->insert({key, true});

@@ -1273,9 +1273,9 @@ bool nvar::hasKey(const nvar& key) const{
     case Function:
       return h_.f->m && h_.f->m->hasKey(key);
     case Set:
-      return h_.set->hasKey(key);
+      return h_.set->has(key);
     case HashSet:
-      return h_.hset->hasKey(key);
+      return h_.hset->has(key);
     case Map:
       return h_.m->hasKey(key);
     case HashMap:
@@ -1302,9 +1302,9 @@ size_t nvar::numKeys(const nvar& key){
     case Function:
       return h_.f->m && h_.f->m->hasKey(key) ? 1 : 0;
     case Set:
-      return h_.set->hasKey(key) ? 1 : 0;
+      return h_.set->has(key) ? 1 : 0;
     case HashSet:
-      return h_.hset->hasKey(key) ? 1 : 0;
+      return h_.hset->has(key) ? 1 : 0;
     case Map:
       return h_.m->hasKey(key) ? 1 : 0;
     case HashMap:
@@ -21705,7 +21705,7 @@ void nvar::intoSet(){
       nset* s = new nset;
       
       for(auto& itr : *h_.m){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = Set;
@@ -21716,7 +21716,7 @@ void nvar::intoSet(){
       nset* s = new nset;
       
       for(auto& itr : *h_.h){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = Set;
@@ -21727,7 +21727,7 @@ void nvar::intoSet(){
       nset* s = new nset;
       
       for(auto& itr : *h_.mm){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = Set;
@@ -21803,7 +21803,7 @@ void nvar::intoHashSet(){
       nhset* s = new nhset;
       
       for(auto& itr : *h_.set){
-        s->insert(*itr);
+        s->add(*itr);
       }
       
       t_ = HashSet;
@@ -21816,7 +21816,7 @@ void nvar::intoHashSet(){
       nhset* s = new nhset;
       
       for(auto& itr : *h_.m){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = HashSet;
@@ -21827,7 +21827,7 @@ void nvar::intoHashSet(){
       nhset* s = new nhset;
       
       for(auto& itr : *h_.h){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = HashSet;
@@ -21838,7 +21838,7 @@ void nvar::intoHashSet(){
       nhset* s = new nhset;
       
       for(auto& itr : *h_.mm){
-        s->insert(itr.first);
+        s->add(itr.first);
       }
       
       t_ = HashSet;
@@ -23051,17 +23051,17 @@ void nvar::merge(const nvar& x){
         }
         case Map:
           for(auto& itr : *x.h_.m){
-            h_.set->insert(itr.first);
+            h_.set->add(itr.first);
           }
           break;
         case HashMap:
           for(auto& itr : *x.h_.h){
-            h_.set->insert(itr.first);
+            h_.set->add(itr.first);
           }
           break;
         case Multimap:
           for(auto& itr : *x.h_.mm){
-            h_.set->insert(itr.first);
+            h_.set->add(itr.first);
           }
           break;
         case Function:
@@ -23099,17 +23099,17 @@ void nvar::merge(const nvar& x){
           break;
         case Map:
           for(auto& itr : *x.h_.m){
-            h_.hset->insert(itr.first);
+            h_.hset->add(itr.first);
           }
           break;
         case HashMap:
           for(auto& itr : *x.h_.h){
-            h_.hset->insert(itr.first);
+            h_.hset->add(itr.first);
           }
           break;
         case Multimap:
           for(auto& itr : *x.h_.mm){
-            h_.hset->insert(itr.first);
+            h_.hset->add(itr.first);
           }
           break;
         case Function:

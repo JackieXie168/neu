@@ -1078,4 +1078,15 @@ namespace neu{
   
 } // end namespace neu
 
+namespace std{
+
+  template<>
+  struct hash<neu::nstr>{
+    size_t operator()(const neu::nstr& s) const{
+      return hash<string>()(s.str());
+    }
+  };
+  
+} // end namespace std
+
 #endif // NEU_N_STR_H

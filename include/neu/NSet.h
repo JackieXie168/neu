@@ -250,6 +250,14 @@ namespace neu{
     std::pair<iterator, bool> insert(value_type&& v){
       return s_.insert(std::move(v));
     }
+
+    std::pair<iterator, bool> add(const value_type& v){
+      return s_.insert(v);
+    }
+    
+    std::pair<iterator, bool> add(value_type&& v){
+      return s_.insert(std::move(v));
+    }
     
     iterator insert(const_iterator position, const value_type& v){
       return s_.insert(position, v);
@@ -379,7 +387,7 @@ namespace neu{
       return s_;
     }
     
-    bool hasKey(const key_type& x) const{
+    bool has(const key_type& x) const{
       return s_.find(x) != s_.end();
     }
     

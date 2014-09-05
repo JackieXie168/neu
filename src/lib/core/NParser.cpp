@@ -557,7 +557,7 @@ namespace neu{
       }
       
       void reach(NonTermSet& vm){
-        vm.insert(this);
+        vm.add(this);
         reachable_ = true;
         
         for(Rule* p : rules_){
@@ -566,7 +566,7 @@ namespace neu{
       }
       
       bool canBeginWith(Elem* e, NonTermSet& ns){
-        ns.insert(this);
+        ns.add(this);
         
         for(Rule* p : rules_){
           if(p->canBeginWith(e, ns)){
@@ -582,7 +582,7 @@ namespace neu{
       }
       
       bool inFirst(Term* t){
-        return first_.hasKey(t);
+        return first_.has(t);
       }
       
       bool reachable(){
@@ -602,7 +602,7 @@ namespace neu{
       }
       
       void addFollow(Term* t){
-        followTerm_.insert(t);
+        followTerm_.add(t);
       }
       
       const TermSet& follow(){
@@ -610,7 +610,7 @@ namespace neu{
       }
       
       void addFollowNonTerm(NonTerm* n){
-        followNonTerm_.insert(n);
+        followNonTerm_.add(n);
       }
       
       void addRule(Rule* rule){
@@ -793,11 +793,11 @@ namespace neu{
         Set s;
         
         for(Rule* p : rules_){
-          if(s.hasKey(p->elems())){
+          if(s.has(p->elems())){
             NERROR("duplicate rule: " + p->toStr());
           }
           
-          s.insert(p->elems());
+          s.add(p->elems());
         }
       }
       
@@ -812,11 +812,11 @@ namespace neu{
       bool expandFollow();
       
       bool addFirst(Term* t){
-        if(first_.hasKey(t)){
+        if(first_.has(t)){
           return false;
         }
         
-        first_.insert(t);
+        first_.add(t);
         return true;
       }
       
@@ -843,7 +843,7 @@ namespace neu{
           for(Elem* ei : elems){
             if(ei->isTerm()){
               Term* t = static_cast<Term*>(ei);
-              allTerms_.insert(t);
+              allTerms_.add(t);
             }
           }
         }
@@ -876,7 +876,7 @@ namespace neu{
       }
       
       bool hasTerm(Term* t){
-        return allTerms_.hasKey(t);
+        return allTerms_.has(t);
       }
       
     private:
@@ -1137,7 +1137,7 @@ namespace neu{
           
           NonTerm* n = static_cast<NonTerm*>(ei);
           
-          if(vm.hasKey(n)){
+          if(vm.has(n)){
             continue;
           }
           
@@ -1162,7 +1162,7 @@ namespace neu{
         
         NonTerm* fn = static_cast<NonTerm*>(fe);
         
-        if(ns.hasKey(fn)){
+        if(ns.has(fn)){
           return false;
         }
         
@@ -1617,8 +1617,8 @@ namespace neu{
         for(Elem* ei : elems_){
           if(ei->isTerm()){
             Term* ti = static_cast<Term*>(ei);
-            if(!first_.hasKey(ti)){
-              first_.insert(ti);
+            if(!first_.has(ti)){
+              first_.add(ti);
               nonTerm_->addFirst(ti);
               changed = true;
             }
@@ -1685,7 +1685,7 @@ namespace neu{
       }
       
       bool inFirst(Term* t){
-        return first_.hasKey(t);
+        return first_.has(t);
       }
       
     private:
@@ -1829,7 +1829,7 @@ namespace neu{
     void alphabet(TermSet& s){
       for(auto& itr : termMap_){
         Term* t = itr.second;
-        s.insert(t);
+        s.add(t);
       }
     }
     
@@ -2349,7 +2349,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
   if(itr != tm.end()){
     prec = itr->first;
     while(itr != tm.end() && itr->first == prec){
-      ts.insert(itr->second);
+      ts.add(itr->second);
       ++itr;
     }
   }
@@ -2370,7 +2370,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
       Rule* p = itr;
       
       if(p->normAmbig(t, n)){
-        nps.insert(p);
+        nps.add(p);
         match = true;
         break;
       }
@@ -2382,7 +2382,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
   if(!match){
     delete n;
     for(Rule* r : rules_){
-      lps.insert(r);
+      lps.add(r);
     }
     normAmbig(tm, lps, nv, prec);
     return;
@@ -2392,14 +2392,14 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
   while(pitr != rules_.end()){
     Rule* p = *pitr;
     
-    if(nps.hasKey(p)){
+    if(nps.has(p)){
       ++pitr;
     }
     else{
       p->replace(this, n);
       n->addRule(p);
       pitr = rules_.erase(pitr);
-      lps.insert(p);
+      lps.add(p);
     }
   }
   
@@ -2523,7 +2523,7 @@ void NParser_::NonTerm::createDispatch(ostream& estr){
     }
     
     for(Rule* p : rules_){
-      if(p->nullable() && followTerm_.hasKey(t)){
+      if(p->nullable() && followTerm_.has(t)){
         rule = p;
         addDispatch(estr, t, p);
       }

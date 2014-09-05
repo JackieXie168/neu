@@ -235,6 +235,14 @@ public:
   std::pair<iterator, bool> insert(value_type&& obj){
     return s_.insert(std::move(obj));
   }
+
+  std::pair<iterator, bool> add(const value_type& obj){
+    return s_.insert(obj);
+  }
+  
+  std::pair<iterator, bool> add(value_type&& obj){
+    return s_.insert(std::move(obj));
+  }
   
   iterator insert(const_iterator hint, const value_type& obj){
     return s_.insert(hint, obj);
@@ -403,7 +411,7 @@ public:
     s_ = std::move(r);
   }
   
-  bool hasKey(const key_type& x) const{
+  bool has(const key_type& x) const{
     return s_.find(x) != s_.end();
   }
   

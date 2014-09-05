@@ -195,119 +195,119 @@ public:
     
   MetaGenerator()
   : enableHandle_(true),
-    enableClass_(true),
-    enableMetadata_(true),
-    enableOuter_(true){
+  enableClass_(true),
+  enableMetadata_(true),
+  enableOuter_(true){
     
     NProgram::require();
-      
-    includes_.push_back(_home + "/include");
-
-    nTypeMap_["void"] = true;
-    nTypeMap_["bool"] = true;
-    nTypeMap_["const bool"] = true;
-    nTypeMap_["const bool &"] = true;
-    nTypeMap_["_Bool"] = true;
-    nTypeMap_["const _Bool"] = true;
-    nTypeMap_["const _Bool &"] = true;
-    nTypeMap_["unsigned char"] = true;
-    nTypeMap_["const unsigned char"] = true;
-    nTypeMap_["const unsigned char &"] = true;
-    nTypeMap_["signed char"] = true;
-    nTypeMap_["const signed char"] = true;
-    nTypeMap_["const signed char &"] = true;
-    nTypeMap_["char"] = true;
-    nTypeMap_["const char"] = true;
-    nTypeMap_["const char &"] = true;
-    nTypeMap_["short"] = true;
-    nTypeMap_["const short"] = true;
-    nTypeMap_["const short &"] = true;
-    nTypeMap_["unsigned short"] = true;
-    nTypeMap_["const unsigned short"] = true;
-    nTypeMap_["const unsigned short &"] = true;
-    nTypeMap_["int"] = true;
-    nTypeMap_["const int"] = true;
-    nTypeMap_["const int &"] = true;
-    nTypeMap_["unsigned int"] = true;
-    nTypeMap_["const unsigned int"] = true;
-    nTypeMap_["const unsigned int &"] = true;
-    nTypeMap_["long"] = true;
-    nTypeMap_["const long"] = true;
-    nTypeMap_["const long &"] = true;
-    nTypeMap_["long long"] = true;
-    nTypeMap_["const long long"] = true;
-    nTypeMap_["const long long &"] = true;
-    nTypeMap_["unsigned long"] = true;
-    nTypeMap_["const unsigned long"] = true;
-    nTypeMap_["const unsigned long &"] = true;
-    nTypeMap_["unsigned long long"] = true;
-    nTypeMap_["const unsigned long long"] = true;
-    nTypeMap_["const unsigned long long &"] = true;
-    nTypeMap_["float"] = true;
-    nTypeMap_["const float"] = true;
-    nTypeMap_["const float &"] = true;
-    nTypeMap_["double"] = true;
-    nTypeMap_["const double"] = true;
-    nTypeMap_["const double &"] = true;
-    nTypeMap_["class neu::nvar"] = true;
-    nTypeMap_["class neu::nvar *"] = true;
-    nTypeMap_["const class neu::nvar"] = true;
-    nTypeMap_["const class neu::nvar &"] = true;
-    nTypeMap_["class neu::nvar &"] = true;
-    nTypeMap_["class neu::nstr"] = true;
-    nTypeMap_["const class neu::nstr"] = true;
-    nTypeMap_["const class neu::nstr &"] = true;
-    nTypeMap_["class neu::nstr &"] = true;
-    nTypeMap_["class std::basic_string<char>"] = true;
-    nTypeMap_["const class std::basic_string<char>"] = true;
-    nTypeMap_["const class std::basic_string<char> &"] = true;
-      
-    nTypeMap_["class neu::NVector<class neu::nvar, "
-              "class std::allocator<class neu::nvar> >"] = true;
-    nTypeMap_["class neu::NVector<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> >"] = true;
-      
-    nTypeMap_["const class neu::NVector<class neu::nvar, "
-              "class std::allocator<class neu::nvar> >"] = true;
-    nTypeMap_["const class neu::NVector<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> >"] = true;
-      
-    nTypeMap_["const class neu::NVector<class neu::nvar, "
-              "class std::allocator<class neu::nvar> > &"] = true;
-    nTypeMap_["const class neu::NVector<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> > &"] = true;
-      
-    nTypeMap_["class neu::NList<class neu::nvar, "
-              "class std::allocator<class neu::nvar> >"] = true;
-    nTypeMap_["class neu::NList<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> >"] = true;
-      
-      
-    nTypeMap_["const class neu::NList<class neu::nvar, "
-              "class std::allocator<class neu::nvar> >"] = true;
-    nTypeMap_["const class neu::NList<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> >"] = true;
-      
-    nTypeMap_["const class neu::NList<class neu::nvar, "
-              "class std::allocator<class neu::nvar> > &"] = true;
-    nTypeMap_["const class neu::NList<class neu::nvar, "
-              "class std::__1::allocator<class neu::nvar> > &"] = true;
-      
-    nTypeMap_["class neu::nrat"] = true;
-    nTypeMap_["const class neu::nrat"] = true;
-    nTypeMap_["const class neu::nrat &"] = true;
-    nTypeMap_["class neu::nreal"] = true;
-    nTypeMap_["const class neu::nreal"] = true;
-    nTypeMap_["const class neu::nreal &"] = true;
-    nTypeMap_["class neu::nstr *"] = true;
-  }
     
+    includes_.push_back(_home + "/include");
+    
+    nTypes_.add("void");
+    nTypes_.add("bool");
+    nTypes_.add("const bool");
+    nTypes_.add("const bool &");
+    nTypes_.add("_Bool");
+    nTypes_.add("const _Bool");
+    nTypes_.add("const _Bool &");
+    nTypes_.add("unsigned char");
+    nTypes_.add("const unsigned char");
+    nTypes_.add("const unsigned char &");
+    nTypes_.add("signed char");
+    nTypes_.add("const signed char");
+    nTypes_.add("const signed char &");
+    nTypes_.add("char");
+    nTypes_.add("const char");
+    nTypes_.add("const char &");
+    nTypes_.add("short");
+    nTypes_.add("const short");
+    nTypes_.add("const short &");
+    nTypes_.add("unsigned short");
+    nTypes_.add("const unsigned short");
+    nTypes_.add("const unsigned short &");
+    nTypes_.add("int");
+    nTypes_.add("const int");
+    nTypes_.add("const int &");
+    nTypes_.add("unsigned int");
+    nTypes_.add("const unsigned int");
+    nTypes_.add("const unsigned int &");
+    nTypes_.add("long");
+    nTypes_.add("const long");
+    nTypes_.add("const long &");
+    nTypes_.add("long long");
+    nTypes_.add("const long long");
+    nTypes_.add("const long long &");
+    nTypes_.add("unsigned long");
+    nTypes_.add("const unsigned long");
+    nTypes_.add("const unsigned long &");
+    nTypes_.add("unsigned long long");
+    nTypes_.add("const unsigned long long");
+    nTypes_.add("const unsigned long long &");
+    nTypes_.add("float");
+    nTypes_.add("const float");
+    nTypes_.add("const float &");
+    nTypes_.add("double");
+    nTypes_.add("const double");
+    nTypes_.add("const double &");
+    nTypes_.add("class neu::nvar");
+    nTypes_.add("class neu::nvar *");
+    nTypes_.add("const class neu::nvar");
+    nTypes_.add("const class neu::nvar &");
+    nTypes_.add("class neu::nvar &");
+    nTypes_.add("class neu::nstr");
+    nTypes_.add("const class neu::nstr");
+    nTypes_.add("const class neu::nstr &");
+    nTypes_.add("class neu::nstr &");
+    nTypes_.add("class std::basic_string<char>");
+    nTypes_.add("const class std::basic_string<char>");
+    nTypes_.add("const class std::basic_string<char> &");
+    
+    nTypes_.add("class neu::NVector<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> >");
+    nTypes_.add("class neu::NVector<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> >");
+    
+    nTypes_.add("const class neu::NVector<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> >");
+    nTypes_.add("const class neu::NVector<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> >");
+    
+    nTypes_.add("const class neu::NVector<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> > &");
+    nTypes_.add("const class neu::NVector<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> > &");
+    
+    nTypes_.add("class neu::NList<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> >");
+    nTypes_.add("class neu::NList<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> >");
+    
+    
+    nTypes_.add("const class neu::NList<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> >");
+    nTypes_.add("const class neu::NList<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> >");
+    
+    nTypes_.add("const class neu::NList<class neu::nvar, "
+                  "class std::allocator<class neu::nvar> > &");
+    nTypes_.add("const class neu::NList<class neu::nvar, "
+                  "class std::__1::allocator<class neu::nvar> > &");
+    
+    nTypes_.add("class neu::nrat");
+    nTypes_.add("const class neu::nrat");
+    nTypes_.add("const class neu::nrat &");
+    nTypes_.add("class neu::nreal");
+    nTypes_.add("const class neu::nreal");
+    nTypes_.add("const class neu::nreal &");
+    nTypes_.add("class neu::nstr *");
+  }
+  
   ~MetaGenerator(){
-      
+    
   }
 
   bool isNType(const nstr& t){
-    return nTypeMap_.hasKey(t);
+    return nTypes_.has(t);
   }    
 
   void enableHandle(bool flag){
@@ -1161,9 +1161,9 @@ public:
   }
 
 private:
-  typedef NMap<nstr, bool> NTypeMap_;
+  typedef NHashSet<nstr> NTypeSet_;
 
-  NTypeMap_ nTypeMap_;
+  NTypeSet_ nTypes_;
   ostream* ostr_;
   CompilerInstance* ci_;
   Sema* sema_;

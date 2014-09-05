@@ -1179,7 +1179,7 @@ namespace neu{
 
       void compact(Index& ni, const RowSet& rs){
         traverse([&](R& r){
-          if(rs.hasKey(r.rowId)){
+          if(rs.has(r.rowId)){
             return;
           }
           
@@ -1189,12 +1189,12 @@ namespace neu{
       
       void compact(Index& ni, const RowSet& rs, const UpdateMap& um){
         traverse([&](R& r){
-          if(rs.hasKey(r.rowId)){
+          if(rs.has(r.rowId)){
             return;
           }
           
           RowId rowId = r.value;
-          if(rs.hasKey(rowId)){
+          if(rs.has(rowId)){
             auto itr = um.find(rowId);
             if(itr != um.end()){
               r.value = itr->second;
@@ -1387,7 +1387,7 @@ namespace neu{
                       UpdateMap& um){
         traverse([&](DataRecord& r){
           if(r.remap){
-            rs.insert(r.value);
+            rs.add(r.value);
             if(r.rowId != 0){
               um.insert({r.value, RowId(r.rowId)});
             }
@@ -2742,7 +2742,7 @@ namespace neu{
         }
         
         if(exists_(rowId)){
-          rs.insert(rowId);
+          rs.add(rowId);
         }
         
         return 1;
@@ -2788,7 +2788,7 @@ namespace neu{
           }
           
           if(exists_(rowId)){
-            rs.insert(rowId);
+            rs.add(rowId);
           }
           
           return 1;
