@@ -89,7 +89,7 @@ namespace neu{
             const A& allocator=A())
     : v_(first, last, allocator){}
     
-    NVector(const NVector<T,A>& x)
+    NVector(const NVector& x)
     : v_(x.v_){}
     
     NVector(NVector&& x)
@@ -198,7 +198,7 @@ namespace neu{
       v_.insert(position, n, x);
     }
     
-    void append(const NVector<T>& v){
+    void append(const NVector& v){
       v_.insert(v_.end(), v.begin(), v.end());
     }
         
@@ -212,28 +212,28 @@ namespace neu{
     }
     
     NVector& operator=(const NVector& x){
-      v_.operator=(x.v_);
+      v_ = x.v_;
       return *this;
     }
     
     NVector& operator=(NVector&& x){
-      v_.operator=(std::move(x.v_));
+      v_ = std::move(x.v_);
 
       return *this;
     }
 
     NVector& operator=(std::initializer_list<value_type> il){
-      v_.operator=(il);
+      v_ = il;
 
       return *this;
     }
 
     reference operator[](size_t n){
-      return v_.operator[](n);
+      return v_[n];
     }
     
     const_reference operator[](size_t n) const{
-      return v_.operator[](n);
+      return v_[n];
     }
     
     const T& uget(size_t n, const T& def) const{
@@ -358,8 +358,7 @@ namespace neu{
     }
     
     NVector& operator+=(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     addBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), addBy2_());
       return *this;
     }
         
@@ -381,19 +380,18 @@ namespace neu{
     }
     
     NVector& operator-=(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     subBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), subBy2_());
       return *this;
     }
     
     NVector operator-(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret -= x;
       return ret;
     }
     
     NVector operator-(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret -= v;
       return ret;
     }
@@ -404,19 +402,18 @@ namespace neu{
     }
     
     NVector& operator*=(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     mulBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), mulBy2_());
       return *this;
     }
     
     NVector operator*(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret *= x;
       return ret;
     }
     
     NVector operator*(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret *= v;
       return ret;
     }
@@ -427,19 +424,18 @@ namespace neu{
     }
     
     NVector& operator/=(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     divBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), divBy2_());
       return *this;
     }
     
     NVector operator/(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret /= x;
       return ret;
     }
     
     NVector operator/(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret /= v;
       return ret;
     }
@@ -450,19 +446,18 @@ namespace neu{
     }
     
     NVector& operator%=(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     modBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), modBy2_());
       return *this;
     }
 
     NVector operator%(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret %= x;
       return ret;
     }
     
     NVector operator%(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret %= v;
       return ret;
     }
@@ -473,19 +468,18 @@ namespace neu{
     }
     
     NVector& andBy(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     andBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), andBy2_());
       return *this;
     }
 
     NVector operator&&(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret.andBy(x);
       return ret;
     }
     
     NVector operator&&(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret.andBy(v);
       return ret;
     }    
@@ -496,19 +490,18 @@ namespace neu{
     }
     
     NVector& orBy(const NVector& v){
-      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(),
-		     orBy2_()); 
+      std::transform(v_.begin(), v_.end(), v.begin(), v_.begin(), orBy2_());
       return *this;
     }
 
     NVector operator||(const T& x) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret.orBy(x);
       return ret;
     }
     
     NVector operator||(const NVector& v) const{
-      NVector<T,A> ret = *this;
+      NVector ret = *this;
       ret.orBy(v);
       return ret;
     }   
