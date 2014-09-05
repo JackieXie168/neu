@@ -131,10 +131,10 @@ public:
   : s_(std::move(s)){}
   
   NHashSet(NHashSet&& s, const Alloc& a)
-  : s_(s.s_, a){}
+  : s_(std::move(s.s_), a){}
 
   NHashSet(HashSet&& s, const Alloc& a)
-  : s_(s, a){}
+  : s_(std::move(s), a){}
   
   NHashSet(std::initializer_list<value_type> il,
           size_type n = 0,
