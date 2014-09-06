@@ -60,6 +60,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NVSemaphore.h>
 #include <neu/NThread.h>
 #include <neu/NBasicMutex.h>
+#include <neu/NRWMutex.h>
 
 using namespace std;
 using namespace neu;
@@ -109,9 +110,7 @@ namespace neu{
       Item(State* s, nvar& r, double p)
       : s(s),
       r(move(r)),
-      p(p){
-
-      }
+      p(p){}
       
       State* s;
       nvar r;
@@ -268,24 +267,38 @@ namespace neu{
     }
     
     State* getState(NProc* np){
+      mutex_.readLock();
+
       auto itr = stateMap_.find(np);
-      
       if(itr == stateMap_.end()){
+        mutex_.unlock();
+      
         State* state = new State(np);
+
+        mutex_.writeLock();
         stateMap_.insert({np, state});
+        mutex_.unlock();
+        
         return state;
       }
       
-      return itr->second;
+      State* s = itr->second;
+      mutex_.unlock();
+      
+      return s;
     }
     
     bool terminate(NProc* np){
+      mutex_.readLock();
+      
       auto itr = stateMap_.find(np);
       if(itr == stateMap_.end()){
+        mutex_.unlock();
         return true;
       }
       
       State* s = itr->second;
+      mutex_.unlock();
       
       return s->terminate();
     }
@@ -299,6 +312,7 @@ namespace neu{
     ThreadVec_ threadVec_;
     bool active_;
     StateMap_ stateMap_;
+    NRWMutex mutex_;
   };
   
 } // end namespace neu
