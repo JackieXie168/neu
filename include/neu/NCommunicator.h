@@ -67,12 +67,8 @@ namespace neu{
 
     class Encoder{
     public:
-      virtual char* header(uint32_t& size){
-        return 0;
-      }
-      
       // if an encrypted buffer is provided, user is responsible for
-      // freeing buf
+      // freeing buf, first 4 bytes of buf are reserved
       virtual char* encrypt(char* buf, uint32_t& size){
         return buf;
       }

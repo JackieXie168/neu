@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NCommunicator.h>
 
 #include <atomic>
+#include <cstring>
 
 #include <neu/NProc.h>
 #include <neu/NBasicMutex.h>
@@ -241,10 +242,6 @@ namespace neu{
       return socket_;
     }
     
-    virtual char* header(uint32_t& size){
-      return encoder_ ? encoder_->header(size) : 0;
-    }
-    
     virtual char* encrypt(char* buf, uint32_t& size){
       return encoder_ ? encoder_->encrypt(buf, size) : buf;
     }
@@ -292,42 +289,13 @@ void ReceiveProc::run(nvar& r){
     return;
   }
   
-  int n;
   uint32_t size;
+  int n = s_->receive((char*)&size, 4, _timeout);
+  if(n == -1){
+    signal(task_, this);
+    return;
+  }
   
-  char* h = c_->header(size);
-  if(h){
-    char* hbuf = (char*)malloc(size);
-    n = s_->receive(hbuf, size, _timeout);
-    if(n == -1){
-      signal(task_, this);
-      return;
-    }
-    
-    if(n != 4){
-      free(hbuf);
-      c_->close_();
-      return;
-    }
-
-    for(size_t i = 0; i < size; ++i){
-      if(hbuf[i] != h[i]){
-        free(hbuf);
-        c_->close_();
-        return;
-      }
-    }
-    free(hbuf);
-    n = s_->receive((char*)&size, 4);
-  }
-  else{
-    n = s_->receive((char*)&size, 4, _timeout);
-    if(n == -1){
-      signal(task_, this);
-      return;
-    }
-  }
-
   if(n != 4){
     c_->close_();
     return;
@@ -378,31 +346,14 @@ void SendProc::run(nvar& r){
     return;
   }
   
-  int n;
   uint32_t size;
-
-  char* h = c_->header(size);
-  if(h){
-    n = s_->send(h, size);
-    if(n != size){
-      c_->close();
-      return;
-    }
-  }
-  
-  char* buf = msg.pack(size);
-  n = s_->send((char*)&size, 4);
-
-  if(n != 4){
-    free(buf);
-    c_->close();
-    return;
-  }
-  
+  char* buf = msg.pack(size, 1024, 4);
   buf = c_->encrypt(buf, size);
-
-  n = s_->send(buf, size);
   
+  uint32_t s = size - 4;
+  memcpy(buf, &s, 4);
+  
+  uint32_t n = s_->send(buf, size);
   free(buf);
   
   if(n != size){
