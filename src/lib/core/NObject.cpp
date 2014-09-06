@@ -227,7 +227,7 @@ namespace neu{
       }
       
     private:
-      typedef NMap<NThread::id, ThreadContext*> ContextMap_;
+      typedef NHashMap<NThread::id, ThreadContext*> ContextMap_;
       
       ContextMap_ contextMap_;
       NRWMutex contextMutex_;
