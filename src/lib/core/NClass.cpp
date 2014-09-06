@@ -123,7 +123,7 @@ namespace{
     }
     
   private:
-    typedef NMap<nstr, NClass*> ClassMap_;
+    typedef NHashMap<nstr, NClass*> ClassMap_;
     
     ClassMap_ classMap_;
   };

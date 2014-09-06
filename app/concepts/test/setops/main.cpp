@@ -43,10 +43,10 @@ public:
     addOutput("g", &g);
 
     // inputs
-    a = {1,2,3};
-    b = {4,5,6};
-    f = {6};
-    d = {1,2,5,6,7,8};
+    a = nset({1,2,3});
+    b = nset({4,5,6});
+    f = nset({6});
+    d = nset({1,2,5,6,7,8});
   }
 
   nvar evaluate(){
@@ -56,10 +56,13 @@ public:
 
     const nvar& v = g.val();
 
+    const nset& s = v; 
+
     // evaluate the fitness
     double fitness = 0;
-    for(size_t i = 0; i < v.size(); ++i){
-      if(v[i] == 1 || v[i] == 2 || v[i] == 5){
+    
+    for(const nvar& vi : s){
+      if(vi == 1 || vi == 2 || vi == 5){
         fitness += 10;
       }
       else{

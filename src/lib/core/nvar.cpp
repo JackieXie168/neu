@@ -26162,7 +26162,7 @@ nvar& nvar::unite(const nvar& x){
         default:{
           nvar s(x);
           s.intoSet();
-          h_.set->unite(*s.h_.set);
+          h_.set->unite(s.set());
           break;
         }
       }
@@ -26175,11 +26175,21 @@ nvar& nvar::unite(const nvar& x){
         default:{
           nvar s(x);
           s.intoHashSet();
-          h_.hset->unite(*s.h_.hset);
+          h_.hset->unite(s.hset());
           break;
         }
       }
       break;
+    case HeadMap:
+      return h_.hm->m->unite(x);
+    case SequenceMap:
+      return h_.sm->m->unite(x);
+    case HeadSequenceMap:
+      return h_.hsm->m->unite(x);
+    case Reference:
+      return h_.ref->v->unite(x);
+    case Pointer:
+      return h_.vp->unite(x);
     default:
       intoSet();
       unite(x);
@@ -26198,7 +26208,7 @@ nvar& nvar::intersect(const nvar& x){
         default:{
           nvar s(x);
           s.intoSet();
-          h_.set->intersect(*s.h_.set);
+          h_.set->intersect(s.set());
           break;
         }
       }
@@ -26211,11 +26221,21 @@ nvar& nvar::intersect(const nvar& x){
         default:{
           nvar s(x);
           s.intoHashSet();
-          h_.hset->intersect(*s.h_.hset);
+          h_.hset->intersect(s.hset());
           break;
         }
       }
       break;
+    case HeadMap:
+      return h_.hm->m->intersect(x);
+    case SequenceMap:
+      return h_.sm->m->intersect(x);
+    case HeadSequenceMap:
+      return h_.hsm->m->intersect(x);
+    case Reference:
+      return h_.ref->v->intersect(x);
+    case Pointer:
+      return h_.vp->intersect(x);
     default:
       intoSet();
       intersect(x);
@@ -26234,7 +26254,7 @@ nvar& nvar::complement(const nvar& x){
         default:{
           nvar s(x);
           s.intoSet();
-          h_.set->complement(*s.h_.set);
+          h_.set->complement(s.set());
           break;
         }
       }
@@ -26247,11 +26267,21 @@ nvar& nvar::complement(const nvar& x){
         default:{
           nvar s(x);
           s.intoHashSet();
-          h_.hset->complement(*s.h_.hset);
+          h_.hset->complement(s.hset());
           break;
         }
       }
       break;
+    case Reference:
+      return h_.ref->v->complement(x);
+    case Pointer:
+      return h_.vp->complement(x);
+    case HeadMap:
+      return h_.hm->m->complement(x);
+    case SequenceMap:
+      return h_.sm->m->complement(x);
+    case HeadSequenceMap:
+      return h_.hsm->m->complement(x);
     default:
       intoSet();
       complement(x);

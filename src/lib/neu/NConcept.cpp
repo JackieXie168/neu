@@ -438,6 +438,22 @@ bool NConcept::isNumeric(const nvar& v, bool allowNegative){
         return false;
       }
     }
+  }
+  else if(v.hasSet()){
+    const nset& s = v;
+    for(const nvar& vi : v){
+      if(vi == undef){
+        return false;
+      }
+        
+      if(!vi.isNumeric()){
+        return false;
+      }
+        
+      if(!allowNegative && vi < 0){
+        return false;
+      }
+    }
       
     return true;
   }

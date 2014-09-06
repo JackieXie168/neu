@@ -1087,6 +1087,13 @@ namespace std{
     }
   };
   
+  template<>
+  struct hash<pair<neu::nstr, neu::nstr>>{
+    size_t operator()(const pair<neu::nstr, neu::nstr>& p) const{
+      return hash<string>()(p.first.str()) ^ hash<string>()(p.second.str());
+    }
+  };
+  
 } // end namespace std
 
 #endif // NEU_N_STR_H
