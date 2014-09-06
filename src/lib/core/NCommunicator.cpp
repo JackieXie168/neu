@@ -318,6 +318,10 @@ void ReceiveProc::run(nvar& r){
   }
   
   buf = c_->decrypt(buf, size);
+  if(!buf){
+    c_->close_();
+    return;
+  }
   
   nvar msg;
   msg.unpack(buf, size);
