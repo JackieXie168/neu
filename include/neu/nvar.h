@@ -1192,17 +1192,31 @@ namespace neu{
     int64_t toLong() const;
     
     static size_t intBytes(int64_t i){
-      if(i & 0xffffffff00000000){
+      if(i < 0){
+        if(i >= -128){
+          return 1;
+        }
+        else if(i >= -32768){
+          return 2;
+        }
+        else if(i >= -2147483648){
+          return 4;
+        }
+        
         return 8;
       }
-      else if(i & 0xffffffffffff0000){
-        return 4;
+      
+      if(i < 128){
+        return 1;
       }
-      else if(i & 0xffffffffffffff00){
+      else if(i < 32768){
         return 2;
       }
+      else if(i < 2147483648){
+        return 4;
+      }
       
-      return 1;
+      return 8;
     }
     
     const double& asDouble() const{

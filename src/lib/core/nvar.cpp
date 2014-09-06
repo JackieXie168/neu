@@ -85,7 +85,7 @@ namespace neu{
   
   static const uint8_t COMPRESS_FLAG = 0x01;
 
-  static const uint32_t _vid = 2014081711;
+  static const uint32_t _vid = 2014090712;
 } // end namespace neu
 
 namespace{
@@ -23602,9 +23602,9 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
           break;
         }
         case 1:{
-          uint8_t j = h_.i;
+          int8_t j = h_.i;
           
-          if(j <= 100){
+          if(j >= 0 && j <= 100){
             buf[pos++] = Pack0 - j;
           }
           else{
@@ -24193,7 +24193,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       break;
     case PackInt8:{
       t_ = Integer;
-      h_.i = *(uint8_t*)(buf + pos);
+      h_.i = *(int8_t*)(buf + pos);
       ++pos;
       break;
     }
@@ -24206,7 +24206,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       break;
     }
     case PackInt32:{
-      uint32_t i;
+      int32_t i;
       memcpy(&i, buf + pos, 4);
       pos += 4;
       t_ = Integer;
