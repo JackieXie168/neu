@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NCommunicator.h>
 
+#include <deque>
 #include <atomic>
 
 #include <neu/NProc.h>
@@ -262,15 +263,17 @@ namespace neu{
     }
     
   private:
+    typedef deque<nvar> Queue_;
+    
     NCommunicator* o_;
     NCommunicator::Encoder* encoder_;
     NProcTask* task_;
     NSocket* socket_;
-    nqueue sendQueue_;
+    Queue_ sendQueue_;
     NBasicMutex sendMutex_;
     NVSemaphore sendSem_;
     SendProc* sendProc_;
-    nqueue receiveQueue_;
+    Queue_ receiveQueue_;
     NBasicMutex receiveMutex_;
     NVSemaphore receiveSem_;
     ReceiveProc* receiveProc_;
