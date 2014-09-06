@@ -6,7 +6,7 @@ OBJECTS = main.o
 LIBS = -L$(NEU_LIB) -lneu_core
 
 all: .depend $(TARGET)
-	./test &> test.out
+	./test >test.out 2>&1
 
 .depend: $(OBJECTS:.o=.cpp) $(OBJECTS:.o=.h)
 	$(COMPILE) -MM $(OBJECTS:.o=.cpp) > .depend

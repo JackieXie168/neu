@@ -8,7 +8,7 @@ ALL_MODULES = $(MODULES) $(META_MODULES)
 LIBS = -L$(NEU_LIB) -lneu_core -lneu
 
 all: .depend $(TARGET)
-	./test &> test.out
+	./test >test.out 2>&1
 
 .depend: $(OBJECTS:.o=.cpp) $(OBJECTS:.o=.h)
 	$(COMPILE) -MM $(MODULES:.o=.cpp) $(META_MODULES:.o=.cpp) -DMETA_GUARD > .depend
