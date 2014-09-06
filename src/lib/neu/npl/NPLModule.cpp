@@ -59,7 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
-#include "llvm/Analysis/Verifier.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/TargetSelect.h"
@@ -88,6 +88,31 @@ namespace{
   typedef NVector<Type*> TypeVec;
   typedef NVector<Value*> ValueVec;
   typedef NMap<nvar, Function*, nvarLess<nvar>> FunctionMap;
+  
+  class Struct{
+  public:
+    StructType* structType;
+    
+    void putField(const nstr& field, int pos){
+      fieldMap_[field] = pos;
+    }
+    
+    int getPos(const nstr& field){
+      auto itr = fieldMap_.find(field);
+      if(itr == fieldMap_.end()){
+        return -1;
+      }
+      
+      return itr->second;
+    }
+    
+  private:
+    typedef NMap<nstr, int> FieldMap_;
+    
+    FieldMap_ fieldMap_;
+  };
+  
+  typedef NMap<nstr, Struct*> StructMap;
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -320,28 +345,10 @@ namespace{
   class Global{
   public:
     Global();
-    
-    void init();
-    
-    Function* getFunction(const nstr& f);
-    
-    void createFunction(const nstr& f, const nstr& mf);
-    
-    StructType* varType;
-    
-  private:
-    LLVMContext& context_;
-    Module module_;
-    FunctionMap functionMap_;
-    NPLCompiler* compiler_;
   };
   
   NBasicMutex _mutex;
   Global* _global;
-  
-  Function* globalFunc(const nstr& f){
-    return _global->getFunction(f);
-  }
   
   class NPLCompiler{
   public:
@@ -387,12 +394,16 @@ namespace{
       VarMap_ varMap_;
     };
     
-    NPLCompiler(Module& module, FunctionMap& functionMap, ostream& estr)
+    NPLCompiler(Module& module,
+                FunctionMap& functionMap,
+                StructMap& structMap,
+                ostream& estr)
     : module_(module),
-    context_(module.getContext()),
-    builder_(context_),
-    estr_(&estr),
-    functionMap_(functionMap){
+      context_(module.getContext()),
+      builder_(context_),
+      estr_(&estr),
+      functionMap_(functionMap),
+      structMap_(structMap){
 
     }
     
@@ -402,6 +413,12 @@ namespace{
       }
     }
     
+    Function* globalFunc(const nstr& f){
+      auto itr = functionMap_.find(f);
+      assert(itr != functionMap_.end());
+      return itr->second;
+    }
+    
     TypeVec typeVec(const nvec& v){
       TypeVec tv;
       for(const nstr& vi : v){
@@ -409,6 +426,13 @@ namespace{
       }
       
       return tv;
+    }
+    
+    StructType* varType(){
+      auto itr = structMap_.find("nvar");
+      assert(itr != structMap_.end());
+      
+      return itr->second->structType;
     }
     
     Type* type(const nvar& t){
@@ -454,7 +478,7 @@ namespace{
       Type* baseType;
       
       if(t.get("var", false)){
-        baseType = _global->varType;
+        baseType = varType();
       }
       else if(isFloat){
         if(bits == 64){
@@ -4846,7 +4870,7 @@ namespace{
     }
     
     bool isVar(Type* t){
-      return elementType(t) == _global->varType;
+      return elementType(t) == varType();
     }
     
     bool isVar(Value* v){
@@ -4880,29 +4904,6 @@ namespace{
     }
     
   private:
-    class Struct{
-    public:
-      StructType* structType;
-
-      void putField(const nstr& field, int pos){
-        fieldMap_[field] = pos;
-      }
-      
-      int getPos(const nstr& field){
-        auto itr = fieldMap_.find(field);
-        if(itr == fieldMap_.end()){
-          return -1;
-        }
-        
-        return itr->second;
-      }
-      
-    private:
-      typedef NMap<nstr, int> FieldMap_;
-
-      FieldMap_ fieldMap_;
-    };
-    
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
     typedef NMap<nstr, Value*> AttributeMap_;
@@ -4914,7 +4915,7 @@ namespace{
 
     ostream* estr_;
     FunctionMap& functionMap_;
-    StructMap_ structMap_;
+    StructMap& structMap_;
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
     InfoMap_ infoMap_;
@@ -4935,512 +4936,11 @@ namespace{
     nstr className_;
   };
   
-  Global::Global()
-  : context_(getGlobalContext()),
-  module_("global", context_){
-    
+  Global::Global(){
     InitializeNativeTarget();
     
     _initFunctionMap();
     _initSymbolMap();
-    
-    compiler_ = new NPLCompiler(module_, functionMap_, cerr);
-    
-    varType = compiler_->createStructType("nvar", {"long", "char"});
-  }
-  
-  void Global::init(){
-    createFunction("double sqrt(double)",
-                   "llvm.sqrt.f64");
-
-    createFunction("float sqrt(float)",
-                   "llvm.sqrt.f32");
-    
-    createFunction("double pow(double, double)",
-                   "llvm.pow.f64");
-    
-    createFunction("double log(double)",
-                   "llvm.sqrt.f64");
-    
-    createFunction("float log10(float)",
-                   "llvm.log10.f32");
-    
-    createFunction("double log10(double)",
-                   "llvm.log10.f64");
-    
-    createFunction("float log2(float)",
-                   "llvm.log2.f32");
-    
-    createFunction("double log2(double)",
-                   "llvm.log2.f64");
-    
-    createFunction("double exp(double)",
-                   "llvm.sqrt.f64");
-
-    createFunction("float sin(float)",
-                   "llvm.sin.f32");
-    
-    createFunction("double sin(double)",
-                   "llvm.sin.f64");
-    
-    createFunction("float cos(float)",
-                   "llvm.cos.f32");
-    
-    createFunction("double cos(double)",
-                   "llvm.cos.f64");
-
-    createFunction("float pow(float, float)",
-                   "llvm.pow.f32");
-    
-    createFunction("double pow(double, double)",
-                   "llvm.pow.f64");
-    
-    createFunction("float fabs(float)",
-                   "llvm.fabs.f32");
-    
-    createFunction("double fabs(double)",
-                   "llvm.fabs.f64");
-    
-    createFunction("float floor(float)",
-                   "llvm.floor.f32");
-    
-    createFunction("double floor(double)",
-                   "llvm.floor.f64");
-    
-    createFunction("float ceil(float)",
-                   "llvm.ceil.f32");
-    
-    createFunction("double ceil(double)",
-                   "llvm.ceil.f64");
-    
-    createFunction("float round(float)",
-                   "llvm.round.f32");
-    
-    createFunction("double round(double)",
-                   "llvm.round.f64");
-    
-    createFunction("double __n_uniform()",
-                   "__n_uniform");
-    
-    createFunction("void nvar::nvar(nvar*, nvar*)",
-                   "_ZN3neu4nvarC1ERKS0_");
-    
-    createFunction("void nvar::nvar(nvar*, char*)",
-                   "_ZN3neu4nvarC1EPKc");
-
-    createFunction("void nvar::nvar(nvar*, char*, int)",
-                   "_ZN3neu4nvarC1EPai");
-    
-    createFunction("void nvar::nvar(nvar*, short*, int)",
-                   "_ZN3neu4nvarC1EPsi");
-    
-    createFunction("void nvar::nvar(nvar*, int*, int)",
-                   "_ZN3neu4nvarC1EPii");
-    
-    createFunction("void nvar::nvar(nvar*, long*, int)",
-                   "_ZN3neu4nvarC1EPxi");
-    
-    createFunction("void nvar::nvar(nvar*, float*, int)",
-                   "_ZN3neu4nvarC1EPfi");
-    
-    createFunction("void nvar::nvar(nvar*, double*, int)",
-                   "_ZN3neu4nvarC1EPdi");
-    
-    createFunction("void nvar::~nvar(nvar*)",
-                   "_ZN3neu4nvarD1Ev");
-    
-    createFunction("long nvar::toLong(nvar*)",
-                   "_ZNK3neu4nvar6toLongEv");
-    
-    createFunction("double nvar::toDouble(nvar*)",
-                   "_ZNK3neu4nvar8toDoubleEv");
-    
-    createFunction("nvar* nvar::operator=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvaraSEx");
-#else
-                   "_ZN3neu4nvaraSEl");
-#endif
-    
-    createFunction("nvar* nvar::operator=(nvar*, double)",
-                   "_ZN3neu4nvaraSEd");
-    
-    createFunction("nvar* nvar::operator=(nvar*, nvar*)",
-                   "_ZN3neu4nvaraSERKS0_");
-    
-    createFunction("void nvar::operator+(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarplEx");
-#else
-                   "_ZNK3neu4nvarplEl");
-#endif
-    
-    createFunction("void nvar::operator+(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarplEd");
-
-    createFunction("void nvar::operator+(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarplERKS0_");
-    
-    createFunction("void nvar::operator-(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarmiEx");
-#else
-                   "_ZNK3neu4nvarmiEl");
-#endif
-    
-    createFunction("void nvar::operator-(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarmiEd");
-    
-    createFunction("void nvar::operator-(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarmiERKS0_");
-    
-    createFunction("void nvar::operator*(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarplEx");
-#else
-                   "_ZNK3neu4nvarplEl");
-#endif
-    
-    createFunction("void nvar::operator*(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarplEd");
-    
-    createFunction("void nvar::operator*(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarpl");
-    
-    createFunction("void nvar::operator/(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvardvEx");
-#else
-                   "_ZNK3neu4nvardvEl");
-#endif
-    
-    createFunction("void nvar::operator/(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvardvEd");
-    
-    createFunction("void nvar::operator/(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvardvERKS0_");
-    
-    createFunction("void nvar::operator%(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarrmEx");
-#else
-                  "_ZNK3neu4nvarrmEl");
-#endif
-    
-    createFunction("void nvar::operator%(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarrmEd");
-    
-    createFunction("void nvar::operator%(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarrmERKS0_");
-    
-    createFunction("nvar* nvar::operator+=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvarpLEx");
-#else
-                   "_ZN3neu4nvarpLEl");
-#endif
-    
-    createFunction("nvar* nvar::operator+=(nvar*, double)",
-                   "_ZN3neu4nvarpLEd");
-    
-    createFunction("nvar* nvar::operator+=(nvar*, nvar*)",
-                   "_ZN3neu4nvarpLERKS0_");
-    
-    createFunction("nvar* nvar::operator-=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvarmIEx");
-#else
-                   "_ZN3neu4nvarmIEl");
-#endif
-    
-    createFunction("nvar* nvar::operator-=(nvar*, double)",
-                   "_ZN3neu4nvarmIEd");
-    
-    createFunction("nvar* nvar::operator-=(nvar*, nvar*)",
-                   "_ZN3neu4nvarmIERKS0_");
-    
-    createFunction("nvar* nvar::operator*=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvarmLEx");
-#else
-                   "_ZN3neu4nvarmLEl");
-#endif
-    
-    createFunction("nvar* nvar::operator*=(nvar*, double)",
-                   "_ZN3neu4nvarmLEd");
-    
-    createFunction("nvar* nvar::operator*=(nvar*, nvar*)",
-                   "_ZN3neu4nvarmLERKS0_");
-    
-    createFunction("nvar* nvar::operator/=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvardVEx");
-#else
-                   "_ZN3neu4nvardVEl");
-#endif
-    
-    createFunction("nvar* nvar::operator/=(nvar*, double)",
-                   "_ZN3neu4nvardVEd");
-    
-    createFunction("nvar* nvar::operator/=(nvar*, nvar*)",
-                   "_ZN3neu4nvardVERKS0_");
-    
-    createFunction("nvar* nvar::operator%=(nvar*, long)",
-#ifdef __APPLE__
-                   "_ZN3neu4nvarrMEx");
-#else
-                   "_ZN3neu4nvarrMEl");
-#endif
-    
-    createFunction("nvar* nvar::operator%=(nvar*, double)",
-                   "_ZN3neu4nvarrMEd");
-    
-    createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
-                   "_ZN3neu4nvarrMERKS0_");
-    
-    createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
-                   "_ZN3neu4nvarrMERKS0_");
-    
-    createFunction("void nvar::operator!(nvar*, nvar*)",
-                   "_ZNK3neu4nvarntEv");
-    
-    createFunction("void nvar::operator&&(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvaraaERKS0_");
-    
-    createFunction("void nvar::operator||(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarooERKS0_");
-    
-    createFunction("void nvar::operator==(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvareqEx");
-#else
-                   "_ZNK3neu4nvareqEl");
-#endif
-    
-    createFunction("void nvar::operator==(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvareqEd");
-    
-    createFunction("void nvar::operator==(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvareqERKS0_");
-
-    createFunction("void nvar::operator!=(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarneEx");
-#else
-                   "_ZNK3neu4nvarneExl");
-#endif
-    
-    createFunction("void nvar::operator!=(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarneEd");
-    
-    createFunction("void nvar::operator!=(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarneERKS0_");
-    
-    createFunction("void nvar::operator<(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarltEx");
-#else
-                   "_ZNK3neu4nvarltEl");
-#endif
-    
-    createFunction("void nvar::operator<(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarltEd");
-    
-    createFunction("void nvar::operator<(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarltERKS0_");
-    
-    createFunction("void nvar::operator<=(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvarleEx");
-#else
-                   "_ZNK3neu4nvarleEl");
-#endif
-    
-    createFunction("void nvar::operator<=(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvarleEd");
-    
-    createFunction("void nvar::operator<=(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvarleERKS0_");
-    
-    createFunction("void nvar::operator>(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvargtEx");
-#else
-                   "_ZNK3neu4nvargtEl");
-#endif
-    
-    createFunction("void nvar::operator>(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvargtEd");
-    
-    createFunction("void nvar::operator>(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvargtERKS0_");
-    
-    createFunction("void nvar::operator>=(nvar*, nvar*, long)",
-#ifdef __APPLE__
-                   "_ZNK3neu4nvargeEx");
-#else
-                   "_ZNK3neu4nvargeEl");
-#endif
-    
-    createFunction("void nvar::operator>=(nvar*, nvar*, double)",
-                   "_ZNK3neu4nvargeEd");
-    
-    createFunction("void nvar::operator>=(nvar*, nvar*, nvar*)",
-                   "_ZNK3neu4nvargeERKS0_");
-    
-    createFunction("nvar* nvar::operator[](nvar*, int)",
-                   "_ZN3neu4nvarixEi");
-    
-    createFunction("nvar* nvar::operator[](nvar*, nvar*)",
-                   "_ZN3neu4nvarixERKS0_");
-    
-    createFunction("long nvar::size(nvar*)",
-                   "_ZNK3neu4nvar4sizeEv");
-    
-    createFunction("void nvar::operator-(nvar*, nvar*)",
-                   "_ZNK3neu4nvarngEv");
-    
-    createFunction("void nvar::pow(nvar*, nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3powERKS0_S2_PNS_7NObjectE");
-    
-    createFunction("void nvar::sqrt(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4sqrtERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::exp(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3expERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::log(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3logERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::floor(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar5floorERKS0_");
-
-    createFunction("nvar* nvar::put(nvar*, char*)",
-                   "_ZN3neu4nvarclEPKc");
-    
-    createFunction("nvar* nvar::put(nvar*, nvar*)",
-                   "_ZN3neu4nvarclERKS0_");
-    
-    createFunction("void nvar::pushBack(nvar*, nvar*)",
-                   "_ZN3neu4nvar8pushBackERKS0_");
-    
-    createFunction("void nvar::intoVector(nvar*)",
-                   "_ZN3neu4nvar10intoVectorEv");
-    
-    createFunction("void nvar::intoList(nvar*)",
-                   "_ZN3neu4nvar8intoListEv");
-
-    createFunction("void nvar::intoQueue(nvar*)",
-                   "_ZN3neu4nvar9intoQueueEv");
-    
-    createFunction("void nvar::intoSet(nvar*)",
-                   "_ZN3neu4nvar7intoSetEv");
-    
-    createFunction("void nvar::intoHashSet(nvar*)",
-                   "_ZN3neu4nvar11intoHashSetEv");
-    
-    createFunction("void nvar::intoMap(nvar*)",
-                   "_ZN3neu4nvar7intoMapEv");
-    
-    createFunction("void nvar::intoHashMap(nvar*)",
-                   "_ZN3neu4nvar11intoHashMapEv");
-    
-    createFunction("void nvar::intoMultimap(nvar*)",
-                   "_ZN3neu4nvar13intoMultimapEv");
-    
-    createFunction("bool nvar::toBool(nvar*)",
-                   "_ZNK3neu4nvar6toBoolEv");
-    
-    createFunction("void nvar::keys(nvar*, nvar*)",
-                   "_ZNK3neu4nvar4keysEv");
-
-    createFunction("void nvar::addKey(nvar*, nvar*)",
-                   "__ZN3neu4nvar6addKeyERKS0_");
-    
-    createFunction("void nvar::pushFront(nvar*, nvar*)",
-                   "_ZN3neu4nvar9pushFrontERKS0_");
-    
-    createFunction("void nvar::popBack(nvar*, nvar*)",
-                   "_ZN3neu4nvar7popBackEv");
-    
-    createFunction("void nvar::popFront(nvar*, nvar*)",
-                   "_ZN3neu4nvar8popFrontEv");
-    
-    createFunction("bool nvar::hasKey(nvar*, nvar*)",
-                   "_ZNK3neu4nvar6hasKeyERKS0_");
-    
-    createFunction("void nvar::insert(nvar*, long, nvar*)",
-                   "_ZN3neu4nvar6insertEmRKS0_");
-    
-    createFunction("void nvar::clear(nvar*)",
-                   "_ZN3neu4nvar5clearEv");
-    
-    createFunction("bool nvar::empty(nvar*)",
-                   "_ZNK3neu4nvar5emptyEv");
-    
-    createFunction("nvar* nvar::back(nvar*)",
-                   "_ZN3neu4nvar4backEv");
-    
-    createFunction("nvar* nvar::get(nvar*, nvar*)",
-                   "_ZN3neu4nvar3getERKS0_");
-    
-    createFunction("nvar* nvar::get(nvar*, nvar*, nvar*)",
-                   "_ZN3neu4nvar3getERKS0_RS0_");
-    
-    createFunction("void nvar::erase(nvar*, nvar*)",
-                   "_ZN3neu4nvar5eraseERKS0_");
-    
-    createFunction("void nvar::cos(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3cosERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::acos(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4acosERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::cosh(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4coshERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::sin(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3sinERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::asin(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4asinERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::sinh(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4sinhERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::tan(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar3tanERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::atan(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4atanERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::tanh(nvar*, nvar*, void*)",
-                   "_ZN3neu4nvar4tanhERKS0_PNS_7NObjectE");
-    
-    createFunction("void nvar::merge(nvar*, nvar*)",
-                   "_ZN3neu4nvar5mergeERKS0_");
-    
-    createFunction("void nvar::outerMerge(nvar*, nvar*)",
-                   "_ZN3neu4nvar10outerMergeERKS0_");
-    
-    delete compiler_;
-  }
-  
-  void Global::createFunction(const nstr& fs, const nstr& mf){
-    nvar fv = nvar::parseFuncSpec(fs.c_str());
-    
-    Function* f =
-    compiler_->createFunction(mf,
-                              compiler_->type(fv["ret"]),
-                              compiler_->typeVec(fv["args"]));
-    
-    functionMap_[fs] = f;
-  }
-  
-  Function* Global::getFunction(const nstr& f){
-    auto itr = functionMap_.find(f);
-    assert(itr != functionMap_.end());
-    return itr->second;
   }
   
 } // end namespace
@@ -5453,9 +4953,11 @@ namespace neu{
     : o_(o),
     context_(getGlobalContext()),
     module_("module", context_),
-    estr_(&cerr){
+    estr_(&cerr),
+    compiler_(module_, functionMap_, structMap_, cerr){
       
       initGlobal();
+      init();
       
       engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
     }
@@ -5464,8 +4966,508 @@ namespace neu{
       
     }
     
+    void init(){
+      StructType* st =
+      compiler_.createStructType("nvar", {"long", "char"});
+      
+      Struct *s = new Struct;
+      s->structType = st;
+      
+      structMap_.insert({"nvar", s});
+      
+      createFunction("double sqrt(double)",
+                     "llvm.sqrt.f64");
+      
+      createFunction("float sqrt(float)",
+                     "llvm.sqrt.f32");
+      
+      createFunction("double pow(double, double)",
+                     "llvm.pow.f64");
+      
+      createFunction("double log(double)",
+                     "llvm.sqrt.f64");
+      
+      createFunction("float log10(float)",
+                     "llvm.log10.f32");
+      
+      createFunction("double log10(double)",
+                     "llvm.log10.f64");
+      
+      createFunction("float log2(float)",
+                     "llvm.log2.f32");
+      
+      createFunction("double log2(double)",
+                     "llvm.log2.f64");
+      
+      createFunction("double exp(double)",
+                     "llvm.sqrt.f64");
+      
+      createFunction("float sin(float)",
+                     "llvm.sin.f32");
+      
+      createFunction("double sin(double)",
+                     "llvm.sin.f64");
+      
+      createFunction("float cos(float)",
+                     "llvm.cos.f32");
+      
+      createFunction("double cos(double)",
+                     "llvm.cos.f64");
+      
+      createFunction("float pow(float, float)",
+                     "llvm.pow.f32");
+      
+      createFunction("double pow(double, double)",
+                     "llvm.pow.f64");
+      
+      createFunction("float fabs(float)",
+                     "llvm.fabs.f32");
+      
+      createFunction("double fabs(double)",
+                     "llvm.fabs.f64");
+      
+      createFunction("float floor(float)",
+                     "llvm.floor.f32");
+      
+      createFunction("double floor(double)",
+                     "llvm.floor.f64");
+      
+      createFunction("float ceil(float)",
+                     "llvm.ceil.f32");
+      
+      createFunction("double ceil(double)",
+                     "llvm.ceil.f64");
+      
+      createFunction("float round(float)",
+                     "llvm.round.f32");
+      
+      createFunction("double round(double)",
+                     "llvm.round.f64");
+      
+      createFunction("double __n_uniform()",
+                     "__n_uniform");
+      
+      createFunction("void nvar::nvar(nvar*, nvar*)",
+                     "_ZN3neu4nvarC1ERKS0_");
+      
+      createFunction("void nvar::nvar(nvar*, char*)",
+                     "_ZN3neu4nvarC1EPKc");
+      
+      createFunction("void nvar::nvar(nvar*, char*, int)",
+                     "_ZN3neu4nvarC1EPai");
+      
+      createFunction("void nvar::nvar(nvar*, short*, int)",
+                     "_ZN3neu4nvarC1EPsi");
+      
+      createFunction("void nvar::nvar(nvar*, int*, int)",
+                     "_ZN3neu4nvarC1EPii");
+      
+      createFunction("void nvar::nvar(nvar*, long*, int)",
+                     "_ZN3neu4nvarC1EPxi");
+      
+      createFunction("void nvar::nvar(nvar*, float*, int)",
+                     "_ZN3neu4nvarC1EPfi");
+      
+      createFunction("void nvar::nvar(nvar*, double*, int)",
+                     "_ZN3neu4nvarC1EPdi");
+      
+      createFunction("void nvar::~nvar(nvar*)",
+                     "_ZN3neu4nvarD1Ev");
+      
+      createFunction("long nvar::toLong(nvar*)",
+                     "_ZNK3neu4nvar6toLongEv");
+      
+      createFunction("double nvar::toDouble(nvar*)",
+                     "_ZNK3neu4nvar8toDoubleEv");
+      
+      createFunction("nvar* nvar::operator=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvaraSEx");
+#else
+      "_ZN3neu4nvaraSEl");
+#endif
+      
+      createFunction("nvar* nvar::operator=(nvar*, double)",
+                     "_ZN3neu4nvaraSEd");
+      
+      createFunction("nvar* nvar::operator=(nvar*, nvar*)",
+                     "_ZN3neu4nvaraSERKS0_");
+      
+      createFunction("void nvar::operator+(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarplEx");
+#else
+      "_ZNK3neu4nvarplEl");
+#endif
+      
+      createFunction("void nvar::operator+(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarplEd");
+      
+      createFunction("void nvar::operator+(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarplERKS0_");
+      
+      createFunction("void nvar::operator-(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarmiEx");
+#else
+      "_ZNK3neu4nvarmiEl");
+#endif
+      
+      createFunction("void nvar::operator-(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarmiEd");
+      
+      createFunction("void nvar::operator-(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarmiERKS0_");
+      
+      createFunction("void nvar::operator*(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarplEx");
+#else
+      "_ZNK3neu4nvarplEl");
+#endif
+      
+      createFunction("void nvar::operator*(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarplEd");
+      
+      createFunction("void nvar::operator*(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarpl");
+      
+      createFunction("void nvar::operator/(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvardvEx");
+#else
+      "_ZNK3neu4nvardvEl");
+#endif
+      
+      createFunction("void nvar::operator/(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvardvEd");
+      
+      createFunction("void nvar::operator/(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvardvERKS0_");
+      
+      createFunction("void nvar::operator%(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarrmEx");
+#else
+      "_ZNK3neu4nvarrmEl");
+#endif
+      
+      createFunction("void nvar::operator%(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarrmEd");
+      
+      createFunction("void nvar::operator%(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarrmERKS0_");
+      
+      createFunction("nvar* nvar::operator+=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvarpLEx");
+#else
+      "_ZN3neu4nvarpLEl");
+#endif
+      
+      createFunction("nvar* nvar::operator+=(nvar*, double)",
+                     "_ZN3neu4nvarpLEd");
+      
+      createFunction("nvar* nvar::operator+=(nvar*, nvar*)",
+                     "_ZN3neu4nvarpLERKS0_");
+      
+      createFunction("nvar* nvar::operator-=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvarmIEx");
+#else
+      "_ZN3neu4nvarmIEl");
+#endif
+      
+      createFunction("nvar* nvar::operator-=(nvar*, double)",
+                     "_ZN3neu4nvarmIEd");
+      
+      createFunction("nvar* nvar::operator-=(nvar*, nvar*)",
+                     "_ZN3neu4nvarmIERKS0_");
+      
+      createFunction("nvar* nvar::operator*=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvarmLEx");
+#else
+      "_ZN3neu4nvarmLEl");
+#endif
+      
+      createFunction("nvar* nvar::operator*=(nvar*, double)",
+                     "_ZN3neu4nvarmLEd");
+      
+      createFunction("nvar* nvar::operator*=(nvar*, nvar*)",
+                     "_ZN3neu4nvarmLERKS0_");
+      
+      createFunction("nvar* nvar::operator/=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvardVEx");
+#else
+      "_ZN3neu4nvardVEl");
+#endif
+      
+      createFunction("nvar* nvar::operator/=(nvar*, double)",
+                     "_ZN3neu4nvardVEd");
+      
+      createFunction("nvar* nvar::operator/=(nvar*, nvar*)",
+                     "_ZN3neu4nvardVERKS0_");
+      
+      createFunction("nvar* nvar::operator%=(nvar*, long)",
+#ifdef __APPLE__
+                     "_ZN3neu4nvarrMEx");
+#else
+      "_ZN3neu4nvarrMEl");
+#endif
+      
+      createFunction("nvar* nvar::operator%=(nvar*, double)",
+                     "_ZN3neu4nvarrMEd");
+      
+      createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
+                     "_ZN3neu4nvarrMERKS0_");
+      
+      createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
+                     "_ZN3neu4nvarrMERKS0_");
+      
+      createFunction("void nvar::operator!(nvar*, nvar*)",
+                     "_ZNK3neu4nvarntEv");
+      
+      createFunction("void nvar::operator&&(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvaraaERKS0_");
+      
+      createFunction("void nvar::operator||(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarooERKS0_");
+      
+      createFunction("void nvar::operator==(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvareqEx");
+#else
+      "_ZNK3neu4nvareqEl");
+#endif
+      
+      createFunction("void nvar::operator==(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvareqEd");
+      
+      createFunction("void nvar::operator==(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvareqERKS0_");
+      
+      createFunction("void nvar::operator!=(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarneEx");
+#else
+      "_ZNK3neu4nvarneExl");
+#endif
+      
+      createFunction("void nvar::operator!=(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarneEd");
+      
+      createFunction("void nvar::operator!=(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarneERKS0_");
+      
+      createFunction("void nvar::operator<(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarltEx");
+#else
+      "_ZNK3neu4nvarltEl");
+#endif
+      
+      createFunction("void nvar::operator<(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarltEd");
+      
+      createFunction("void nvar::operator<(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarltERKS0_");
+      
+      createFunction("void nvar::operator<=(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvarleEx");
+#else
+      "_ZNK3neu4nvarleEl");
+#endif
+      
+      createFunction("void nvar::operator<=(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvarleEd");
+      
+      createFunction("void nvar::operator<=(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvarleERKS0_");
+      
+      createFunction("void nvar::operator>(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvargtEx");
+#else
+      "_ZNK3neu4nvargtEl");
+#endif
+      
+      createFunction("void nvar::operator>(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvargtEd");
+      
+      createFunction("void nvar::operator>(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvargtERKS0_");
+      
+      createFunction("void nvar::operator>=(nvar*, nvar*, long)",
+#ifdef __APPLE__
+                     "_ZNK3neu4nvargeEx");
+#else
+      "_ZNK3neu4nvargeEl");
+#endif
+      
+      createFunction("void nvar::operator>=(nvar*, nvar*, double)",
+                     "_ZNK3neu4nvargeEd");
+      
+      createFunction("void nvar::operator>=(nvar*, nvar*, nvar*)",
+                     "_ZNK3neu4nvargeERKS0_");
+      
+      createFunction("nvar* nvar::operator[](nvar*, int)",
+                     "_ZN3neu4nvarixEi");
+      
+      createFunction("nvar* nvar::operator[](nvar*, nvar*)",
+                     "_ZN3neu4nvarixERKS0_");
+      
+      createFunction("long nvar::size(nvar*)",
+                     "_ZNK3neu4nvar4sizeEv");
+      
+      createFunction("void nvar::operator-(nvar*, nvar*)",
+                     "_ZNK3neu4nvarngEv");
+      
+      createFunction("void nvar::pow(nvar*, nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3powERKS0_S2_PNS_7NObjectE");
+      
+      createFunction("void nvar::sqrt(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4sqrtERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::exp(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3expERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::log(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3logERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::floor(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar5floorERKS0_");
+      
+      createFunction("nvar* nvar::put(nvar*, char*)",
+                     "_ZN3neu4nvarclEPKc");
+      
+      createFunction("nvar* nvar::put(nvar*, nvar*)",
+                     "_ZN3neu4nvarclERKS0_");
+      
+      createFunction("void nvar::pushBack(nvar*, nvar*)",
+                     "_ZN3neu4nvar8pushBackERKS0_");
+      
+      createFunction("void nvar::intoVector(nvar*)",
+                     "_ZN3neu4nvar10intoVectorEv");
+      
+      createFunction("void nvar::intoList(nvar*)",
+                     "_ZN3neu4nvar8intoListEv");
+      
+      createFunction("void nvar::intoQueue(nvar*)",
+                     "_ZN3neu4nvar9intoQueueEv");
+      
+      createFunction("void nvar::intoSet(nvar*)",
+                     "_ZN3neu4nvar7intoSetEv");
+      
+      createFunction("void nvar::intoHashSet(nvar*)",
+                     "_ZN3neu4nvar11intoHashSetEv");
+      
+      createFunction("void nvar::intoMap(nvar*)",
+                     "_ZN3neu4nvar7intoMapEv");
+      
+      createFunction("void nvar::intoHashMap(nvar*)",
+                     "_ZN3neu4nvar11intoHashMapEv");
+      
+      createFunction("void nvar::intoMultimap(nvar*)",
+                     "_ZN3neu4nvar13intoMultimapEv");
+      
+      createFunction("bool nvar::toBool(nvar*)",
+                     "_ZNK3neu4nvar6toBoolEv");
+      
+      createFunction("void nvar::keys(nvar*, nvar*)",
+                     "_ZNK3neu4nvar4keysEv");
+      
+      createFunction("void nvar::addKey(nvar*, nvar*)",
+                     "__ZN3neu4nvar6addKeyERKS0_");
+      
+      createFunction("void nvar::pushFront(nvar*, nvar*)",
+                     "_ZN3neu4nvar9pushFrontERKS0_");
+      
+      createFunction("void nvar::popBack(nvar*, nvar*)",
+                     "_ZN3neu4nvar7popBackEv");
+      
+      createFunction("void nvar::popFront(nvar*, nvar*)",
+                     "_ZN3neu4nvar8popFrontEv");
+      
+      createFunction("bool nvar::hasKey(nvar*, nvar*)",
+                     "_ZNK3neu4nvar6hasKeyERKS0_");
+      
+      createFunction("void nvar::insert(nvar*, long, nvar*)",
+                     "_ZN3neu4nvar6insertEmRKS0_");
+      
+      createFunction("void nvar::clear(nvar*)",
+                     "_ZN3neu4nvar5clearEv");
+      
+      createFunction("bool nvar::empty(nvar*)",
+                     "_ZNK3neu4nvar5emptyEv");
+      
+      createFunction("nvar* nvar::back(nvar*)",
+                     "_ZN3neu4nvar4backEv");
+      
+      createFunction("nvar* nvar::get(nvar*, nvar*)",
+                     "_ZN3neu4nvar3getERKS0_");
+      
+      createFunction("nvar* nvar::get(nvar*, nvar*, nvar*)",
+                     "_ZN3neu4nvar3getERKS0_RS0_");
+      
+      createFunction("void nvar::erase(nvar*, nvar*)",
+                     "_ZN3neu4nvar5eraseERKS0_");
+      
+      createFunction("void nvar::cos(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3cosERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::acos(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4acosERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::cosh(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4coshERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::sin(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3sinERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::asin(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4asinERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::sinh(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4sinhERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::tan(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar3tanERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::atan(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4atanERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::tanh(nvar*, nvar*, void*)",
+                     "_ZN3neu4nvar4tanhERKS0_PNS_7NObjectE");
+      
+      createFunction("void nvar::merge(nvar*, nvar*)",
+                     "_ZN3neu4nvar5mergeERKS0_");
+      
+      createFunction("void nvar::outerMerge(nvar*, nvar*)",
+                     "_ZN3neu4nvar10outerMergeERKS0_");
+    }
+    
+    void createFunction(const nstr& fs, const nstr& mf){
+      nvar fv = nvar::parseFuncSpec(fs.c_str());
+      
+      Function* f =
+      compiler_.createFunction(mf,
+                               compiler_.type(fv["ret"]),
+                               compiler_.typeVec(fv["args"]));
+      
+      functionMap_[fs] = f;
+    }
+    
+    Function* getFunction(const nstr& f){
+      auto itr = functionMap_.find(f);
+      assert(itr != functionMap_.end());
+      return itr->second;
+    }
+    
     bool compile(const nvar& code){
-      NPLCompiler compiler(module_, functionMap_, *estr_);
+      NPLCompiler compiler(module_, functionMap_, structMap_, *estr_);
       
       return compiler.compileTop(code);
     }
@@ -5496,7 +5498,6 @@ namespace neu{
       _mutex.lock();
       if(!_global){
         _global = new Global;
-        _global->init();
       }
       _mutex.unlock();
     }
@@ -5514,8 +5515,10 @@ namespace neu{
     Module module_;
     ExecutionEngine* engine_;
     FunctionMap functionMap_;
+    StructMap structMap_;
     FunctionPtrMap_ functionPtrMap_;
     ostream* estr_;
+    NPLCompiler compiler_;
   };
   
 } // end namespace neu

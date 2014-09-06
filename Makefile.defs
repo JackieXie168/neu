@@ -1,5 +1,5 @@
-# path to LLVM 3.4 install directory
-export LLVM_DIR = $(HOME)/llvm-3.4/build-release
+# path to LLVM 3.5 install directory
+export LLVM_DIR = $(HOME)/llvm-3.5.0/build-release
 
 # C++ compiler
 export CXX = c++

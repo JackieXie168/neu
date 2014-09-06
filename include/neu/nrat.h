@@ -334,7 +334,7 @@ namespace neu{
       int64_t n = numerator();
       int64_t d = denominator();
       
-      if(_improper || abs(n) < d){
+      if(_improper || std::abs(n) < d){
         int p = 7; // NObject::precedence("Div")
         if(p > prec){
           ostr << "(";
@@ -353,7 +353,7 @@ namespace neu{
         else if(p > prec){
           ostr << "(";
         }
-        ostr << abs(i) << "+" << abs(n) % d << "/" << d;
+        ostr << std::abs(i) << "+" << std::abs(n) % d << "/" << d;
         if(i < 0 || p > prec){
           ostr << ")";
         }

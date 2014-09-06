@@ -527,7 +527,7 @@ public:
   }
     
   int isNCallable(FunctionDecl* fd){
-    if(!isNCompatibleType(fd->getResultType())){
+    if(!isNCompatibleType(fd->getReturnType())){
       return 0;
     }
       
@@ -604,7 +604,7 @@ public:
         
       CXXMethodDecl* md = mv[i];
         
-      bool isVoid = md->getResultType().getTypePtr()->isVoidType();
+      bool isVoid = md->getReturnType().getTypePtr()->isVoidType();
         
       for(size_t j = md->getMinRequiredArguments(); 
           j <= md->param_size(); ++j){
@@ -690,9 +690,8 @@ public:
   }
 
   nstr getQualifiedName(NamedDecl* decl){
-    PrintingPolicy p(sema_->LangOpts);
-    nstr ret = decl->getQualifiedNameAsString(p);
-    ret.findReplace("<anonymous namespace>::", "");
+    nstr ret = decl->getQualifiedNameAsString();
+    ret.findReplace("(anonymous namespace)::", "");
       
     return ret;
   }
@@ -700,7 +699,7 @@ public:
   // ndm - is there a better way to do this?
   bool isInUnnamedNamespace(NamedDecl* decl){
     nstr ret = decl->getQualifiedNameAsString();
-    return ret.find("<anonymous namespace>::") != nstr::npos;
+    return ret.find("(anonymous namespace)::") != nstr::npos;
   }
   
   void generateClass(CXXRecordDecl* rd){
@@ -717,7 +716,7 @@ public:
       CXXMethodDecl* md = *mitr;
       
       if(!foundDist){
-        QualType qt = md->getResultType();
+        QualType qt = md->getReturnType();
         QualType ct = context_->getCanonicalType(qt);
         
         if(qt.getAsString() == "ndist" &&
@@ -915,7 +914,7 @@ public:
           ostr << fullName << "::" << name << "(";
         }
         else{
-          QualType qrt = md->getResultType();
+          QualType qrt = md->getReturnType();
           QualType crt = context_->getCanonicalType(qrt);
         
           nstr rts = cleanType(crt.getAsString());
@@ -998,7 +997,7 @@ public:
             ");" << endl;
         }
         else{
-          if(!md->getResultType().getTypePtr()->isVoidType()){
+          if(!md->getReturnType().getTypePtr()->isVoidType()){
             ostr << "return ";
           }
           ostr << "x_->" << md->getName().str() << "(";
@@ -1097,10 +1096,10 @@ public:
               
             ostr << ";" << endl;
               
-            if(!md->getResultType().getTypePtr()->isVoidType()){
+            if(!md->getReturnType().getTypePtr()->isVoidType()){
               ostr << "      neu::nvar& ri = mi(\"return\");" << endl;
                 
-              nstr rawType = md->getResultType().getAsString();
+              nstr rawType = md->getReturnType().getAsString();
                 
               nvec m;
               if(_pointerRegex.match(rawType, m)){
