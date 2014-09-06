@@ -407,11 +407,7 @@ namespace{
 
     }
     
-    ~NPLCompiler(){
-      for(auto& itr : structMap_){
-        delete itr.second;
-      }
-    }
+    ~NPLCompiler(){}
     
     Function* globalFunc(const nstr& f){
       auto itr = functionMap_.find(f);
