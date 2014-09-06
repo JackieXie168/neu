@@ -1,0 +1,59 @@
+x = 1;
+
+x += 2;
+
+x -= 1;
+
+x *= 5;
+
+x /= 2;
+
+Print("x is %v", x);
+
+y = [1,2,3] + [4,5,6];
+
+Print("y is %v", y);
+
+++y;
+
+Print("y is now %v", y);
+
+if(5 < 10){
+  Print("yes!");
+}
+
+if(5 > 2 || 10 <= 20){
+  Print("yes, again!");
+}
+
+if(2 > 5){
+  Print("wrong");
+}
+else if(3 > 4){
+  Print("also wrong");
+}
+else{
+  Print("right!");
+}
+
+z = 0;
+
+for(i = 0; i < 10; ++i){
+  z += 10;
+}
+
+Print("z is %v", z);
+
+i = 0;
+
+while(i < 10){
+  z *= 2;
+
+  ++i;
+
+  if(i > 5){
+    break;
+  }
+}
+
+Print("z is now %v", z);
