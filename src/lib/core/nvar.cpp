@@ -85,7 +85,7 @@ namespace neu{
   
   static const uint8_t COMPRESS_FLAG = 0x01;
 
-  static const uint32_t _vid = 2014090712;
+  static const uint32_t _vid = 2014090713;
 } // end namespace neu
 
 namespace{
@@ -191,31 +191,58 @@ namespace{
   static const nvar::Type Pack98 =            156;
   static const nvar::Type Pack99 =            155;
   static const nvar::Type Pack100 =           154;
-  static const nvar::Type PackInt8 =          153;
-  static const nvar::Type PackInt16 =         152;
-  static const nvar::Type PackInt32 =         151;
-  static const nvar::Type PackFloat32 =       150;
-  static const nvar::Type PackShortString =   149;
-  static const nvar::Type PackLongString =    148;
-  static const nvar::Type PackLongSymbol =    147;
-  static const nvar::Type PackSmallVector =   146;
-  static const nvar::Type PackShortVector =   145;
-  static const nvar::Type PackLongVector =    144;
-  static const nvar::Type PackShortList =     143;
-  static const nvar::Type PackLongList =      142;
-  static const nvar::Type PackShortQueue =    141;
-  static const nvar::Type PackLongQueue =     140;
-  static const nvar::Type PackLongFunction =  139;
-  static const nvar::Type PackShortSet =      138;
-  static const nvar::Type PackLongSet =       137;
-  static const nvar::Type PackShortHashSet =  136;
-  static const nvar::Type PackLongHashSet =   135;
-  static const nvar::Type PackShortMap =      134;
-  static const nvar::Type PackLongMap =       133;
-  static const nvar::Type PackShortHashMap =  132;
-  static const nvar::Type PackLongHashMap =   131;
-  static const nvar::Type PackShortMultimap = 130;
-  static const nvar::Type PackLongMultimap =  129;
+  static const nvar::Type Pack101 =           153;
+  static const nvar::Type Pack102 =           152;
+  static const nvar::Type Pack103 =           151;
+  static const nvar::Type Pack104 =           150;
+  static const nvar::Type Pack105 =           149;
+  static const nvar::Type Pack106 =           148;
+  static const nvar::Type Pack107 =           147;
+  static const nvar::Type Pack108 =           146;
+  static const nvar::Type Pack109 =           145;
+  static const nvar::Type Pack110 =           144;
+  static const nvar::Type Pack111 =           143;
+  static const nvar::Type Pack112 =           142;
+  static const nvar::Type Pack113 =           141;
+  static const nvar::Type Pack114 =           140;
+  static const nvar::Type Pack115 =           139;
+  static const nvar::Type Pack116 =           138;
+  static const nvar::Type Pack117 =           137;
+  static const nvar::Type Pack118 =           136;
+  static const nvar::Type Pack119 =           135;
+  static const nvar::Type Pack120 =           134;
+  static const nvar::Type Pack121 =           133;
+  static const nvar::Type Pack122 =           132;
+  static const nvar::Type Pack123 =           131;
+  static const nvar::Type Pack124 =           130;
+  static const nvar::Type Pack125 =           129;
+  static const nvar::Type Pack126 =           128;
+  static const nvar::Type Pack127 =           127;
+  static const nvar::Type PackInt8 =          126;
+  static const nvar::Type PackInt16 =         125;
+  static const nvar::Type PackInt32 =         124;
+  static const nvar::Type PackFloat32 =       123;
+  static const nvar::Type PackShortString =   122;
+  static const nvar::Type PackLongString =    121;
+  static const nvar::Type PackLongSymbol =    120;
+  static const nvar::Type PackSmallVector =   119;
+  static const nvar::Type PackShortVector =   118;
+  static const nvar::Type PackLongVector =    117;
+  static const nvar::Type PackShortList =     116;
+  static const nvar::Type PackLongList =      115;
+  static const nvar::Type PackShortQueue =    114;
+  static const nvar::Type PackLongQueue =     113;
+  static const nvar::Type PackLongFunction =  112;
+  static const nvar::Type PackShortSet =      111;
+  static const nvar::Type PackLongSet =       110;
+  static const nvar::Type PackShortHashSet =  109;
+  static const nvar::Type PackLongHashSet =   108;
+  static const nvar::Type PackShortMap =      107;
+  static const nvar::Type PackLongMap =       106;
+  static const nvar::Type PackShortHashMap =  105;
+  static const nvar::Type PackLongHashMap =   104;
+  static const nvar::Type PackShortMultimap = 103;
+  static const nvar::Type PackLongMultimap =  102;
 
 } // end namespace  
 
@@ -23603,14 +23630,13 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         }
         case 1:{
           int8_t j = h_.i;
-          
-          if(j >= 0 && j <= 100){
-            buf[pos++] = Pack0 - j;
-          }
-          else{
-            buf[pos++] = PackInt8;
-            buf[pos++] = j;
-          }
+          buf[pos++] = PackInt8;
+          buf[pos++] = j;
+          break;
+        }
+        case 0:{
+          uint8_t j = h_.i;
+          buf[pos++] = Pack0 - j;
           break;
         }
       }
@@ -24188,6 +24214,33 @@ void nvar::unpack_(char* buf, uint32_t& pos){
     case Pack98:
     case Pack99:
     case Pack100:
+    case Pack101:
+    case Pack102:
+    case Pack103:
+    case Pack104:
+    case Pack105:
+    case Pack106:
+    case Pack107:
+    case Pack108:
+    case Pack109:
+    case Pack110:
+    case Pack111:
+    case Pack112:
+    case Pack113:
+    case Pack114:
+    case Pack115:
+    case Pack116:
+    case Pack117:
+    case Pack118:
+    case Pack119:
+    case Pack120:
+    case Pack121:
+    case Pack122:
+    case Pack123:
+    case Pack124:
+    case Pack125:
+    case Pack126:
+    case Pack127:
       t_ = Integer;
       h_.i = Pack0 - t;
       break;

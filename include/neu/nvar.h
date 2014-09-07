@@ -1207,7 +1207,7 @@ namespace neu{
       }
       
       if(i < 128){
-        return 1;
+        return 0;
       }
       else if(i < 32768){
         return 2;
