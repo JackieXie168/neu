@@ -21729,7 +21729,7 @@ void nvar::intoSet(){
       break;
     case HashSet:{
       t_ = Set;
-      h_.set = new nset(h_.set->begin(), h_.set->end());
+      h_.set = new nset(h_.hset->begin(), h_.hset->end());
       break;
     }
     case Map:{
