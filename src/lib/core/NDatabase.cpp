@@ -237,9 +237,7 @@ namespace neu{
     class IndexBase{
     public:
       IndexBase(uint8_t type)
-      : type_(type){
-        
-      }
+      : type_(type){}
       
       virtual ~IndexBase(){}
       
@@ -678,6 +676,7 @@ namespace neu{
           
           chunkMap_.insert({chunk->min(), chunk});
         }
+        
         fclose(file);
         
         needsLoad_ = false;
@@ -1332,9 +1331,7 @@ namespace neu{
       
       DataIndex(NDatabase_* d, const nstr& path, bool create)
       : Index(d, DataIndexType, path, create),
-      d_(d){
-
-      }
+      d_(d){}
       
       void insert(uint32_t dataId, uint32_t offset, RowId rowId){
         record_.set(rowId, dataId, offset);
@@ -1385,6 +1382,7 @@ namespace neu{
                       DataIndex* newIndex,
                       RowSet& rs,
                       UpdateMap& um){
+        
         traverse([&](DataRecord& r){
           if(r.remap){
             rs.add(r.value);
@@ -1419,9 +1417,7 @@ namespace neu{
     class Int64Index : public Index<Int64Record, int64_t>{
     public:
       Int64Index(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Int64, path, create){
-        
-      }
+      : Index(d, NTable::Int64, path, create){}
       
       void insert(RowId rowId, int64_t value){
         record_.value = value;
@@ -1450,9 +1446,7 @@ namespace neu{
     class UInt64Index : public Index<UInt64Record, uint64_t>{
     public:
       UInt64Index(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::UInt64, path, create){
-        
-      }
+      : Index(d, NTable::UInt64, path, create){}
       
       void insert(RowId rowId, uint64_t value){
         record_.value = value;
@@ -1481,9 +1475,7 @@ namespace neu{
     class RowIndex : public Index<RowRecord, RowId>{
     public:
       RowIndex(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Row, path, create){
-        
-      }
+      : Index(d, NTable::Row, path, create){}
       
       void insert(RowId rowId, uint64_t value){
         record_.value = value;
@@ -1512,9 +1504,7 @@ namespace neu{
     class Int32Index : public Index<Int32Record, int32_t>{
     public:
       Int32Index(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Int32, path, create){
-        
-      }
+      : Index(d, NTable::Int32, path, create){}
       
       void insert(RowId rowId, int32_t value){
         record_.value = value;
@@ -1547,9 +1537,7 @@ namespace neu{
     class UInt32Index : public Index<UInt32Record, uint32_t>{
     public:
       UInt32Index(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::UInt32, path, create){
-        
-      }
+      : Index(d, NTable::UInt32, path, create){}
       
       void insert(RowId rowId, uint32_t value){
         record_.value = value;
@@ -1578,9 +1566,7 @@ namespace neu{
     class DoubleIndex : public Index<DoubleRecord, double>{
     public:
       DoubleIndex(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Double, path, create){
-        
-      }
+      : Index(d, NTable::Double, path, create){}
       
       void insert(RowId rowId, double value){
         record_.value = value;
@@ -1609,9 +1595,7 @@ namespace neu{
     class FloatIndex : public Index<FloatRecord, float>{
     public:
       FloatIndex(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Float, path, create){
-        
-      }
+      : Index(d, NTable::Float, path, create){}
       
       void insert(RowId rowId, float value){
         record_.value = value;
@@ -1640,9 +1624,7 @@ namespace neu{
     class HashIndex : public Index<HashRecord, uint64_t>{
     public:
       HashIndex(NDatabase_* d, const nstr& path, bool create)
-      : Index(d, NTable::Hash, path, create){
-        
-      }
+      : Index(d, NTable::Hash, path, create){}
       
       void insert(RowId rowId, uint64_t value){
         record_.value = value;
@@ -2717,6 +2699,7 @@ namespace neu{
     void query(const nstr& indexName,
                const nvar& start,
                NTable::QueryFunc qf){
+      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
 
@@ -2752,6 +2735,7 @@ namespace neu{
     }
     
     void traverseStart(NTable::QueryFunc qf){
+      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         if(get(rowId, row)){
@@ -2765,11 +2749,13 @@ namespace neu{
     }
     
     void traverseEnd(NTable::QueryFunc qf){
+      
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
         if(get(rowId, row)){
           return qf(row) != 0 ? -1 : 0;
         }
+        
         return -1;
       };
 
@@ -2780,6 +2766,7 @@ namespace neu{
     
     void join(const nstr& indexName, const RowSet& js, RowSet& rs){
       for(RowId findRowId : js){
+      
         auto f = [&](RowId rowId, const nvar& v) -> int{
           RowId toRowId = v;
           
@@ -3016,6 +3003,7 @@ namespace neu{
     }
     
     itr->second->erase();
+    delete itr->second;
     
     tableMap_.erase(itr);
     
@@ -3058,6 +3046,7 @@ namespace neu{
   
   size_t NDatabase_::memoryUsage(PMap& pm){
     size_t m = 0;
+    
     for(auto& itr : tableMap_){
       m += itr.second->memoryUsage(pm);
     }
