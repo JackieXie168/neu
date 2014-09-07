@@ -23255,12 +23255,12 @@ void nvar::merge(const nvar& x){
       switch(x.t_){
         case Set:
           for(auto& itr : *x.h_.set){
-            h_.m->insert({*itr, true});
+            h_.mm->insert({*itr, true});
           }
           break;
         case HashSet:
           for(auto& itr : *x.h_.hset){
-            h_.m->insert({*itr, true});
+            h_.mm->insert({*itr, true});
           }
           break;
         case Map:
@@ -23394,6 +23394,18 @@ void nvar::merge(const nvar& x){
       break;
     default:
       switch(x.t_){
+        case Set:
+          intoSet();
+          merge(x);
+          break;
+        case HashSet:
+          intoHashSet();
+          merge(x);
+          break;
+        case HashMap:
+          intoHashMap();
+          merge(x);
+          break;
         case Map:
         case Multimap:
         case Function:
