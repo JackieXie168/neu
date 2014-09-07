@@ -355,66 +355,52 @@ namespace neu{
     
     nvar(Type t, Head h)
     : t_(t),
-    h_(h){
-    
-    }
+    h_(h){}
     
     nvar()
-    : t_(Undefined){
-    
-    }
+    : t_(Undefined){}
     
     nvar(bool x)
-    : t_(x ? True : False){
-    
-    }
+    : t_(x ? True : False){}
     
     nvar(uint8_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(int8_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(uint16_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(int16_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(uint32_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(int32_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(uint64_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(int64_t x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
 #if defined (__i386__) || defined (__APPLE__)
@@ -422,13 +408,11 @@ namespace neu{
     nvar(long int x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
     nvar(unsigned long int x)
     : t_(Integer){
       h_.i = x;
-      
     }
     
 #endif
@@ -436,19 +420,16 @@ namespace neu{
     nvar(double x)
     : t_(Float){
       h_.d = x;
-      
     }
     
     nvar(float x)
     : t_(Float){
       h_.d = x;
-      
     }
     
     nvar(nvar&& x)
     : t_(x.t_),
     h_(x.h_){
-      
       x.t_ = Undefined;
     }
     
@@ -951,7 +932,7 @@ namespace neu{
     NHashSet<T>& as(NHashSet<T>& x) const{
       switch(t_){
         case HashSet:{
-          const nset& s = *h_.set;
+          const nhset& s = *h_.hset;
           
           for(auto& itr : s){
             T t;
