@@ -481,7 +481,6 @@ namespace neu{
       void dump(ostream& estr){
         estr << "priority: " << priority << endl;
         estr << "caller stack size: " << returnStack_.size() << endl;
-        
         estr << "*******************" << endl;
         
         for(Return* r : returnStack_){
@@ -1919,7 +1918,6 @@ namespace neu{
     void normAmbig(){
       NonTermVec nv;
       
-      TermSet lts;
       auto itr = termPrecMap_.begin();
       assert(itr != termPrecMap_.end());
       
@@ -1974,6 +1972,7 @@ namespace neu{
                const Stack& tokens,
                Global* g,
                const nstr& msg){
+      
       size_t remaining = g->remaining();
 
       size_t dist = tokens.size() - remaining;
@@ -2553,9 +2552,7 @@ NParser::NParser(const nstr& name){
   x_ = p;
 }
 
-NParser::~NParser(){
-  delete x_;
-}
+NParser::~NParser(){}
 
 nvar NParser::parse(const nstr& str,
                     bool metadata,
