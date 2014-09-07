@@ -409,7 +409,7 @@ namespace{
     
     ~NPLCompiler(){}
     
-    Function* globalFunc(const nstr& f){
+    Function* func(const nstr& f){
       auto itr = functionMap_.find(f);
       assert(itr != functionMap_.end());
       return itr->second;
@@ -639,7 +639,7 @@ namespace{
     }
     
     void deleteVar(Value* v){
-      globalCall("void nvar::~nvar(nvar*)", {v});
+      call("void nvar::~nvar(nvar*)", {v});
     }
             
     Value* getLValue(const nvar& n){
@@ -683,7 +683,7 @@ namespace{
       if(v.hasVector()){
         vv = toVar(h);
         
-        globalCall("void nvar::intoVector(nvar*)", {vv});
+        call("void nvar::intoVector(nvar*)", {vv});
         
         const nvec& vec = v;
         for(size_t i = 0; i < vec.size(); ++i){
@@ -698,7 +698,7 @@ namespace{
       else if(v.hasList()){
         vv = toVar(h);
 
-        globalCall("void nvar::intoList(nvar*)", {vv});
+        call("void nvar::intoList(nvar*)", {vv});
         
         const nlist& l = v;
         for(size_t i = 0; i < l.size(); ++i){
@@ -713,7 +713,7 @@ namespace{
       else if(v.hasQueue()){
         vv = toVar(h);
         
-        globalCall("void nvar::intoQueue(nvar*)", {vv});
+        call("void nvar::intoQueue(nvar*)", {vv});
         
         const nqueue& q = v;
         for(size_t i = 0; i < q.size(); ++i){
@@ -729,7 +729,7 @@ namespace{
       if(v.hasSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::intoSet(nvar*)", {vv});
+        call("void nvar::intoSet(nvar*)", {vv});
         
         const nset& s = v;
         for(auto& itr : s){
@@ -743,13 +743,13 @@ namespace{
             return 0;
           }
           
-          globalCall("void nvar::addKey(nvar*, nvar*)", {vv, k});
+          call("void nvar::addKey(nvar*, nvar*)", {vv, k});
         }
       }
       else if(v.hasHashSet()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::intoHashSet(nvar*)", {vv});
+        call("void nvar::intoHashSet(nvar*)", {vv});
         
         const nhset& s = v;
         for(auto& itr : s){
@@ -763,7 +763,7 @@ namespace{
             return 0;
           }
           
-          globalCall("void nvar::addKey(nvar*, nvar*)", {vv, k});
+          call("void nvar::addKey(nvar*, nvar*)", {vv, k});
         }
       }
       else if(v.hasMap()){
@@ -782,7 +782,7 @@ namespace{
         if(has){
           vv = vv ? vv : toVar(h);
           
-          globalCall("void nvar::intoMap(nvar*)", {vv});
+          call("void nvar::intoMap(nvar*)", {vv});
           
           const nmap& m = v;
           for(auto& itr : m){
@@ -821,7 +821,7 @@ namespace{
       else if(v.hasHashMap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::intoHashMap(nvar*)", {vv});
+        call("void nvar::intoHashMap(nvar*)", {vv});
         
         const nhmap& m = v;
         for(auto& itr : m){
@@ -859,7 +859,7 @@ namespace{
       else if(v.hasMultimap()){
         vv = vv ? vv : toVar(h);
         
-        globalCall("void nvar::intoMultimap(nvar*)", {vv});
+        call("void nvar::intoMultimap(nvar*)", {vv});
         
         const nmmap& m = v;
         for(auto& itr : m){
@@ -905,11 +905,11 @@ namespace{
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
       if(isVar(from)){
         if(toType->isIntegerTy()){
-          Value* v = globalCall("long nvar::toLong(nvar*)", {from});
+          Value* v = call("long nvar::toLong(nvar*)", {from});
           return convertNum(v, toType);
         }
         else if(toType->isFloatingPointTy()){
-          Value* v = globalCall("double nvar::toDouble(nvar*)", {from});
+          Value* v = call("double nvar::toDouble(nvar*)", {from});
           return convertNum(v, toType);
         }
 
@@ -1031,7 +1031,7 @@ namespace{
         
         if(pt->isIntegerTy(8)){
           Value* ret = createAlloca("nvar", name);
-          globalCall("void nvar::nvar(nvar*, char*)", {ret, v});
+          call("void nvar::nvar(nvar*, char*)", {ret, v});
           return ret;
         }
         else if(VectorType* vt = dyn_cast<VectorType>(pt)){
@@ -1045,16 +1045,16 @@ namespace{
             size_t bits = intType->getBitWidth();
             switch(bits){
               case 8:
-                globalCall("void nvar::nvar(nvar*, char*, int)", {ret, vp, n});
+                call("void nvar::nvar(nvar*, char*, int)", {ret, vp, n});
                 return ret;
               case 16:
-                globalCall("void nvar::nvar(nvar*, short*, int)", {ret, vp, n});
+                call("void nvar::nvar(nvar*, short*, int)", {ret, vp, n});
                 return ret;
               case 32:
-                globalCall("void nvar::nvar(nvar*, int*, int)", {ret, vp, n});
+                call("void nvar::nvar(nvar*, int*, int)", {ret, vp, n});
                 return ret;
               case 64:
-                globalCall("void nvar::nvar(nvar*, long*, int)", {ret, vp, n});
+                call("void nvar::nvar(nvar*, long*, int)", {ret, vp, n});
                 return ret;
               default:
                 NERROR("invalid vector integer type");
@@ -1062,18 +1062,18 @@ namespace{
             return 0;
           }
           else if(et->isDoubleTy()){
-            globalCall("void nvar::nvar(nvar*, double*, int)", {ret, vp, n});
+            call("void nvar::nvar(nvar*, double*, int)", {ret, vp, n});
             return ret;
           }
           else if(et->isFloatTy()){
-            globalCall("void nvar::nvar(nvar*, float*, int)", {ret, vp, n});
+            call("void nvar::nvar(nvar*, float*, int)", {ret, vp, n});
             return ret;
           }
         }
       }
       else if(isVar(t)){
         Value* ret = createAlloca("nvar", name);
-        globalCall("void nvar::nvar(nvar*, nvar*)", {ret, v});
+        call("void nvar::nvar(nvar*, nvar*)", {ret, v});
         return ret;
       }
       
@@ -1426,13 +1426,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator+(nvar*, nvar*, long)",
+          call("void nvar::operator+(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator+(nvar*, nvar*, double)",
+          call("void nvar::operator+(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1443,7 +1443,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator+(nvar*, nvar*, nvar*)",
+        call("void nvar::operator+(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1478,13 +1478,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator-(nvar*, nvar*, long)",
+          call("void nvar::operator-(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator-(nvar*, nvar*, double)",
+          call("void nvar::operator-(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1495,7 +1495,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator-(nvar*, nvar*, nvar*)",
+        call("void nvar::operator-(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1530,13 +1530,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator*(nvar*, nvar*, long)",
+          call("void nvar::operator*(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator*(nvar*, nvar*, double)",
+          call("void nvar::operator*(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1547,7 +1547,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator*(nvar*, nvar*, nvar*)",
+        call("void nvar::operator*(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1586,13 +1586,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator/(nvar*, nvar*, long)",
+          call("void nvar::operator/(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator/(nvar*, nvar*, double)",
+          call("void nvar::operator/(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1603,7 +1603,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator/(nvar*, nvar*, nvar*)",
+        call("void nvar::operator/(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1644,13 +1644,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator%(nvar*, nvar*, long)",
+          call("void nvar::operator%(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator%(nvar*, nvar*, double)",
+          call("void nvar::operator%(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1661,7 +1661,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator%(nvar*, nvar*, nvar*)",
+        call("void nvar::operator%(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1686,12 +1686,12 @@ namespace{
       if(isVar(tl)){
         if(tr->isIntegerTy()){
           Value* vl = convert(r, "long");
-          return globalCall("nvar* nvar::operator+=(nvar*, long)",
+          return call("nvar* nvar::operator+=(nvar*, long)",
                             {l, vl});
         }
         else if(tr->isFloatingPointTy()){
           Value* vd = convert(r, "double");
-          return globalCall("nvar* nvar::operator+=(nvar*, double)",
+          return call("nvar* nvar::operator+=(nvar*, double)",
                             {l, vd});
         }
         
@@ -1701,7 +1701,7 @@ namespace{
           return 0;
         }
         
-        return globalCall("nvar* nvar::operator+=(nvar*, nvar*)",
+        return call("nvar* nvar::operator+=(nvar*, nvar*)",
                           {l, vr});
         
       }
@@ -1727,12 +1727,12 @@ namespace{
       if(isVar(tl)){
         if(tr->isIntegerTy()){
           Value* vl = convert(r, "long");
-          return globalCall("nvar* nvar::operator-=(nvar*, long)",
+          return call("nvar* nvar::operator-=(nvar*, long)",
                             {l, vl});
         }
         else if(tr->isFloatingPointTy()){
           Value* vd = convert(r, "double");
-          return globalCall("nvar* nvar::operator-=(nvar*, double)",
+          return call("nvar* nvar::operator-=(nvar*, double)",
                             {l, vd});
         }
         
@@ -1742,7 +1742,7 @@ namespace{
           return 0;
         }
         
-        return globalCall("nvar* nvar::operator-=(nvar*, nvar*)",
+        return call("nvar* nvar::operator-=(nvar*, nvar*)",
                           {l, vr});
         
       }
@@ -1768,12 +1768,12 @@ namespace{
       if(isVar(tl)){
         if(tr->isIntegerTy()){
           Value* vl = convert(r, "long");
-          return globalCall("nvar* nvar::operator*=(nvar*, long)",
+          return call("nvar* nvar::operator*=(nvar*, long)",
                             {l, vl});
         }
         else if(tr->isFloatingPointTy()){
           Value* vd = convert(r, "double");
-          return globalCall("nvar* nvar::operator*=(nvar*, double)",
+          return call("nvar* nvar::operator*=(nvar*, double)",
                             {l, vd});
         }
         
@@ -1783,7 +1783,7 @@ namespace{
           return 0;
         }
         
-        return globalCall("nvar* nvar::operator*=(nvar*, nvar*)",
+        return call("nvar* nvar::operator*=(nvar*, nvar*)",
                           {l, vr});
         
       }
@@ -1809,12 +1809,12 @@ namespace{
       if(isVar(tl)){
         if(tr->isIntegerTy()){
           Value* vl = convert(r, "long");
-          return globalCall("nvar* nvar::operator/=(nvar*, long)",
+          return call("nvar* nvar::operator/=(nvar*, long)",
                             {l, vl});
         }
         else if(tr->isFloatingPointTy()){
           Value* vd = convert(r, "double");
-          return globalCall("nvar* nvar::operator/=(nvar*, double)",
+          return call("nvar* nvar::operator/=(nvar*, double)",
                             {l, vd});
         }
         
@@ -1824,7 +1824,7 @@ namespace{
           return 0;
         }
         
-        return globalCall("nvar* nvar::operator/=(nvar*, nvar*)",
+        return call("nvar* nvar::operator/=(nvar*, nvar*)",
                           {l, vr});
         
       }
@@ -1850,12 +1850,12 @@ namespace{
       if(isVar(tl)){
         if(tr->isIntegerTy()){
           Value* vl = convert(r, "long");
-          return globalCall("nvar* nvar::operator%=(nvar*, long)",
+          return call("nvar* nvar::operator%=(nvar*, long)",
                             {l, vl});
         }
         else if(tr->isFloatingPointTy()){
           Value* vd = convert(r, "double");
-          return globalCall("nvar* nvar::operator%=(nvar*, double)",
+          return call("nvar* nvar::operator%=(nvar*, double)",
                             {l, vd});
         }
         
@@ -1865,7 +1865,7 @@ namespace{
           return 0;
         }
         
-        return globalCall("nvar* nvar::operator%=(nvar*, nvar*)",
+        return call("nvar* nvar::operator%=(nvar*, nvar*)",
                           {l, vr});
         
       }
@@ -1893,13 +1893,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator==(nvar*, nvar*, long)",
+          call("void nvar::operator==(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator==(nvar*, nvar*, double)",
+          call("void nvar::operator==(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1910,7 +1910,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator==(nvar*, nvar*, nvar*)",
+        call("void nvar::operator==(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1942,13 +1942,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator!=(nvar*, nvar*, long)",
+          call("void nvar::operator!=(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator!=(nvar*, nvar*, double)",
+          call("void nvar::operator!=(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -1959,7 +1959,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator!=(nvar*, nvar*, nvar*)",
+        call("void nvar::operator!=(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -1991,13 +1991,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator<(nvar*, nvar*, long)",
+          call("void nvar::operator<(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator<(nvar*, nvar*, double)",
+          call("void nvar::operator<(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -2008,7 +2008,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator<(nvar*, nvar*, nvar*)",
+        call("void nvar::operator<(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -2043,13 +2043,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator<=(nvar*, nvar*, long)",
+          call("void nvar::operator<=(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator<=(nvar*, nvar*, double)",
+          call("void nvar::operator<=(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -2060,7 +2060,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator<=(nvar*, nvar*, nvar*)",
+        call("void nvar::operator<=(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -2095,13 +2095,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator>(nvar*, nvar*, long)",
+          call("void nvar::operator>(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator>(nvar*, nvar*, double)",
+          call("void nvar::operator>(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -2112,7 +2112,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator>(nvar*, nvar*, nvar*)",
+        call("void nvar::operator>(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -2147,13 +2147,13 @@ namespace{
         
         if(t2->isIntegerTy()){
           Value* vl = convert(v2, "long");
-          globalCall("void nvar::operator>=(nvar*, nvar*, long)",
+          call("void nvar::operator>=(nvar*, nvar*, long)",
                      {ret, v1, vl});
           return ret;
         }
         else if(t2->isFloatingPointTy()){
           Value* vd = convert(v2, "double");
-          globalCall("void nvar::operator>=(nvar*, nvar*, double)",
+          call("void nvar::operator>=(nvar*, nvar*, double)",
                      {ret, v1, vd});
           return ret;
         }
@@ -2164,7 +2164,7 @@ namespace{
           return 0;
         }
         
-        globalCall("void nvar::operator>=(nvar*, nvar*, nvar*)",
+        call("void nvar::operator>=(nvar*, nvar*, nvar*)",
                    {ret, v1, v});
         
         return ret;
@@ -2284,7 +2284,7 @@ namespace{
       
       if(isVar(v1)){
         if(isVar(v2)){
-          return globalCall("nvar* nvar::operator[](nvar*, nvar*)",
+          return call("nvar* nvar::operator[](nvar*, nvar*)",
                             {v1, v2});
         }
         else{
@@ -2293,7 +2293,7 @@ namespace{
             return 0;
           }
           
-          return globalCall("nvar* nvar::operator[](nvar*, int)",
+          return call("nvar* nvar::operator[](nvar*, int)",
                             {v1, i});
         }
       }
@@ -2303,7 +2303,7 @@ namespace{
     
     Value* size(Value* v){
       if(isVar(v)){
-        return globalCall("long nvar::size[](nvar*)",
+        return call("long nvar::size[](nvar*)",
                           {v});
       }
       
@@ -2313,7 +2313,7 @@ namespace{
     Value* neg(Value* v){
       if(isVar(v)){
         Value* ret = createVar("neg");
-        globalCall("void nvar::operator-(nvar*, nvar*)",
+        call("void nvar::operator-(nvar*, nvar*)",
                    {ret, v});
         return ret;
       }
@@ -2335,7 +2335,7 @@ namespace{
         }
         
         Value* ret = createVar("pow");
-        globalCall("void nvar::pow(nvar*, nvar*, nvar*, void*)",
+        call("void nvar::pow(nvar*, nvar*, nvar*, void*)",
                    {ret, v[0], v[1], null()});
         
         return ret;
@@ -2351,14 +2351,14 @@ namespace{
         return 0;
       }
 
-      return globalCall("double pow(double, double)", {v1, v2});
+      return call("double pow(double, double)", {v1, v2});
     }
     
     Value* sqrt(Value* v){
       if(isVar(v)){
         Value* ret = createVar("sqrt");
         
-        globalCall("void nvar::sqrt(nvar*, nvar*, void*)",
+        call("void nvar::sqrt(nvar*, nvar*, void*)",
                    {ret, v, null()});
         
         return ret;
@@ -2369,14 +2369,14 @@ namespace{
         return 0;
       }
       
-      return globalCall("double sqrt(double)", {v});
+      return call("double sqrt(double)", {v});
     }
     
     Value* exp(Value* v){
       if(isVar(v)){
         Value* ret = createVar("exp");
         
-        globalCall("void nvar::exp(nvar*, nvar*, void*)",
+        call("void nvar::exp(nvar*, nvar*, void*)",
                    {ret, v, null()});
         
         return ret;
@@ -2387,14 +2387,14 @@ namespace{
         return 0;
       }
       
-      return globalCall("double exp(double)", {v});
+      return call("double exp(double)", {v});
     }
     
     Value* log(Value* v){
       if(isVar(v)){
         Value* ret = createVar("log");
         
-        globalCall("void nvar::log(nvar*, nvar*, void*)",
+        call("void nvar::log(nvar*, nvar*, void*)",
                    {ret, v, null()});
         
         return ret;
@@ -2405,14 +2405,14 @@ namespace{
         return 0;
       }
       
-      return globalCall("double log(double)", {v});
+      return call("double log(double)", {v});
     }
     
     Value* floor(Value* v){
       if(isVar(v)){
         Value* ret = createVar("floor");
         
-        globalCall("void nvar::floor(nvar*, nvar*, void*)",
+        call("void nvar::floor(nvar*, nvar*, void*)",
                    {ret, v, null()});
         
         return ret;
@@ -2423,12 +2423,12 @@ namespace{
         return 0;
       }
       
-      return globalCall("double floor(double)", {v});
+      return call("double floor(double)", {v});
     }
     
     Value* put(Value* l, Value* r){
       if(isString(r)){
-        return globalCall("nvar* nvar::put(nvar*, char*)",
+        return call("nvar* nvar::put(nvar*, char*)",
                           {l, r});
       }
       
@@ -2437,12 +2437,12 @@ namespace{
         return 0;
       }
       
-      return globalCall("nvar* nvar::put(nvar*, nvar*)",
+      return call("nvar* nvar::put(nvar*, nvar*)",
                         {l, rc});
     }
     
     void pushBack(Value* l, Value* r){
-      globalCall("void nvar::pushBack(nvar*, nvar*)",
+      call("void nvar::pushBack(nvar*, nvar*)",
                  {l, r});
     }
     
@@ -2501,15 +2501,15 @@ namespace{
         
         if(t->isIntegerTy()){
           Value* vl = convert(v, "long");
-          globalCall("nvar* nvar::operator=(nvar*, long)", {ptr, vl});
+          call("nvar* nvar::operator=(nvar*, long)", {ptr, vl});
         }
         else if(t->isFloatingPointTy()){
           Value* vd = convert(v, "double");
-          globalCall("nvar* nvar::operator=(nvar*, double)", {ptr, vd});
+          call("nvar* nvar::operator=(nvar*, double)", {ptr, vd});
         }
         
         Value* vr = toVar(v);
-        globalCall("nvar* nvar::operator=(nvar*, nvar*)", {ptr, vr});
+        call("nvar* nvar::operator=(nvar*, nvar*)", {ptr, vr});
       }
       else{
         builder_.CreateStore(v, ptr);
@@ -3004,7 +3004,7 @@ namespace{
           }
           
           if(isVar(r)){
-            return globalCall("void nvar::operator!(nvar*, nvar*)", {r});
+            return call("void nvar::operator!(nvar*, nvar*)", {r});
           }
           
           Value* rc = convert(r, "bool");
@@ -3053,7 +3053,7 @@ namespace{
           
           if(isVar(v[0])){
             Value* ret = createVar("and");
-            return globalCall("void nvar::operator&&(nvar*, nvar*, nvar*)",
+            return call("void nvar::operator&&(nvar*, nvar*, nvar*)",
                               {ret, v[0], v[1]});
           }
           
@@ -3078,7 +3078,7 @@ namespace{
           
           if(isVar(v[0])){
             Value* ret = createVar("or");
-            return globalCall("void nvar::operator||(nvar*, nvar*, nvar*)",
+            return call("void nvar::operator||(nvar*, nvar*, nvar*)",
                               {ret, v[0], v[1]});
           }
           
@@ -3773,11 +3773,11 @@ namespace{
           Value* sr;
           
           if(et->isDoubleTy()){
-            sr = builder_.CreateCall(globalFunc("double sqrt(double)"),
+            sr = builder_.CreateCall(func("double sqrt(double)"),
                                      args.vector(), "sqrt");
           }
           else{
-            sr = builder_.CreateCall(globalFunc("float sqrt(float)"),
+            sr = builder_.CreateCall(func("float sqrt(float)"),
                                      args.vector(), "sqrt");
           }
           
@@ -3825,11 +3825,11 @@ namespace{
           args.push_back(d);
           
           if(et->isDoubleTy()){
-            return builder_.CreateCall(globalFunc("double sqrt(double)"),
+            return builder_.CreateCall(func("double sqrt(double)"),
                                        args.vector(), "sqrt");
           }
 
-          return builder_.CreateCall(globalFunc("float sqrt(float)"),
+          return builder_.CreateCall(func("float sqrt(float)"),
                                      args.vector(), "sqrt");
         }
         case FKEY_DotProduct_2:{
@@ -4083,7 +4083,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoVector(nvar*)", {l});
+          return call("void nvar::intoVector(nvar*)", {l});
         }
         case FKEY_TouchList_1:{
           Value* l = getLValue(n[0]);
@@ -4095,7 +4095,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoList(nvar*)", {l});
+          return call("void nvar::intoList(nvar*)", {l});
         }
         case FKEY_TouchQueue_1:{
           Value* l = getLValue(n[0]);
@@ -4107,7 +4107,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoQueue(nvar*)", {l});
+          return call("void nvar::intoQueue(nvar*)", {l});
         }
         case FKEY_TouchSet_1:{
           Value* l = getLValue(n[0]);
@@ -4119,7 +4119,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoSet(nvar*)", {l});
+          return call("void nvar::intoSet(nvar*)", {l});
         }
         case FKEY_TouchHashSet_1:{
           Value* l = getLValue(n[0]);
@@ -4131,7 +4131,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoHashSet(nvar*)", {l});
+          return call("void nvar::intoHashSet(nvar*)", {l});
         }
         case FKEY_TouchMap_1:{
           Value* l = getLValue(n[0]);
@@ -4143,7 +4143,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoMap(nvar*)", {l});
+          return call("void nvar::intoMap(nvar*)", {l});
         }
         case FKEY_TouchHashMap_1:{
           Value* l = getLValue(n[0]);
@@ -4155,7 +4155,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::intoHashMap(nvar*)", {l});
+          return call("void nvar::intoHashMap(nvar*)", {l});
         }
         case FKEY_TouchMultimap_1:{
           Value* l = getLValue(n[0]);
@@ -4167,7 +4167,7 @@ namespace{
             return error("not a var[0]", n);
           }
 
-          return globalCall("void nvar::intoMultimap(nvar*)", {l});
+          return call("void nvar::intoMultimap(nvar*)", {l});
         }
         case FKEY_Keys_1:{
           Value* l = getLValue(n[0]);
@@ -4180,7 +4180,7 @@ namespace{
           }
           
           Value* ret = createVar("keys");
-          return globalCall("void nvar::keys(nvar*, nvar*)", {ret, l});
+          return call("void nvar::keys(nvar*, nvar*)", {ret, l});
         }
         case FKEY_PushFront_2:{
           Value* l = getLValue(n[0]);
@@ -4199,7 +4199,7 @@ namespace{
           
           Value* rv = toVar(r);
           
-          return globalCall("void nvar::pushFront(nvar*, nvar*)", {l, rv});
+          return call("void nvar::pushFront(nvar*, nvar*)", {l, rv});
         }
         case FKEY_PopBack_1:{
           Value* l = getLValue(n[0]);
@@ -4212,7 +4212,7 @@ namespace{
           }
           
           Value* ret = createVar("popBack");
-          return globalCall("void nvar::popBack(nvar*, nvar*)", {ret, l});
+          return call("void nvar::popBack(nvar*, nvar*)", {ret, l});
         }
         case FKEY_PopFront_1:{
           Value* l = getLValue(n[0]);
@@ -4225,7 +4225,7 @@ namespace{
           }
           
           Value* ret = createVar("popFront");
-          return globalCall("void nvar::popFront(nvar*, nvar*)", {ret, l});
+          return call("void nvar::popFront(nvar*, nvar*)", {ret, l});
         }
         case FKEY_HasKey_2:{
           Value* l = getLValue(n[0]);
@@ -4244,7 +4244,7 @@ namespace{
           
           Value* rv = toVar(r);
           
-          return globalCall("bool nvar::hasKey(nvar*, nvar*)", {l, rv});
+          return call("bool nvar::hasKey(nvar*, nvar*)", {l, rv});
         }
         case FKEY_Insert_3:{
           Value* l = getLValue(n[0]);
@@ -4270,7 +4270,7 @@ namespace{
           
           Value* rv = toVar(r);
           
-          return globalCall("void nvar::insert(nvar*, long, nvar*)", {l, i, rv});
+          return call("void nvar::insert(nvar*, long, nvar*)", {l, i, rv});
         }
         case FKEY_Clear_1:{
           Value* l = getLValue(n[0]);
@@ -4282,7 +4282,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::clear(nvar*)", {l});
+          return call("void nvar::clear(nvar*)", {l});
         }
         case FKEY_Empty_1:{
           Value* l = getLValue(n[0]);
@@ -4294,7 +4294,7 @@ namespace{
             return error("not a var[0]", n);
           }
           
-          return globalCall("bool nvar::empty(nvar*)", {l});
+          return call("bool nvar::empty(nvar*)", {l});
         }
         case FKEY_Back_1:{
           Value* l = getLValue(n[0]);
@@ -4307,7 +4307,7 @@ namespace{
           }
           
           Value* ret = createVar("back");
-          return globalCall("void nvar::back(nvar*, nvar*)", {ret, l});
+          return call("void nvar::back(nvar*, nvar*)", {ret, l});
         }
         case FKEY_Get_2:{
           Value* l = getLValue(n[0]);
@@ -4327,7 +4327,7 @@ namespace{
           Value* rv = toVar(r);
           
           Value* ret = createVar("get");
-          return globalCall("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv});
+          return call("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv});
         }
         case FKEY_Get_3:{
           Value* l = getLValue(n[0]);
@@ -4354,7 +4354,7 @@ namespace{
           Value* dv = toVar(d);
           
           Value* ret = createVar("get");
-          return globalCall("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv, dv});
+          return call("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv, dv});
         }
         case FKEY_Erase_2:{
           Value* l = getLValue(n[0]);
@@ -4373,7 +4373,7 @@ namespace{
           
           Value* rv = toVar(r);
           
-          return globalCall("void nvar::erase(nvar*, nvar*)", {l, rv});
+          return call("void nvar::erase(nvar*, nvar*)", {l, rv});
         }
         case FKEY_Cos_1:{
           Value* r = compile(n[0]);
@@ -4384,17 +4384,17 @@ namespace{
           if(isVar(r)){
             Value* ret = createVar("cos");
             
-            return globalCall("void nvar::cos(nvar*, nvar*, void*)",
+            return call("void nvar::cos(nvar*, nvar*, void*)",
                               {ret, r, null()});
           }
           
           Type* t = r->getType();
           
           if(t->isDoubleTy()){
-            return globalCall("double cos(double)", {r});
+            return call("double cos(double)", {r});
           }
           else if(t->isFloatTy()){
-            return globalCall("float cos(float)", {r});
+            return call("float cos(float)", {r});
           }
           
           Value* rv = toVar(r);
@@ -4404,7 +4404,7 @@ namespace{
           
           Value* ret = createVar("cos");
           
-          return globalCall("void nvar::cos(nvar*, nvar*, void*)",
+          return call("void nvar::cos(nvar*, nvar*, void*)",
                             {ret, rv, null()});        }
         case FKEY_Acos_1:{
           Value* r = compile(n[0]);
@@ -4419,7 +4419,7 @@ namespace{
           
           Value* ret = createVar("acos");
           
-          return globalCall("void nvar::acos(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::acos(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Cosh_1:{
           Value* r = compile(n[0]);
@@ -4434,7 +4434,7 @@ namespace{
           
           Value* ret = createVar("cosh");
           
-          return globalCall("void nvar::cosh(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::cosh(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Sin_1:{
           Value* r = compile(n[0]);
@@ -4445,17 +4445,17 @@ namespace{
           if(isVar(r)){
             Value* ret = createVar("sin");
             
-            return globalCall("void nvar::sin(nvar*, nvar*, void*)",
+            return call("void nvar::sin(nvar*, nvar*, void*)",
                               {ret, r, null()});
           }
           
           Type* t = r->getType();
           
           if(t->isDoubleTy()){
-            return globalCall("double sin(double)", {r});
+            return call("double sin(double)", {r});
           }
           else if(t->isFloatTy()){
-            return globalCall("float sin(float)", {r});
+            return call("float sin(float)", {r});
           }
           
           Value* rv = toVar(r);
@@ -4465,7 +4465,7 @@ namespace{
           
           Value* ret = createVar("sin");
           
-          return globalCall("void nvar::sin(nvar*, nvar*, void*)",
+          return call("void nvar::sin(nvar*, nvar*, void*)",
                             {ret, rv, null()});
         }
         case FKEY_Asin_1:{
@@ -4481,7 +4481,7 @@ namespace{
           
           Value* ret = createVar("asin");
           
-          return globalCall("void nvar::asin(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::asin(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Sinh_1:{
           Value* r = compile(n[0]);
@@ -4496,7 +4496,7 @@ namespace{
           
           Value* ret = createVar("sinh");
           
-          return globalCall("void nvar::sinh(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::sinh(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Tan_1:{
           Value* r = compile(n[0]);
@@ -4511,7 +4511,7 @@ namespace{
           
           Value* ret = createVar("tan");
           
-          return globalCall("void nvar::tan(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::tan(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Atan_1:{
           Value* r = compile(n[0]);
@@ -4526,7 +4526,7 @@ namespace{
           
           Value* ret = createVar("atan");
           
-          return globalCall("void nvar::atan(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::atan(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Tanh_1:{
           Value* r = compile(n[0]);
@@ -4541,7 +4541,7 @@ namespace{
           
           Value* ret = createVar("tanh");
           
-          return globalCall("void nvar::tanh(nvar*, nvar*, void*)", {ret, rv, null()});
+          return call("void nvar::tanh(nvar*, nvar*, void*)", {ret, rv, null()});
         }
         case FKEY_Merge_2:{
           Value* l = getLValue(n[0]);
@@ -4563,7 +4563,7 @@ namespace{
             error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::merge(nvar*, nvar*)", {l, rv});
+          return call("void nvar::merge(nvar*, nvar*)", {l, rv});
         }
         case FKEY_OuterMerge_2:{
           Value* l = getLValue(n[0]);
@@ -4585,10 +4585,10 @@ namespace{
             error("not a var[0]", n);
           }
           
-          return globalCall("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
+          return call("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
         }
         case FKEY_Uniform_0:{
-          return globalCall("double __n_uniform()");
+          return call("double __n_uniform()");
         }
         case FKEY_Uniform_2:{
           nvar f = nfunc("Add") << n[0] <<
@@ -4873,8 +4873,8 @@ namespace{
       return isVar(v->getType());
     }
     
-    Value* globalCall(const nstr& c){
-      Function* f = globalFunc(c);
+    Value* call(const nstr& c){
+      Function* f = func(c);
       
       Type* rt = f->getReturnType();
       
@@ -4886,8 +4886,8 @@ namespace{
       }
     }
     
-    Value* globalCall(const nstr& c, const ValueVec& v){
-      Function* f = globalFunc(c);
+    Value* call(const nstr& c, const ValueVec& v){
+      Function* f = func(c);
 
       Type* rt = f->getReturnType();
       
@@ -4958,9 +4958,7 @@ namespace neu{
       engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
     }
     
-    ~NPLModule_(){
-      
-    }
+    ~NPLModule_(){}
     
     void init(){
       StructType* st =
@@ -5455,13 +5453,7 @@ namespace neu{
       
       functionMap_[fs] = f;
     }
-    
-    Function* getFunction(const nstr& f){
-      auto itr = functionMap_.find(f);
-      assert(itr != functionMap_.end());
-      return itr->second;
-    }
-    
+        
     bool compile(const nvar& code){
       NPLCompiler compiler(module_, functionMap_, structMap_, *estr_);
       
