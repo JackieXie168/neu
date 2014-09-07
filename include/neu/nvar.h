@@ -4315,7 +4315,7 @@ namespace neu{
         case List:
           NERROR("expected a vector not a list");
         case Queue:
-          NERROR("expected a vector not a list");
+          NERROR("expected a vector not a queue");
         case HeadSequence:
           return h_.hs->s->begin();
         case SequenceMap:
@@ -4661,13 +4661,27 @@ namespace neu{
         case LocalObject:
         case SharedObject:
           return size_t(h_.o);
-        case Vector:
-        case List:
-        case Queue:{
+        case Vector:{
           size_t h = 0;
           size_t size = h_.v->size();
           for(size_t i = 0; i < size; ++i){
             h ^= (*h_.v)[i].hash();
+          }
+          return h + t_;
+        }
+        case List:{
+          size_t h = 0;
+          size_t size = h_.l->size();
+          for(size_t i = 0; i < size; ++i){
+            h ^= (*h_.l)[i].hash();
+          }
+          return h + t_;
+        }
+        case Queue:{
+          size_t h = 0;
+          size_t size = h_.q->size();
+          for(size_t i = 0; i < size; ++i){
+            h ^= (*h_.q)[i].hash();
           }
           return h + t_;
         }
