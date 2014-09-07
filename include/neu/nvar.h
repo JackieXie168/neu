@@ -2156,6 +2156,28 @@ namespace neu{
         case HeadSequence:
           *h_.hs->s << x;
           break;
+        case Set:{
+          Head hv;
+          hv.v = new nvec(1, x);
+          
+          Head hm;
+          hm.set = h_.set;
+          
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Set, hm));
+          t_ = SequenceMap;
+          break;
+        }
+        case HashSet:{
+          Head hv;
+          hv.v = new nvec(1, x);
+          
+          Head hm;
+          hm.hset = h_.hset;
+          
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashSet, hm));
+          t_ = SequenceMap;
+          break;
+        }
         case Map:{
           Head hv;
           hv.v = new nvec(1, x);
