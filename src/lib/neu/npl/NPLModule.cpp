@@ -4964,7 +4964,7 @@ namespace neu{
       StructType* st =
       compiler_.createStructType("nvar", {"long", "char"});
       
-      Struct *s = new Struct;
+      Struct* s = new Struct;
       s->structType = st;
       
       structMap_.insert({"nvar", s});
