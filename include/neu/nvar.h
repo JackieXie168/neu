@@ -2652,8 +2652,6 @@ namespace neu{
       switch(t_){
         case Function:
           return true;
-        case HeadMap:
-          return h_.hm->h->isFunction();
         case Reference:
           return h_.ref->v->isFunction();
         case Pointer:
