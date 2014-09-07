@@ -177,24 +177,18 @@ namespace neu{
       CFunction(const char* f)
       : f(f),
       fp(0),
-      m(0){
-        
-      }
+      m(0){}
       
       CFunction(const nstr& f)
       : f(f),
       fp(0),
-      m(0){
-        
-      }
+      m(0){}
       
       CFunction(nstr&& f, size_t n)
       : f(std::move(f)),
       v(n),
       fp(0),
-      m(0){
-        
-      }
+      m(0){}
       
       ~CFunction(){
         if(m){
@@ -219,15 +213,11 @@ namespace neu{
     
     class CHeadSequence{
     public:
-      CHeadSequence(){
-        
-      }
+      CHeadSequence(){}
       
       CHeadSequence(nvar* h, nvar* s)
       : h(h),
-      s(s){
-        
-      }
+      s(s){}
       
       CHeadSequence* clone(){
         CHeadSequence* c = new CHeadSequence(new nvar(*h), new nvar(*s));
@@ -245,15 +235,11 @@ namespace neu{
     
     class CHeadMap{
     public:
-      CHeadMap(){
-        
-      }
+      CHeadMap(){}
       
       CHeadMap(nvar* h, nvar* m)
       : h(h),
-      m(m){
-        
-      }
+      m(m){}
       
       CHeadMap* clone(){
         CHeadMap* c = new CHeadMap(new nvar(*h), new nvar(*m));
@@ -271,15 +257,11 @@ namespace neu{
     
     class CSequenceMap{
     public:
-      CSequenceMap(){
-        
-      }
+      CSequenceMap(){}
       
       CSequenceMap(nvar* s, nvar* m)
       : s(s),
-      m(m){
-        
-      }
+      m(m){}
       
       CSequenceMap* clone(){
         CSequenceMap* c = new CSequenceMap(new nvar(*s), new nvar(*m));
@@ -297,16 +279,12 @@ namespace neu{
     
     class CHeadSequenceMap{
     public:
-      CHeadSequenceMap(){
-        
-      }
+      CHeadSequenceMap(){}
       
       CHeadSequenceMap(nvar* h, nvar* s, nvar* m)
       : h(h),
       s(s),
-      m(m){
-        
-      }
+      m(m){}
       
       CHeadSequenceMap* clone(){
         CHeadSequenceMap* c =
@@ -330,9 +308,7 @@ namespace neu{
     public:
       CReference(nvar* v)
       : refCount_(1),
-      v(v){
-        
-      }
+      v(v){}
       
       ~CReference(){
         delete v;
