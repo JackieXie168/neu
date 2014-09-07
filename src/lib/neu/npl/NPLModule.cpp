@@ -4954,7 +4954,11 @@ namespace neu{
       engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
     }
     
-    ~NPLModule_(){}
+    ~NPLModule_(){
+      for(auto& itr : structMap_){
+        delete itr.second;
+      }
+    }
     
     void init(){
       StructType* st =
