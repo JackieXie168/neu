@@ -2086,6 +2086,18 @@ namespace neu{
           t_ = SequenceMap;
           break;
         }
+        case HashMap:{
+          Head hv;
+          hv.v = new nvec;
+          hv.v->emplace_back(std::move(x));
+          
+          Head hm;
+          hm.h = h_.h;
+          
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashMap, hm));
+          t_ = SequenceMap;
+          break;
+        }
         case Multimap:{
           Head hv;
           hv.v = new nvec;
@@ -2186,6 +2198,17 @@ namespace neu{
           hm.m = h_.m;
           
           h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, hm));
+          t_ = SequenceMap;
+          break;
+        }
+        case HashMap:{
+          Head hv;
+          hv.v = new nvec(1, x);
+          
+          Head hm;
+          hm.h = h_.h;
+          
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashMap, hm));
           t_ = SequenceMap;
           break;
         }
@@ -2290,6 +2313,18 @@ namespace neu{
           hm.m = h_.m;
           
           h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, hm));
+          t_ = SequenceMap;
+          break;
+        }
+        case HashMap:{
+          Head hv;
+          hv.v = new nvec;
+          hv.v->emplace_back(std::move(x));
+          
+          Head hm;
+          hm.h = h_.h;
+          
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashMap, hm));
           t_ = SequenceMap;
           break;
         }
