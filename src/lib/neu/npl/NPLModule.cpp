@@ -3773,12 +3773,10 @@ namespace{
           Value* sr;
           
           if(et->isDoubleTy()){
-            sr = builder_.CreateCall(func("double sqrt(double)"),
-                                     args.vector(), "sqrt");
+            sr = call("double sqrt(double)", args);
           }
           else{
-            sr = builder_.CreateCall(func("float sqrt(float)"),
-                                     args.vector(), "sqrt");
+            sr = call("float sqrt(float)", args);
           }
           
           Value* vd = createAlloca(vt, "vec");
@@ -3825,12 +3823,10 @@ namespace{
           args.push_back(d);
           
           if(et->isDoubleTy()){
-            return builder_.CreateCall(func("double sqrt(double)"),
-                                       args.vector(), "sqrt");
+            return call("double sqrt(double)", args);
           }
 
-          return builder_.CreateCall(func("float sqrt(float)"),
-                                     args.vector(), "sqrt");
+          return call("float sqrt(float)", args);
         }
         case FKEY_DotProduct_2:{
           Value* lv = compile(n[0]);
