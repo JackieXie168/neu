@@ -3617,7 +3617,6 @@ nvar& nvar::operator=(const nvar& x){
           h_.l = new nlist(*x.h_.l);
           return *this;
         case Queue:
-          t_ = Queue;
           *h_.q = *x.h_.q;
           return *this;
         case Function:
@@ -4649,7 +4648,7 @@ nvar& nvar::operator=(const nvar& x){
           h_.set = new nset(*x.h_.set);
           return *this;
         case HashSet:
-          t_ = Set;
+          t_ = HashSet;
           h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
@@ -6371,7 +6370,6 @@ nvar& nvar::set(const nvar& x){
           h_.l = new nlist(*x.h_.l);
           return *this;
         case Queue:
-          t_ = Queue;
           *h_.q = *x.h_.q;
           return *this;
         case Function:
@@ -19527,7 +19525,7 @@ nvar nvar::operator!=(const nvar& x) const{
       }
     case HashMap:
       switch(x.t_){
-        case Map:
+        case HashMap:
           return *h_.h != *x.h_.h;
         case Symbol:
         case Function:
@@ -21037,6 +21035,12 @@ void nvar::erase(const nvar& key){
       if(h_.f->m){
         h_.f->m->erase(key);
       }
+      break;
+    case Set:
+      h_.set->erase(key);
+      break;
+    case HashSet:
+      h_.hset->erase(key);
       break;
     case Map:
       h_.m->erase(key);
