@@ -83,9 +83,7 @@ int main(int argc, char** argv){
       }
     }
 
-    double dt = NSys::now() - t1;
-
-    cout << "inserted " << NUM_ROWS << endl;
+    cout << "inserted " << NUM_ROWS << " rows" << endl;
 
     // add some more rows
     while(i < NUM_ROWS + 10000){
@@ -200,8 +198,6 @@ int main(int argc, char** argv){
 
   // traverse the first 100 rows and output them
   table->traverseStart(q3);
-
-  double dt = NSys::now() - t1;
 
   cout << "rows is: " << rows << endl;
 
