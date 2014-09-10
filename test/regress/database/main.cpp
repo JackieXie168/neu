@@ -53,8 +53,6 @@ int main(int argc, char** argv){
 
     NRandom rng;
 
-    double t1 = NSys::now();
-    
     // add some rows to the table
     size_t i;
     nvar row;
@@ -87,7 +85,7 @@ int main(int argc, char** argv){
 
     double dt = NSys::now() - t1;
 
-    cout << "inserted " << NUM_ROWS << " rows in: " << dt << endl;
+    cout << "inserted " << NUM_ROWS << endl;
 
     // add some more rows
     while(i < NUM_ROWS + 10000){
@@ -142,8 +140,6 @@ int main(int argc, char** argv){
   NTable::Lock lock(table);
   
   nvec rows;
-
-  double t1 = NSys::now();
 
   // a query func is a lambda which receives a const nvar& r for the
   // row - it returns 0 to stop querying, 1 to move forward, -1 to
@@ -212,8 +208,6 @@ int main(int argc, char** argv){
   cout << "rows2 is: " << rows2 << endl;
 
   cout << "u1 is: " << u1 << endl;
-
-  cout << "queries took: " << dt << endl;
 
   return 0;
 }
