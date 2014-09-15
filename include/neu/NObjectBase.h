@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -67,13 +67,9 @@ namespace neu{
   class NObjectBase{
   public:
     NObjectBase()
-    : refCount_(1){
-      
-    }
+    : refCount_(1){}
     
-    virtual ~NObjectBase(){
-      
-    }
+    virtual ~NObjectBase(){}
     
     virtual void ref(){
       ++refCount_;

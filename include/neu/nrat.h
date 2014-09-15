@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -70,32 +70,21 @@ namespace neu{
   
   class nrat{
   public:
-    nrat(){
-      
-    }
+    nrat(){}
     
     nrat(const nrat& r)
-    : r_(r.r_){
-      
-    }
+    : r_(r.r_){}
     
     nrat(int numerator)
-    : r_(numerator){
-    }
+    : r_(numerator){}
     
     nrat(int64_t numerator)
-    : r_(numerator){
-      
-    }
+    : r_(numerator){}
     
     nrat(int64_t numerator, int64_t denominator)
-    : r_(numerator, denominator){
-      
-    }
+    : r_(numerator, denominator){}
     
-    ~nrat(){
-      
-    }
+    ~nrat(){}
     
     static nrat fromDouble(double f){
       int64_t sign = f < 0 ? -1 : 1;
@@ -328,7 +317,7 @@ namespace neu{
       return r_.numerator() != 0;
     }
     
-    nstr toStr(int prec) const{
+    nstr toStr(int prec=9999) const{
       std::stringstream ostr;
       
       int64_t n = numerator();
@@ -491,7 +480,7 @@ namespace neu{
   }
   
   inline std::ostream& operator<<(std::ostream& ostr, const nrat& r){
-    return ostr << r.toStr(9999);
+    return ostr << r.toStr();
   }
   
 } // end namespace neu

@@ -182,6 +182,10 @@ int main(int argc, char** argv){
   // fetch the actual row data into rows2
   table->get(r1, q2);
 
+  sort(rows2.begin(), rows2.end(), [](const nvar& a, const nvar& b){
+      return a["id"] < b["id"];
+    });
+
   size_t count = 0;
   NTable::QueryFunc q3 =
     [&](const nvar& r){

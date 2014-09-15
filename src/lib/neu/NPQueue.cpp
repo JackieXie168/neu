@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -210,9 +210,7 @@ private:
       : funcVec_(funcVec),
         queue_(queue),
         exit_(false),
-        chunk_(chunk){
-      
-    }
+        chunk_(chunk){}
     
     void begin(){
       beginSem_.release();

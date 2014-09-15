@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -65,9 +65,7 @@ namespace neu{
     
     class Func{
     public:
-      virtual ~Func(){
-        
-      }
+      virtual ~Func(){}
       
       virtual double operator()(double value) const = 0;
       
@@ -94,9 +92,7 @@ namespace neu{
     class SigmoidFunc : public Func{
     public:
       SigmoidFunc(double a)
-      : a_(a){
-        
-      }
+      : a_(a){}
       
       double operator()(double v) const{
         return 1.0 / (1.0 + std::exp(-a_ * v));
@@ -123,9 +119,7 @@ namespace neu{
     class SignumFunc : public Func{
     public:
       SignumFunc(double threshold)
-      : threshold_(threshold){
-        
-      }
+      : threshold_(threshold){}
       
       double operator()(double v) const{
         return v < threshold_ ? -1.0 : 1.0;
@@ -155,9 +149,7 @@ namespace neu{
       totalInputs_(0),
       inputsReceived_(0),
       activation_(0),
-      output_(nvar::nan()){
-        
-      }
+      output_(nvar::nan()){}
       
       Neuron(Func* activationFunc)
       : activationFunc_(activationFunc),
@@ -165,9 +157,7 @@ namespace neu{
       totalInputs_(0),
       inputsReceived_(0),
       activation_(0),
-      output_(nvar::nan()){
-        
-      }
+      output_(nvar::nan()){}
       
       Neuron()
       : activationFunc_(linearFunc),
@@ -287,9 +277,7 @@ namespace neu{
     
     class Layer{
     public:
-      Layer(){
-        
-      }
+      Layer(){}
       
       Layer(size_t size){
         for(size_t i = 0; i < size; ++i){

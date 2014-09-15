@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -65,9 +65,7 @@ namespace{
   
   class Global{
   public:
-    Global(){
-      
-    }
+    Global(){}
     
     void registerClass(NClass* c){
       const nstr& name = c->name();
@@ -83,7 +81,7 @@ namespace{
       for(auto& itr : classMap_){
         NClass* c = itr.second;
       
-        if(m.hasKey(c)){
+        if(m.has(c)){
           continue;
         }
         

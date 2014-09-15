@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -556,7 +556,7 @@ namespace neu{
       }
       
       void reach(NonTermSet& vm){
-        vm.add(this);
+        vm << this;
         reachable_ = true;
         
         for(Rule* p : rules_){
@@ -565,7 +565,7 @@ namespace neu{
       }
       
       bool canBeginWith(Elem* e, NonTermSet& ns){
-        ns.add(this);
+        ns << this;
         
         for(Rule* p : rules_){
           if(p->canBeginWith(e, ns)){
@@ -601,7 +601,7 @@ namespace neu{
       }
       
       void addFollow(Term* t){
-        followTerm_.add(t);
+        followTerm_ << t;
       }
       
       const TermSet& follow(){
@@ -609,7 +609,7 @@ namespace neu{
       }
       
       void addFollowNonTerm(NonTerm* n){
-        followNonTerm_.add(n);
+        followNonTerm_ << n;
       }
       
       void addRule(Rule* rule){
@@ -796,7 +796,7 @@ namespace neu{
             NERROR("duplicate rule: " + p->toStr());
           }
           
-          s.add(p->elems());
+          s << p->elems();
         }
       }
       
@@ -815,7 +815,7 @@ namespace neu{
           return false;
         }
         
-        first_.add(t);
+        first_ << t;
         return true;
       }
       
@@ -842,7 +842,7 @@ namespace neu{
           for(Elem* ei : elems){
             if(ei->isTerm()){
               Term* t = static_cast<Term*>(ei);
-              allTerms_.add(t);
+              allTerms_ << t;
             }
           }
         }
@@ -1617,7 +1617,7 @@ namespace neu{
           if(ei->isTerm()){
             Term* ti = static_cast<Term*>(ei);
             if(!first_.has(ti)){
-              first_.add(ti);
+              first_ << ti;
               nonTerm_->addFirst(ti);
               changed = true;
             }
@@ -1828,7 +1828,7 @@ namespace neu{
     void alphabet(TermSet& s){
       for(auto& itr : termMap_){
         Term* t = itr.second;
-        s.add(t);
+        s << t;
       }
     }
     
@@ -2348,7 +2348,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
   if(itr != tm.end()){
     prec = itr->first;
     while(itr != tm.end() && itr->first == prec){
-      ts.add(itr->second);
+      ts << itr->second;
       ++itr;
     }
   }
@@ -2369,7 +2369,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
       Rule* p = itr;
       
       if(p->normAmbig(t, n)){
-        nps.add(p);
+        nps << p;
         match = true;
         break;
       }
@@ -2381,7 +2381,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
   if(!match){
     delete n;
     for(Rule* r : rules_){
-      lps.add(r);
+      lps << r;
     }
     normAmbig(tm, lps, nv, prec);
     return;
@@ -2398,7 +2398,7 @@ void NParser_::NonTerm::normAmbig(TermPrecMap& tm,
       p->replace(this, n);
       n->addRule(p);
       pitr = rules_.erase(pitr);
-      lps.add(p);
+      lps << p;
     }
   }
   

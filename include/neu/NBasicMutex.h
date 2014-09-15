@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -62,13 +62,9 @@ namespace neu{
   
   class NBasicMutex{
   public:
-    NBasicMutex(){
-      
-    }
+    NBasicMutex(){}
     
-    ~NBasicMutex(){
-      
-    }
+    ~NBasicMutex(){}
     
     void lock(){
       mutex_.lock();

@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -70,9 +70,7 @@ namespace{
   public:
     AuthProc(NProcTask* task, NServer* server)
     : task_(task),
-    server_(server){
-      
-    }
+    server_(server){}
     
     void run(nvar& r){
       NSocket* socket = r.ptr<NSocket>();
@@ -101,9 +99,7 @@ namespace{
     AcceptProc(NProcTask* task, AuthProc* authProc, NListener& listener, int port)
     : task_(task),
     authProc_(authProc),
-    listener_(listener){
-      
-    }
+    listener_(listener){}
 
     void run(nvar& r){
       NSocket* socket = listener_.accept(_timeout);
@@ -131,9 +127,7 @@ namespace neu{
     : o_(o),
     task_(task),
     acceptProc_(0),
-    authProc_(0){
-      
-    }
+    authProc_(0){}
     
     ~NServer_(){
       if(acceptProc_){

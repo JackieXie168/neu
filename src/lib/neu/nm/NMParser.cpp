@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -107,9 +107,6 @@ namespace{
     SKEY_False,
     SKEY_E
   };
-  
-
-  
 
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
   FunctionMap _functionMap;

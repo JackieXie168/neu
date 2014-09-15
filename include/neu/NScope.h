@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -67,13 +67,9 @@ namespace neu{
     
     NScope(bool limiting=false, bool shared=false)
     : limiting_(limiting),
-    shared_(shared ? new Shared_ : 0){
-      
-    }
+    shared_(shared ? new Shared_ : 0){}
     
-    ~NScope(){
-      
-    }
+    ~NScope(){}
     
     virtual bool instanceOf(uint32_t classId) const{
       return classId == NScope::classId;

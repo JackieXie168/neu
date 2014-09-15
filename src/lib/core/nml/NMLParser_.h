@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -75,13 +75,9 @@ namespace neu{
     NMLParser_(NMLParser* o)
     : o_(o),
     estr_(&cerr),
-    metadata_(true){
-      
-    }
+    metadata_(true){}
     
-    ~NMLParser_(){
-      
-    }
+    ~NMLParser_(){}
     
     bool handleVarBuiltin(nvar& f);
     
@@ -375,7 +371,7 @@ namespace neu{
           continue;
         }
         
-        if(m.hasKey(k)){
+        if(m.has(k)){
           error(k, "duplicate case in switch");
           continue;
         }
@@ -402,7 +398,7 @@ namespace neu{
           }
           
           size_t size = f.size();
-          if(ctors.hasKey(size)){
+          if(ctors.has(size)){
             error(f, "duplicate ctor");
             continue;
           }
@@ -414,7 +410,7 @@ namespace neu{
           if(f.isFunction() && f.str() == name){
             size_t size = f.size();
             
-            if(ctors.hasKey(size)){
+            if(ctors.has(size)){
               error(f, "duplicate ctor");
               continue;
             }
@@ -508,6 +504,9 @@ namespace neu{
               case nvar::HashMap:
                 v.intoHashMap();
                 break;
+              case nvar::Multimap:
+                v.intoMultimap();
+                break;
               default:
                 assert(false);
             }
@@ -525,13 +524,22 @@ namespace neu{
               case nvar::HashSet:
                 v.intoHashSet();
                 break;
+              case nvar::Map:
+                v.intoMap();
+                break;
+              case nvar::HashMap:
+                v.intoHashMap();
+                break;
+              case nvar::Multimap:
+                v.intoMultimap();
+                break;
               default:
                 assert(false);
             }
             noMap = false;
           }
           
-          v.addKey(ii[0]);
+          v << move(ii[0]);
         }
         else{
           assert(false);

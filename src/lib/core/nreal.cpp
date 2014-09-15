@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -535,14 +535,14 @@ nreal nreal::catalan(){
   return ret;
 }
 
-#else     // lower precision version
+#else // double-precision version
 
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
 
-#include "global.h"
+#include <neu/NError.h>
 
 using namespace std;
 using namespace neu;
@@ -553,27 +553,19 @@ namespace neu{
   public:
     
     nreal_(nreal* o)
-    : o_(o){
-      
-    }
+    : o_(o){}
     
     nreal_(nreal* o, double x)
     : o_(o),
-    r_(x){
-      
-    }
+    r_(x){}
     
     nreal_(nreal* o, int64_t x)
     : o_(o),
-    r_(x){
-      
-    }
+    r_(x){}
     
     nreal_(nreal* o, int x)
     : o_(o),
-    r_(x){
-      
-    }
+    r_(x){}
     
     bool fromStr(const nstr& str){
       r_ = atof(str.c_str());
@@ -594,9 +586,7 @@ namespace neu{
       return ostr.str();
     }
     
-    void setPrecision(size_t bits){
-      
-    }
+    void setPrecision(size_t bits){}
     
     size_t defaultPrecision(){
       return 64;
@@ -697,7 +687,7 @@ nreal::nreal(){
 nreal::nreal(const char* s){
   x_ = new nreal_(this);
   if(!x_->fromStr(s)){
-    NERROR("construction from string failed: " << nstr(s));
+    NERROR("construction from string failed: " + nstr(s));
   }
 }
 
@@ -790,9 +780,7 @@ void nreal::setPrecision(size_t bits){
   x_->setPrecision(bits);
 }
 
-void nreal::setDefaultPrecision(size_t bits){
-  
-}
+void nreal::setDefaultPrecision(size_t bits){}
 
 size_t nreal::defaultPrecision(){
   return 64;
@@ -801,12 +789,12 @@ size_t nreal::defaultPrecision(){
 nreal nreal::fromStr(const nstr& str){
   nreal r;
   if(!r.x_->fromStr(str)){
-    NERROR("construction from string failed: " << str);
+    NERROR("construction from string failed: " + str);
   }
   return r;
 }
 
-mstr nreal::toStr(bool exp, int precision) const{
+nstr nreal::toStr(bool exp, int precision) const{
   return x_->toStr(exp, precision);
 }
 

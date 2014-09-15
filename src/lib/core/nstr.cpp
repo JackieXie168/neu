@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -222,7 +222,7 @@ nstr nstr::asStr(const nvar& v){
 }
 
 bool nstr::isNumeric() const{
-  return _numericRegex.match(str_);
+  return _numericRegex.match(s_);
 }
 
 nstr nstr::getB62Id(uint64_t id){

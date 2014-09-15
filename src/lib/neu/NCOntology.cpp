@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -160,7 +160,7 @@ void remapState(RenameMap& m, nvar& state){
 }
 
  void remapInOuts(RenameMap& rm, nvar& si){
-   if(si.hasKey("ins")){
+   if(si.has("ins")){
      nvar vn;
      nmap& m = si["ins"];
      for(auto& itr : m){
@@ -175,7 +175,7 @@ void remapState(RenameMap& m, nvar& state){
      si["ins"] = vn;
    }
 
-   if(si.hasKey("outs")){
+   if(si.has("outs")){
      nvar vn;
      nmap& m = si["outs"];
      for(auto& itr : m){
@@ -273,7 +273,7 @@ public:
         vv("inputUses") = 0;
         vv("outputUses") = 0;
 
-        if(!vv.hasKey("weight")){
+        if(!vv.has("weight")){
           vv("weight") = 1.0;
         }
 
@@ -297,7 +297,7 @@ public:
         vv("given") = true;
         vv("cloneOf") = pn;
 
-        if(!vv.hasKey("weight")){
+        if(!vv.has("weight")){
           vv("weight") = 1.0;
         }
 
@@ -400,7 +400,7 @@ public:
       vv("outputUses") = 1;
       vv("static") = isStatic;
 
-      if(!vv.hasKey("weight")){
+      if(!vv.has("weight")){
         vv("weight") = 1.0;
       }
 
@@ -500,7 +500,7 @@ public:
           vv("outputUses") = 1;
           vv("static") = isStatic;
 
-          if(!vv.hasKey("weight")){
+          if(!vv.has("weight")){
             vv("weight") = 1.0;
           }
 
@@ -545,7 +545,7 @@ public:
                     double unusedBias);
 
   bool addParam(const nstr& name, NConcept* param){
-    if(paramMap_.hasKey(name)){
+    if(paramMap_.has(name)){
       return false;
     }
     
@@ -753,7 +753,7 @@ public:
   }
 
   const nvar& getAttribute_(const nstr& key) const{
-    if(attributes_.hasKey(key)){
+    if(attributes_.has(key)){
       return attributes_[key];
     }
 
@@ -985,11 +985,11 @@ public:
   }
 
   bool extends(const nstr& concept){
-    return extendsMap_.hasKey(concept);
+    return extendsMap_.has(concept);
   }
 
   bool extendedBy(const nstr& concept){
-    return extendedByMap_.hasKey(concept);
+    return extendedByMap_.has(concept);
   }
 
   nvec getExtends() const{
@@ -1122,19 +1122,19 @@ public:
         usesStatic = true;
       }
 
-      if(!isStatic && !si.hasKey("ins")){
+      if(!isStatic && !si.has("ins")){
         newSeq.push_front(si);
         continue;
       }
 
       bool matched = false;
 
-      if(si.hasKey("outs")){
+      if(si.has("outs")){
         const nvar& outs = si["outs"];
         const nmap& m = outs;
 
         for(auto& itr : m){
-          if(outMap.hasKey(itr.first)){
+          if(outMap.has(itr.first)){
             matched = true;
             break;
           }
@@ -1145,7 +1145,7 @@ public:
       }
 
       if(matched){
-        if(si.hasKey("ins")){
+        if(si.has("ins")){
           const nvar& ins = si["ins"];
           const nmap& m = ins;
 
@@ -1165,7 +1165,7 @@ public:
 
       auto itr2 = vm.begin();
       while(itr2 != vm.end()){
-        if(!outMap.hasKey(itr2->first)){
+        if(!outMap.has(itr2->first)){
           vm.erase(itr2++);
         }
         else{
@@ -1348,7 +1348,7 @@ public:
 
     full = solutionMap_.size() >= maxSize_;
 
-    if(checksumMap_.hasKey(solution->checksum())){
+    if(checksumMap_.has(solution->checksum())){
       delete solution;
       return -2;
     }
@@ -1600,11 +1600,11 @@ public:
             continue;
           }
 
-          if(!conceptMap_.hasKey(ci)){
+          if(!conceptMap_.has(ci)){
             NERROR("invalid extends field '" + ci + "' on: " + ci);
           }
 
-          if(!visited.hasKey(ci)){
+          if(!visited.has(ci)){
             concept->addExtends(ci);
             front.push_back(ci);
             visited[ci] = true;
@@ -1619,7 +1619,7 @@ public:
 
       const nvar& metadata = concept->metadata();
 
-      if(!metadata.hasKey("comment")){
+      if(!metadata.has("comment")){
         NERROR("Missing data field on: " + concept->name());
       }
 
@@ -1644,7 +1644,7 @@ public:
 
       concept->setData(n);
 
-      if(!metadata.hasKey("methods")){
+      if(!metadata.has("methods")){
         NERROR("Missing methods on: " + concept->name());
       }
 
@@ -1655,7 +1655,7 @@ public:
       for(const nvar& k : keys){
         const nvar& mi = methods[k];
         
-        if(!mi.hasKey("comment")){
+        if(!mi.has("comment")){
           continue;
         }
         
@@ -1702,7 +1702,7 @@ public:
                  "' on method: " + k);
         }
 
-        if(!mi.hasKey("const")){
+        if(!mi.has("const")){
           NERROR("Missing const field "
                  "on concept: '" + concept->name() +
                  "' on method: " + k);
@@ -1714,10 +1714,10 @@ public:
 
         method->setThis(ct);
 
-        if(mi.hasKey("return")){
+        if(mi.has("return")){
           const nvar& r = mi["return"];
 
-          if(!r.hasKey("type")){
+          if(!r.has("type")){
             NERROR("Invalid return type on concept: '" +
                    concept->name() + "' on method: " + k);
           }
@@ -1751,7 +1751,7 @@ public:
                    "' on method: " + k);
           }
 
-          if(!r.hasKey("const")){
+          if(!r.has("const")){
             NERROR("Missing const field on return "
                    "on concept: '" + concept->name() +
                    "' on method: " + k);
@@ -1781,7 +1781,7 @@ public:
                    "' on method: " + k);
           }
 
-          if(!pi.hasKey("type")){
+          if(!pi.has("type")){
             NERROR("[3] invalid parameter '" + pi.str() +
                    "' on concept: '" + concept->name() +
                    "' on method: " + k);
@@ -1817,7 +1817,7 @@ public:
                    "' on method: " + k);
           }
 
-          if(!pi.hasKey("const")){
+          if(!pi.has("const")){
             NERROR("Missing const field on parameter '" +
                    pi.str() + " on concept: '" + concept->name() +
                    "' on method: " + k);
@@ -1868,11 +1868,11 @@ public:
 
     const nstr& name = keys[0];
 
-    if(conceptMap_.hasKey(name)){
+    if(conceptMap_.has(name)){
       NERROR("Found duplicate concept: " + name);
     }
 
-    if(!metadata[name].hasKey("extends")){
+    if(!metadata[name].has("extends")){
       NERROR("Missing extends field on: " + name);
     }
 
@@ -2023,7 +2023,7 @@ public:
       const nstr& from = itr.first;
       const nstr& to = itr.second;
 
-      if(cgg.hasKey(from)){
+      if(cgg.has(from)){
         cgg[from].pushBack(to);
       }
       else{
@@ -2232,7 +2232,7 @@ public:
       while(itr2 != p2.second){
         Method* m = itr2->second.first;
 
-        if(methodMap.hasKey(m)){
+        if(methodMap.has(m)){
           ++itr2;
           continue;
         }
@@ -2321,7 +2321,7 @@ public:
   }
 
   void addInput(const nstr& name, NConcept* input){
-    if(inputMap_.hasKey(name)){
+    if(inputMap_.has(name)){
       NERROR("Duplicate input: " + name);
     }
 
@@ -2344,7 +2344,7 @@ public:
   }
 
   void addOutput(const nstr& name, NConcept* output){
-    if(outputMap_.hasKey(name)){
+    if(outputMap_.has(name)){
       NERROR("Duplicate output: " + name);
     }
 
@@ -2395,7 +2395,7 @@ public:
     }
 
     for(auto& itr : outputMap_){
-      if(!inputMap_.hasKey(itr.first)){
+      if(!inputMap_.has(itr.first)){
         obj_.DefSym(itr.first, itr.second);
       }
     }
@@ -2502,12 +2502,12 @@ public:
         const nmap& om = si["outs"];
 
         for(auto& itr : om){
-          if(m.hasKey(itr.first)){
+          if(m.has(itr.first)){
             found = true;
             break;
           }
 
-          if(si.hasKey("ins")){
+          if(si.has("ins")){
             NConcept* c = 
               static_cast<NConcept*>(obj_.Get(nsym(itr.first)).obj());
 
@@ -2793,7 +2793,7 @@ int Proc::chooseOut(nvar& state, bool initial){
   
   assert(!outs.empty());
   
-  if(codeGen_->backtrack() && state.hasKey("lastChoices")){
+  if(codeGen_->backtrack() && state.has("lastChoices")){
     const nvec& lastChoices = state["lastChoices"];
     for(int i : lastChoices){
       s += 1;
@@ -3138,7 +3138,7 @@ bool Method::getParamVars(const nvar& state,
     for(auto& itr : me){
       const nstr& ei = itr.first;
 
-      if(vars.hasKey(ei)){
+      if(vars.has(ei)){
         const nvar& sp = vars[ei];
         const nmap& m = sp.map();
       
@@ -3212,7 +3212,7 @@ bool Method::getParamVars(const nvar& state,
 
     for(auto itr : me){
       const nstr& ei = itr.first;
-      if(vars.hasKey(ei)){
+      if(vars.has(ei)){
         const nvar& sp = vars[ei];
         const nmap& m = sp.map();
         
@@ -3288,7 +3288,7 @@ void Method::mapMethod(MethodParamMap& inMap,
       ConceptDef* ce = _ontology->getConceptDef(k);
       assert(ce);
       const nvar& rm = ce->concept()->getRemove();
-      if(rm.hasKey(name_)){
+      if(rm.has(name_)){
         em.erase(k);
       }
     }

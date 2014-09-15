@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -74,13 +74,9 @@ namespace neu{
     
     NMParser_(NMParser* o)
     : o_(o),
-    estr_(&cerr){
-      
-    }
+    estr_(&cerr){}
     
-    ~NMParser_(){
-      
-    }
+    ~NMParser_(){}
     
     void advance(const char* text, const nstr& tag=""){
       advance(strlen(text), tag);

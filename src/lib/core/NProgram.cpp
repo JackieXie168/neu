@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -74,7 +74,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 #include <unistd.h>
 
-#ifndef META_NO_PRECISE
+#ifndef NEU_NO_PRECISE
 
 #include <gmp.h>
 #include <mpfr.h>
@@ -205,13 +205,9 @@ namespace neu{
     }
     
     NProgram_(NProgram* o)
-    : o_(o){
-      
-    }
+    : o_(o){}
     
-    ~NProgram_(){
-      
-    }
+    ~NProgram_(){}
     
     void init(int& argc, char** argv, const nvar& args){
       NProgram::argc = argc;
@@ -265,7 +261,7 @@ namespace neu{
           continue;
         }
         
-        if(args.hasKey(k)){
+        if(args.has(k)){
           const nstr& ks = k;
           
           if(ks[0] == '_'){
@@ -445,7 +441,7 @@ namespace neu{
       for(auto& itr : _optMap){
         Opt* o = itr.second;
         
-        if(!_args.hasKey(o->key)){
+        if(!_args.has(o->key)){
           if(o->required){
             NERROR("missing option: " + o->key);
           }
@@ -468,7 +464,7 @@ namespace neu{
       
       _resetSignalHandlers();
       
-#ifndef META_NO_PRECISE
+#ifndef NEU_NO_PRECISE
       size_t precision = 256;
       
       if(precision < MPFR_PREC_MIN || precision > MPFR_PREC_MAX){
@@ -544,7 +540,7 @@ void NProgram::opt(const nstr& name,
     NERROR("empty option name");
   }
   
-  if(_optMap.hasKey(name) || (!alias.empty() && _optMap.hasKey(alias))){
+  if(_optMap.has(name) || (!alias.empty() && _optMap.has(alias))){
     NERROR("duplicate option name: " + name);
   }
 
@@ -745,7 +741,7 @@ nstr NProgram::usage(const nstr& msg){
   for(auto& itr : _optMap){
     Opt* opt = itr.second;
 
-    if(m.hasKey(opt)){
+    if(m.has(opt)){
       continue;
     }
     

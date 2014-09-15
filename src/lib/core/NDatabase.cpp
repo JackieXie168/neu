@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -1068,7 +1068,7 @@ namespace neu{
           if(r.match(p)){
             size_t pageId = nvar(p).toLong();
             
-            if(!pm.hasKey(pageId)){
+            if(!pm.has(pageId)){
               nstr fullPath = path_ + "/" + p;
               d_->safeRemove(fullPath.c_str());
             }
@@ -1385,7 +1385,7 @@ namespace neu{
         
         traverse([&](DataRecord& r){
           if(r.remap){
-            rs.add(r.value);
+            rs << r.value;
             if(r.rowId != 0){
               um.insert({r.value, RowId(r.rowId)});
             }
@@ -2119,7 +2119,7 @@ namespace neu{
         if(r.match(p)){
           size_t dataId = nvar(p).toLong();
           
-          if(!dm.hasKey(dataId)){
+          if(!dm.has(dataId)){
             nstr fullPath = dataPath_ + "/" + p;
             d_->safeRemove(fullPath);
           }
@@ -2725,7 +2725,7 @@ namespace neu{
         }
         
         if(exists_(rowId)){
-          rs.add(rowId);
+          rs << rowId;
         }
         
         return 1;
@@ -2775,7 +2775,7 @@ namespace neu{
           }
           
           if(exists_(rowId)){
-            rs.add(rowId);
+            rs << rowId;
           }
           
           return 1;

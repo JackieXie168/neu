@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -96,9 +96,7 @@ namespace{
     Server(NProcTask* task, NBroker_* broker)
     : NServer(task),
     task_(task),
-    broker_(broker){
-      
-    }
+    broker_(broker){}
     
     NCommunicator* create(){
       return new ServerProc(task(), broker_);
@@ -184,9 +182,7 @@ namespace neu{
     : o_(o),
     task_(task),
     server_(0),
-    encoder_(0){
-      
-    }
+    encoder_(0){}
     
     ~NBroker_(){
       if(server_){

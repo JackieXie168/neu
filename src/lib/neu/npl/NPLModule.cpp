@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -193,10 +193,11 @@ namespace{
     FKEY_TouchHashMap_1,
     FKEY_TouchMultimap_1,
     FKEY_Keys_1,
+    FKEY_Enumerate_1,
     FKEY_PushFront_2,
     FKEY_PopBack_1,
     FKEY_PopFront_1,
-    FKEY_HasKey_2,
+    FKEY_Has_2,
     FKEY_Insert_3,
     FKEY_Clear_1,
     FKEY_Empty_1,
@@ -310,10 +311,11 @@ namespace{
     _functionMap[{"TouchHashMap", 1}] = FKEY_TouchHashMap_1;
     _functionMap[{"TouchMultimap", 1}] = FKEY_TouchMultimap_1;
     _functionMap[{"Keys", 1}] = FKEY_Keys_1;
+    _functionMap[{"Enumerate", 1}] = FKEY_Enumerate_1;
     _functionMap[{"PushFront", 2}] = FKEY_PushFront_2;
     _functionMap[{"PopBack", 1}] = FKEY_PopBack_1;
     _functionMap[{"PopFront", 1}] = FKEY_PopFront_1;
-    _functionMap[{"HasKey", 2}] = FKEY_HasKey_2;
+    _functionMap[{"Has", 2}] = FKEY_Has_2;
     _functionMap[{"Insert", 3}] = FKEY_Insert_3;
     _functionMap[{"Clear", 1}] = FKEY_Clear_1;
     _functionMap[{"Empty", 1}] = FKEY_Empty_1;
@@ -370,7 +372,7 @@ namespace{
       }
     
       void putVar(Value* v){
-        assert(!varMap_.hasKey(v));
+        assert(!varMap_.has(v));
         varMap_[v] = true;
       }
       
@@ -399,13 +401,11 @@ namespace{
                 StructMap& structMap,
                 ostream& estr)
     : module_(module),
-      context_(module.getContext()),
-      builder_(context_),
-      estr_(&estr),
-      functionMap_(functionMap),
-      structMap_(structMap){
-
-    }
+    context_(module.getContext()),
+    builder_(context_),
+    estr_(&estr),
+    functionMap_(functionMap),
+    structMap_(structMap){}
     
     ~NPLCompiler(){}
     
@@ -743,7 +743,7 @@ namespace{
             return 0;
           }
           
-          call("void nvar::addKey(nvar*, nvar*)", {vv, k});
+          call("void nvar::add(nvar*, nvar*)", {vv, k});
         }
       }
       else if(v.hasHashSet()){
@@ -763,7 +763,7 @@ namespace{
             return 0;
           }
           
-          call("void nvar::addKey(nvar*, nvar*)", {vv, k});
+          call("void nvar::add(nvar*, nvar*)", {vv, k});
         }
       }
       else if(v.hasMap()){
@@ -1354,7 +1354,7 @@ namespace{
       if(itr == attributeMap_.end()){
         const nvar& c = currentClass();
         
-        if(c.hasKey(s)){
+        if(c.has(s)){
           const nvar& a = c[s];
 
           BasicBlock* cb = builder_.GetInsertBlock();
@@ -4178,6 +4178,19 @@ namespace{
           Value* ret = createVar("keys");
           return call("void nvar::keys(nvar*, nvar*)", {ret, l});
         }
+        case FKEY_Enumerate_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
+          if(!isVar(l)){
+            return error("not a var[0]", n);
+          }
+          
+          Value* ret = createVar("ret");
+          return call("void nvar::enumerate(nvar*, nvar*)", {ret, l});
+        }
         case FKEY_PushFront_2:{
           Value* l = getLValue(n[0]);
           if(!l){
@@ -4223,7 +4236,7 @@ namespace{
           Value* ret = createVar("popFront");
           return call("void nvar::popFront(nvar*, nvar*)", {ret, l});
         }
-        case FKEY_HasKey_2:{
+        case FKEY_Has_2:{
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -4240,7 +4253,7 @@ namespace{
           
           Value* rv = toVar(r);
           
-          return call("bool nvar::hasKey(nvar*, nvar*)", {l, rv});
+          return call("bool nvar::has(nvar*, nvar*)", {l, rv});
         }
         case FKEY_Insert_3:{
           Value* l = getLValue(n[0]);
@@ -5372,9 +5385,12 @@ namespace neu{
       
       createFunction("void nvar::keys(nvar*, nvar*)",
                      "_ZNK3neu4nvar4keysEv");
+
+      createFunction("void nvar::enumerate(nvar*, nvar*)",
+                     "_ZNK3neu4nvar4enumerateEv");
       
-      createFunction("void nvar::addKey(nvar*, nvar*)",
-                     "__ZN3neu4nvar6addKeyERKS0_");
+      createFunction("void nvar::add(nvar*, nvar*)",
+                     "_ZN3neu4nvar3addERKS0_");
       
       createFunction("void nvar::pushFront(nvar*, nvar*)",
                      "_ZN3neu4nvar9pushFrontERKS0_");
@@ -5385,8 +5401,8 @@ namespace neu{
       createFunction("void nvar::popFront(nvar*, nvar*)",
                      "_ZN3neu4nvar8popFrontEv");
       
-      createFunction("bool nvar::hasKey(nvar*, nvar*)",
-                     "_ZNK3neu4nvar6hasKeyERKS0_");
+      createFunction("bool nvar::has(nvar*, nvar*)",
+                     "_ZNK3neu4nvar3hasERKS0_");
       
       createFunction("void nvar::insert(nvar*, long, nvar*)",
                      "_ZN3neu4nvar6insertEmRKS0_");

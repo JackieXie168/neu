@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -92,9 +92,7 @@ namespace neu{
     NError_(NError* o, const NError_& error)
     : o_(o),
     msg_(error.msg_),
-    var_(error.var_){
-      
-    }
+    var_(error.var_){}
     
     const char* what() const{
       stringstream ostr;

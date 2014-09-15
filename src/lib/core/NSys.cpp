@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -77,7 +77,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #endif
 
-#include <neu/NRegex.h>
 #include <neu/NError.h>
 #include <neu/NMutex.h>
 #include <neu/global.h>
@@ -87,13 +86,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace std;
 using namespace neu;
-
-namespace{
-  
-  static NRegex _parentRegex("(.*?)[^/]*$");
-  static NRegex _extensionRegex(".*\\.([a-zA-Z0-9]+)");
-  
-} // end namespace
 
 nvar NSys::sysInfo(){
   nvar info;
@@ -209,13 +201,26 @@ nstr NSys::basename(const nstr& path){
 }
 
 nstr NSys::parentDirectory(const nstr& path){
-  nvec m;
-  if(_parentRegex.match(path, m)){
-    return m[1];
-  }
-  else{
+  size_t len = path.length();
+  
+  if(len == 0){
     return "";
   }
+  
+  size_t i = len - 1;
+  
+  while(i > 0){
+    if(path[i] == '/'){
+      return path.substr(0, i);
+    }
+    --i;
+  }
+  
+  if(path[0] == '/'){
+    return "/";
+  }
+  
+  return "";
 }
 
 bool NSys::makeDir(const nstr& path){
@@ -248,8 +253,6 @@ long NSys::processId(){
 }
 
 bool NSys::exists(const nstr& path){
-  // TODO - there is a better way to do this?
-  
   ifstream f(path.c_str());
   if(f.fail()){
     return false;
@@ -300,11 +303,24 @@ bool NSys::rename(const nstr& sourcePath, const nstr& destPath){
   return status == 0;
 }
 
-nstr NSys::fileExtension(const nstr& filePath){
-  nvec m;
+nstr NSys::fileExtension(const nstr& path){
+  size_t len = path.length();
   
-  if(_extensionRegex.match(filePath, m)){
-    return m[1];
+  if(len == 0){
+    return "";
+  }
+  
+  size_t i = len - 1;
+  
+  while(i > 0){
+    if(path[i] == '.'){
+      return path.substr(i + 1, len - i);
+    }
+    else if(path[i] == '/'){
+      return "";
+    }
+    
+    --i;
   }
   
   return "";

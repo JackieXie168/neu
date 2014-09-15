@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -127,9 +127,10 @@ namespace{
       varBuiltinMap_({"intoMultimap", 0}) = "TouchMultimap";
       varBuiltinMap_({"intoList", 0}) = "TouchList";
       varBuiltinMap_({"keys", 0}) = "Keys";
+      varBuiltinMap_({"enumerate", 0}) = "Enumerate";
       varBuiltinMap_({"pushFront", 1}) = "PushFront";
       varBuiltinMap_({"popBack", 0}) = "PopBack";
-      varBuiltinMap_({"hasKey", 1}) = "HasKey";
+      varBuiltinMap_({"has", 1}) = "Has";
       varBuiltinMap_({"insert", 2}) = "Insert";
       varBuiltinMap_({"clear", 0}) = "Clear";
       varBuiltinMap_({"empty", 0}) = "Empty";
@@ -142,7 +143,7 @@ namespace{
     }
     
     bool isReservedName(const nstr& name) const{
-      return nameMap_.hasKey(name);
+      return nameMap_.has(name);
     }
     
     const nvar& getType(const nstr& t){

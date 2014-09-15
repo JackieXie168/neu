@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -62,13 +62,9 @@ namespace neu{
   class NLib_{
   public:
     NLib_(NLib* o)
-    : o_(o){
+    : o_(o){}
 
-    }
-
-    ~NLib_(){
-
-    }
+    ~NLib_(){}
 
   private:
     NLib* o_;

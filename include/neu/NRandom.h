@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -68,12 +68,9 @@ namespace neu{
     NRandom(uint64_t seed=0)
     : uniform_(0, 1){
       rng_.seed(seed);
-      
     }
     
-    ~NRandom(){
-      
-    }
+    ~NRandom(){}
     
     void setSeed(int64_t seed){
       rng_.seed(seed);
@@ -161,7 +158,7 @@ namespace neu{
       if(b < a){
         NERROR("b < a");
       }
-      
+
       seq.intoVector();
       nvec& v = seq;
       v.reserve(b - a);

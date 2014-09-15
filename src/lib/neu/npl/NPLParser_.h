@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -74,13 +74,9 @@ namespace neu{
     
     NPLParser_(NPLParser* o)
     : o_(o),
-    estr_(&cerr){
-      
-    }
+    estr_(&cerr){}
     
-    ~NPLParser_(){
-      
-    }
+    ~NPLParser_(){}
     
     void advance(const char* text, const nstr& tag=""){
       advance(strlen(text), tag);
@@ -195,7 +191,7 @@ namespace neu{
     void addExtern(const nvar& f){
       nvar k = {f[1].sym(), f[1].size()};
       
-      if(out_.hasKey(k)){
+      if(out_.has(k)){
         error("extern exists: " + k);
         return;
       }
@@ -204,7 +200,7 @@ namespace neu{
     }
     
     void addClass(const nstr& c, nvar& cv){
-      if(out_.hasKey(c)){
+      if(out_.has(c)){
         error("class exists: " + c);
         return;
       }
@@ -215,7 +211,7 @@ namespace neu{
     void addMethod(nvar& c, nvar& f){
       nvar k = {f[1].sym(), f[1].size()};
       
-      if(c.hasKey(k)){
+      if(c.has(k)){
         error("method exists: " + k);
         return;
       }
@@ -226,7 +222,7 @@ namespace neu{
     void addAttribute(nvar& c, nvar& a){
       const nstr& k = a.str();
       
-      if(c.hasKey(k)){
+      if(c.has(k)){
         error("attribute exists: " + k);
         return;
       }
@@ -333,7 +329,7 @@ namespace neu{
     nvar sym(const nstr& s){
       nvar v;
       
-      if(defineMap_.hasKey(s)){
+      if(defineMap_.has(s)){
         v = defineMap_[s];
       }
       else{
@@ -356,7 +352,7 @@ namespace neu{
     nvar sym(const char* s){
       nvar v;
       
-      if(defineMap_.hasKey(s)){
+      if(defineMap_.has(s)){
         v = defineMap_[s];
       }
       else{
@@ -423,7 +419,7 @@ namespace neu{
           continue;
         }
         
-        if(ret.hasKey(k)){
+        if(ret.has(k)){
           error(k, "duplicate case in switch");
           continue;
         }
@@ -482,6 +478,9 @@ namespace neu{
               case nvar::HashMap:
                 v.intoHashMap();
                 break;
+              case nvar::Multimap:
+                v.intoMultimap();
+                break;
               default:
                 assert(false);
             }
@@ -499,18 +498,28 @@ namespace neu{
               case nvar::HashSet:
                 v.intoHashSet();
                 break;
+              case nvar::Map:
+                v.intoMap();
+                break;
+              case nvar::HashMap:
+                v.intoHashMap();
+                break;
+              case nvar::Multimap:
+                v.intoMultimap();
+                break;
               default:
                 assert(false);
             }
             noMap = false;
           }
           
-          v.addKey(ii[0]);
+          v << ii[0];
         }
         else{
           assert(false);
         }
       }
+
     }
     
   private:

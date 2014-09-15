@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -61,9 +61,7 @@ using namespace neu;
 
 namespace{
   
-  enum SymbolKey{
-    
-  };
+  enum SymbolKey{};
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -121,9 +119,10 @@ namespace{
     FKEY_TouchMultimap_1,
     FKEY_TouchList_1,
     FKEY_Keys_1,
+    FKEY_Enumerate_1,
     FKEY_PushFront_2,
     FKEY_PopBack_1,
-    FKEY_HasKey_2,
+    FKEY_Has_2,
     FKEY_Insert_3,
     FKEY_Clear_1,
     FKEY_Empty_1,
@@ -187,9 +186,7 @@ namespace{
   
   static FunctionMap _functionMap;
   
-  static void _initSymbolMap(){
-    
-  }
+  static void _initSymbolMap(){}
   
   static void _initFunctionMap(){
     _functionMap[{"Var", 1}] = FKEY_Var_1;
@@ -247,9 +244,10 @@ namespace{
     _functionMap[{"TouchMultimap", 1}] = FKEY_TouchMultimap_1;
     _functionMap[{"TouchList", 1}] = FKEY_TouchList_1;
     _functionMap[{"Keys", 1}] = FKEY_Keys_1;
+    _functionMap[{"Enumerate", 1}] = FKEY_Enumerate_1;
     _functionMap[{"PushFront", 2}] = FKEY_PushFront_2;
     _functionMap[{"PopBack", 1}] = FKEY_PopBack_1;
-    _functionMap[{"HasKey", 2}] = FKEY_HasKey_2;
+    _functionMap[{"Has", 2}] = FKEY_Has_2;
     _functionMap[{"Insert", 3}] = FKEY_Insert_3;
     _functionMap[{"Clear", 1}] = FKEY_Clear_1;
     _functionMap[{"Empty", 1}] = FKEY_Empty_1;
@@ -322,13 +320,9 @@ namespace neu{
   class NMLGenerator_{
   public:
     NMLGenerator_(NMLGenerator* o)
-    : o_(o){
-      
-    }
+    : o_(o){}
     
-    ~NMLGenerator_(){
-      
-    }
+    ~NMLGenerator_(){}
     
     void generate(ostream& ostr, const nvar& v){
       emitStatement(ostr, v, "");
@@ -426,7 +420,7 @@ namespace neu{
           nstr idt = indent;
           idt += "  ";
           
-          if(c.hasKey("ctors")){
+          if(c.has("ctors")){
             const nmap& m = c["ctors"];
             for(auto& itr : m){
               const nvar& ctor = itr.second;
@@ -643,9 +637,10 @@ namespace neu{
         case FKEY_TouchMultimap_1:
         case FKEY_TouchList_1:
         case FKEY_Keys_1:
+        case FKEY_Enumerate_1:
         case FKEY_PushFront_2:
         case FKEY_PopBack_1:
-        case FKEY_HasKey_2:
+        case FKEY_Has_2:
         case FKEY_Insert_3:
         case FKEY_Clear_1:
         case FKEY_Empty_1:

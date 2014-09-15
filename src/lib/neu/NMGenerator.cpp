@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -435,13 +435,9 @@ namespace neu{
   public:
     NMGenerator_(NMGenerator* o, NMObject* obj)
     : o_(o),
-    obj_(obj){
-      
-    }
+    obj_(obj){}
     
-    ~NMGenerator_(){
-      
-    }
+    ~NMGenerator_(){}
     
     void generate(ostream& ostr, const nvar& v){
       emitExpression(ostr, v);
@@ -504,9 +500,9 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       ostr << op;
-      emitExpression(ostr, n[1], "", p);
+      emitExpression(ostr, n[1], p);
       
       if(p > prec){
         ostr << ")";
@@ -525,7 +521,7 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       
       if(p > prec){
         ostr << ")";
@@ -542,7 +538,7 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       
       if(p > prec){
         ostr << ")";
@@ -612,7 +608,6 @@ namespace neu{
     
     void emitExpression(ostream& ostr,
                         const nvar& n,
-                        const nstr& indent="",
                         int prec=100){
       switch(n.type()){
         case nvar::False:
@@ -688,7 +683,7 @@ namespace neu{
                 ostr << p;
               }
               else{
-                emitExpression(ostr, p, indent);
+                emitExpression(ostr, p);
               }
               
               return;

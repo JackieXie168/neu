@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -64,9 +64,7 @@ namespace neu{
     typedef std::thread::id id;
     
     NThread()
-    : thread_(0){
-      
-    }
+    : thread_(0){}
     
     ~NThread(){
       if(thread_){

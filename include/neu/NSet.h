@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -389,6 +389,16 @@ namespace neu{
     
     bool has(const key_type& x) const{
       return s_.find(x) != s_.end();
+    }
+    
+    NSet& operator<<(const key_type& x){
+      s_.insert(x);
+      return *this;
+    }
+    
+    NSet& operator<<(key_type&& x){
+      s_.emplace(std::move(x));
+      return *this;
     }
     
   private:

@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -79,9 +79,7 @@ namespace{
   class CommandPool : public NPool<NCommand>{
   public:
     CommandPool()
-    : NPool(2){
-      
-    }
+    : NPool(2){}
     
     NCommand* init(){
       NCommand* cmd =
@@ -109,9 +107,7 @@ namespace{
   
   class Class : public NClass{
   public:
-    Class() : NClass("neu::NMObject"){
-      
-    }
+    Class() : NClass("neu::NMObject"){}
     
     NObjectBase* construct(const nvar& f){
       switch(f.size()){
@@ -252,7 +248,7 @@ namespace neu{
 } // end namespace neu
 
 FuncMap::FuncMap(){
-  _processFunc = [](void* o, const nvar& v) -> nvar{
+  _processFunc = [](void* o, nvec& v) -> nvar{
     return NMObject_::obj(o)->process_(v);
   };
 }

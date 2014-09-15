@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -63,9 +63,7 @@ namespace neu{
   class NServerProc : public NCommunicator, public NProc{
   public:
     NServerProc(NProcTask* task)
-    : NCommunicator(task){
-      
-    }
+    : NCommunicator(task){}
     
     NProcTask* task(){
       return NCommunicator::task();

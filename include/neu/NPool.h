@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -65,9 +65,7 @@ namespace neu{
   class NPool{
   public:
     NPool(size_t maxSize)
-    : sem_(maxSize, maxSize){
-      
-    }
+    : sem_(maxSize, maxSize){}
     
     virtual ~NPool(){
       clear();

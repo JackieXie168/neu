@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -69,9 +69,7 @@ using namespace neu;
 class Program : public NProgram{
 public:
   Program(int argc, char** argv)
-  : NProgram(argc, argv){
-    
-  }
+  : NProgram(argc, argv){}
   
   void handleSignal(int signal, bool fatal){
     if(fatal){
@@ -85,9 +83,7 @@ class Parser : public NMLParser{
 public:
   Parser()
  : done_(false),
-  first_(true){
-
-  }
+  first_(true){}
 
   void reset(){
     first_ = true;
@@ -129,6 +125,10 @@ int main(int argc, char** argv){
 
   Program::opt("show", "s", false, "Show N input/output");  
 
+  Program::opt("strict", "", true, "Interpret in strict mode"); 
+
+  Program::opt("exact", "", false, "Perform math in exact mode"); 
+
   Program::opt("history", "", 100, "Number of lines to keep in history"); 
 
   Program program(argc, argv);
@@ -142,7 +142,15 @@ int main(int argc, char** argv){
 
   bool show = args["show"];
 
-  NObject* o = args["math"] ? new NMObject : new NObject;
+  NObject* o;
+  if(args["math"]){
+    o = new NMObject;
+  }
+  else{
+    o = new NObject;
+    o->setStrict(args["strict"]);
+    o->setExact(args["exact"]);
+  }
 
   Parser parser;
   NMLGenerator generator;
@@ -174,7 +182,7 @@ int main(int argc, char** argv){
           cout << ">> " << r << endl;
         }
 
-        if(r != none){
+        if(r.some()){
           generator.generate(cout, r);
           cout << endl;
         }

@@ -1,6 +1,10 @@
 # path to LLVM 3.5 install directory
 export LLVM_DIR = $(HOME)/llvm-3.5.0/build-release
 
+# uncomment to disable precise mode
+# (building nreal and libneu_core with GMP and MPFR libraries)
+# export NO_PRECISE = 1
+
 # C++ compiler
 export CXX = c++
 

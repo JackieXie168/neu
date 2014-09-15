@@ -13,8 +13,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -118,6 +118,9 @@ strings: strings STRING_LITERAL {
 
 expr: expr_num {
   $$ = move($1);
+}
+| '(' expr ')' {
+  $$ = $2;
 }
 | IDENTIFIER {
   $$ = PS->sym($1);
@@ -280,75 +283,50 @@ expr: expr_num {
   $$.setHead($4);
   PS->addItems(nvar::Vector, nvar::Multimap, $$, $6);
 }
-| '(' exprs ')' {
-  if($2.size() == 1){
-    $$ = move($2[0][0]);
-  }
-  else{
-    $$ = undef;
-    PS->addItems(nvar::List, nvar::Map, $$, $2);
-  }
-}
-| '(' exprs ',' ')' {
+| '`' '[' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::Map, $$, $2);
+  PS->addItems(nvar::List, nvar::Map, $$, $3);
 }
-| '(' ':' expr ',' exprs ')' {
-  $$ = undef;
-  $$.setHead($3);
-  PS->addItems(nvar::List, nvar::Map, $$, $5);
-}
-| '(' '|' exprs ')' {
-  $$ = undef;
-  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
-}
-| '(' '|' exprs ',' ')' {
-  $$ = undef;
-  PS->addItems(nvar::List, nvar::Multimap, $$, $3);
-}
-| '(' '|' ':' expr ',' exprs ')' {
+| '`' '[' ':' expr ',' exprs ']' {
   $$ = undef;
   $$.setHead($4);
-  PS->addItems(nvar::List, nvar::Multimap, $$, $6);
+  PS->addItems(nvar::List, nvar::Map, $$, $6);
 }
-| '(' '%' exprs ')' {
+| '`' '[' '|' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::Set, $$, $3);
+  PS->addItems(nvar::List, nvar::Multimap, $$, $4);
 }
-| '(' '%' exprs ',' ')' {
+| '`' '[' '|' ':' expr ',' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::Set, $$, $3);
+  $$.setHead($5);
+  PS->addItems(nvar::List, nvar::Multimap, $$, $7);
 }
-| '(' '%' ':' expr ',' exprs ')' {
+| '`' '[' '%' exprs ']' {
   $$ = undef;
-  $$.setHead($4);
-  PS->addItems(nvar::List, nvar::Set, $$, $6);
+  PS->addItems(nvar::List, nvar::Set, $$, $4);
 }
-| '(' '^' exprs ')' {
+| '`' '[' '%' ':' expr ',' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+  $$.setHead($5);
+  PS->addItems(nvar::List, nvar::Set, $$, $7);
 }
-| '(' '^' exprs ',' ')' {
+| '`' '[' '^' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::HashSet, $$, $3);
+  PS->addItems(nvar::List, nvar::HashSet, $$, $4);
 }
-| '(' '^' ':' expr ',' exprs ')' {
+| '`' '[' '^' ':' expr ',' exprs ']' {
   $$ = undef;
-  $$.setHead($4);
-  PS->addItems(nvar::List, nvar::HashSet, $$, $6);
+  $$.setHead($5);
+  PS->addItems(nvar::List, nvar::HashSet, $$, $7);
 }
-| '(' '=' exprs ')' {
+| '`' '[' '=' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
+  PS->addItems(nvar::List, nvar::HashMap, $$, $4);
 }
-| '(' '=' exprs ',' ')' {
+| '`' '[' '=' ':' expr ',' exprs ']' {
   $$ = undef;
-  PS->addItems(nvar::List, nvar::HashMap, $$, $3);
-}
-| '(' '=' ':' expr ',' exprs ')' {
-  $$ = undef;
-  $$.setHead($4);
-  PS->addItems(nvar::List, nvar::HashMap, $$, $6);
+  $$.setHead($5);
+  PS->addItems(nvar::List, nvar::HashMap, $$, $7);
 }
 | '@' '[' exprs ']' {
   $$ = undef;
@@ -496,6 +474,10 @@ stmt: expr end {
 | KW_FOR '(' stmt stmt expr ')' block {
   $7.str() = "ScopedBlock";
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
+}
+| KW_FOR '(' IDENTIFIER ':' expr ')' block {
+  $7.str() = "ScopedBlock";
+  $$ = PS->func("ForEach") << PS->sym($3) << move($5) << move($7);
 }
 | KW_SWITCH '(' expr ')' '{' case_stmts '}' {
   PS->createSwitch($$, $3, $6);

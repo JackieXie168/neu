@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -69,9 +69,7 @@ namespace neu{
   public:
     NListener()
       : port_(-1),
-    listenBackLog_(1000){
-      
-    }
+    listenBackLog_(1000){}
 
     ~NListener(){
       close();

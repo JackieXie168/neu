@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -257,11 +257,13 @@ namespace neu{
     
     nvar Keys(const nvar& v1);
     
+    nvar Enumerate(const nvar& v1);
+    
     nvar PushFront(const nvar& v1, const nvar& v2);
     
     nvar PopBack(const nvar& v1);
     
-    nvar HasKey(const nvar& v1, const nvar& v2);
+    nvar Has(const nvar& v1, const nvar& v2);
     
     nvar Insert(const nvar& v1, const nvar& v2, const nvar& v3);
     
@@ -284,6 +286,8 @@ namespace neu{
     nvar If(const nvar& v1, const nvar& v2, const nvar& v3);
     
     nvar For(const nvar& v1, const nvar& v2, const nvar& v3, const nvar& v4);
+
+    nvar ForEach(const nvar& v1, const nvar& v2, const nvar& v3);
     
     nvar While(const nvar& v1, const nvar& v2);
     

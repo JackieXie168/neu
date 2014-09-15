@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -86,6 +86,7 @@ namespace neu{
   static const uint8_t COMPRESS_FLAG = 0x01;
 
   static const uint32_t _vid = 2014090713;
+  
 } // end namespace neu
 
 namespace{
@@ -246,7 +247,7 @@ namespace{
 
 } // end namespace  
 
-void nvar::streamOutput_(ostream& ostr, bool concise) const{
+void nvar::streamOutput_(ostream& ostr) const{
   switch(t_){
     case None:
       ostr << "none";
@@ -293,21 +294,21 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case Vector:{
       ostr << "[";
       bool first = true;
-      streamOutputSequence_(ostr, *h_.v, first, concise);
+      streamOutputSequence_(ostr, *h_.v, first);
       ostr << "]";
       break;
     }
     case List:{
-      ostr << "(";
+      ostr << "`[";
       bool first = true;
-      streamOutputSequence_(ostr, *h_.l, first, concise);
-      ostr << ")";
+      streamOutputSequence_(ostr, *h_.l, first);
+      ostr << "]";
       break;
     }
     case Queue:{
       ostr << "@[";
       bool first = true;
-      streamOutputSequence_(ostr, *h_.q, first, concise);
+      streamOutputSequence_(ostr, *h_.q, first);
       ostr << "]";
       break;
     }
@@ -323,11 +324,11 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
         else{
           ostr << ",";
         }
-        a.streamOutput_(ostr, concise);
+        a.streamOutput_(ostr);
       }
       
       if(h_.f->m){
-        streamOutputMap_(ostr, *h_.f->m, first, concise);
+        streamOutputMap_(ostr, *h_.f->m, first);
       }
       
       ostr << ")";
@@ -335,24 +336,24 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     }
     case HeadSequence:{
       stringstream sstr;
-      h_.hs->h->streamOutput_(sstr, concise);
+      h_.hs->h->streamOutput_(sstr);
       
       bool first = true;
       
       switch(h_.hs->s->t_){
         case Vector:
           ostr << "[:" << sstr.str() << ",";
-          streamOutputSequence_(ostr, *h_.hs->s->h_.v, first, concise);
+          streamOutputSequence_(ostr, *h_.hs->s->h_.v, first);
           ostr << "]";
           break;
         case List:
-          ostr << "(:" << sstr.str() << ",";
-          streamOutputSequence_(ostr, *h_.hs->s->h_.l, first, concise);
-          ostr << ")";
+          ostr << "`[:" << sstr.str() << ",";
+          streamOutputSequence_(ostr, *h_.hs->s->h_.l, first);
+          ostr << "]";
           break;
         case Queue:
           ostr << "@[:" << sstr.str() << ",";
-          streamOutputSequence_(ostr, *h_.hs->s->h_.q, first, concise);
+          streamOutputSequence_(ostr, *h_.hs->s->h_.q, first);
           ostr << "]";
           break;
         default:
@@ -363,7 +364,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case Set:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputSet_(sstr, *h_.set, first, concise);
+      bool found = streamOutputSet_(sstr, *h_.set, first);
       if(found){
         ostr << "[% ";
         ostr << sstr.str();
@@ -377,7 +378,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case HashSet:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputSet_(sstr, *h_.hset, first, concise);
+      bool found = streamOutputSet_(sstr, *h_.hset, first);
       if(found){
         ostr << "[^ ";
         ostr << sstr.str();
@@ -391,7 +392,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case Map:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputMap_(sstr, *h_.m, first, concise);
+      bool found = streamOutputMap_(sstr, *h_.m, first);
       if(found){
         ostr << "[";
         ostr << sstr.str();
@@ -405,7 +406,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case HashMap:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputMap_(sstr, *h_.h, first, concise);
+      bool found = streamOutputMap_(sstr, *h_.h, first);
       if(found){
         ostr << "[= ";
         ostr << sstr.str();
@@ -419,9 +420,9 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     case Multimap:{
       stringstream sstr;
       bool first = true;
-      bool found = streamOutputMap_(sstr, *h_.mm, first, concise);
+      bool found = streamOutputMap_(sstr, *h_.mm, first);
       if(found){
-        ostr << "[|";
+        ostr << "[| ";
         ostr << sstr.str();
         ostr << "]";
       }
@@ -432,7 +433,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     }
     case HeadMap:{
       stringstream hstr;
-      h_.hm->h->streamOutput_(hstr, concise);
+      h_.hm->h->streamOutput_(hstr);
       
       stringstream sstr;
       
@@ -440,7 +441,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       
       switch(h_.hm->m->t_){
         case Set:
-          if(streamOutputSet_(sstr, *h_.hm->m->h_.set, first, concise)){
+          if(streamOutputSet_(sstr, *h_.hm->m->h_.set, first)){
             ostr << "[%:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
@@ -448,7 +449,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           }
           break;
         case HashSet:
-          if(streamOutputSet_(sstr, *h_.hm->m->h_.hset, first, concise)){
+          if(streamOutputSet_(sstr, *h_.hm->m->h_.hset, first)){
             ostr << "[^:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
@@ -456,7 +457,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           }
           break;
         case Map:
-          if(streamOutputMap_(sstr, *h_.hm->m->h_.m, first, concise)){
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.m, first)){
             ostr << "[:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
@@ -464,7 +465,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           }
           break;
         case HashMap:
-          if(streamOutputMap_(sstr, *h_.hm->m->h_.h, first, concise)){
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.h, first)){
             ostr << "[=:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
@@ -472,7 +473,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           }
           break;
         case Multimap:
-          if(streamOutputMap_(sstr, *h_.hm->m->h_.mm, first, concise)){
+          if(streamOutputMap_(sstr, *h_.hm->m->h_.mm, first)){
             ostr << "[|:" << hstr.str() << ", " << sstr.str() << "]";
           }
           else{
@@ -507,24 +508,20 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           assert(false && "invalid case");
       }
       
-      nstr end;
       bool first = true;
       
       switch(h_.sm->s->t_){
         case Queue:
           ostr <<  "@[" << m;
-          end = "]";
-          streamOutputSequence_(ostr, *h_.sm->s->h_.q, first, concise);
+          streamOutputSequence_(ostr, *h_.sm->s->h_.q, first);
           break;
         case Vector:
           ostr << "[" << m;
-          end = "]";
-          streamOutputSequence_(ostr, *h_.sm->s->h_.v, first, concise);
+          streamOutputSequence_(ostr, *h_.sm->s->h_.v, first);
           break;
         case List:
-          ostr << "(" << m;
-          end = ")";
-          streamOutputSequence_(ostr, *h_.sm->s->h_.l, first, concise);
+          ostr << "`[" << m;
+          streamOutputSequence_(ostr, *h_.sm->s->h_.l, first);
           break;
         default:
           assert(false && "invalid case");
@@ -532,31 +529,31 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
 
       switch(h_.sm->m->t_){
         case Set:
-          streamOutputSet_(ostr, *h_.sm->m->h_.set, first, concise);
+          streamOutputSet_(ostr, *h_.sm->m->h_.set, first);
           break;
         case HashSet:
-          streamOutputSet_(ostr, *h_.sm->m->h_.hset, first, concise);
+          streamOutputSet_(ostr, *h_.sm->m->h_.hset, first);
           break;
         case Map:
-          streamOutputMap_(ostr, *h_.sm->m->h_.m, first, concise);
+          streamOutputMap_(ostr, *h_.sm->m->h_.m, first);
           break;
         case HashMap:
-          streamOutputMap_(ostr, *h_.sm->m->h_.h, first, concise);
+          streamOutputMap_(ostr, *h_.sm->m->h_.h, first);
           break;
         case Multimap:
-          streamOutputMap_(ostr, *h_.sm->m->h_.mm, first, concise);
+          streamOutputMap_(ostr, *h_.sm->m->h_.mm, first);
           break;
         default:
           assert(false && "invalid case");
       }
 
-      ostr << end;
+      ostr << "]";
       
       break;
     }
     case HeadSequenceMap:{
       stringstream hstr;
-      h_.hm->h->streamOutput_(hstr, concise);
+      h_.hsm->h->streamOutput_(hstr);
       
       nstr m;
       
@@ -576,61 +573,57 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           m = "=";
           break;
         default:
-          assert(false && "invalid case");
+          assert(false);
       }
       
-      nstr end;
       bool first = true;
       
       switch(h_.hsm->s->t_){
-        case Queue:
-          ostr <<  "@[" << m << ":" << hstr.str() << ",";
-          end = "]";
-          streamOutputSequence_(ostr, *h_.hsm->s->h_.q, first, concise);
-          break;
         case Vector:
           ostr << "[" << m << ":" << hstr.str() << ",";
-          end = "]";
-          streamOutputSequence_(ostr, *h_.hsm->s->h_.v, first, concise);
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.v, first);
           break;
         case List:
-          ostr << "(" << m << ":" << hstr.str() << ",";
-          end = ")";
-          streamOutputSequence_(ostr, *h_.hsm->s->h_.l, first, concise);
+          ostr << "`[" << m << ":" << hstr.str() << ",";
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.l, first);
+          break;
+        case Queue:
+          ostr <<  "@[" << m << ":" << hstr.str() << ",";
+          streamOutputSequence_(ostr, *h_.hsm->s->h_.q, first);
           break;
         default:
-          assert(false && "invalid case");
+          assert(false);
       }
       
       switch(h_.hsm->m->t_){
         case Set:
-          streamOutputSet_(ostr, *h_.hsm->m->h_.set, first, concise);
+          streamOutputSet_(ostr, *h_.hsm->m->h_.set, first);
           break;
         case HashSet:
-          streamOutputSet_(ostr, *h_.hsm->m->h_.hset, first, concise);
+          streamOutputSet_(ostr, *h_.hsm->m->h_.hset, first);
           break;
         case Map:
-          streamOutputMap_(ostr, *h_.hsm->m->h_.m, first, concise);
+          streamOutputMap_(ostr, *h_.hsm->m->h_.m, first);
           break;
         case HashMap:
-          streamOutputMap_(ostr, *h_.hsm->m->h_.h, first, concise);
+          streamOutputMap_(ostr, *h_.hsm->m->h_.h, first);
           break;
         case Multimap:
-          streamOutputMap_(ostr, *h_.hsm->m->h_.mm, first, concise);
+          streamOutputMap_(ostr, *h_.hsm->m->h_.mm, first);
           break;
         default:
           assert(false && "invalid case");
       }
       
-      ostr << end;
+      ostr << "]";
       
       break;
     }
     case Reference:
-      h_.ref->v->streamOutput_(ostr, concise);
+      h_.ref->v->streamOutput_(ostr);
       break;
     case Pointer:
-      h_.vp->streamOutput_(ostr, concise);
+      h_.vp->streamOutput_(ostr);
       break;
   }
 }
@@ -695,7 +688,7 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       v.reserve(size);
       
       for(size_t i = 0; i < size; ++i){
-        v.emplace_back(nvar(xv[i], Copy));
+        v.emplace_back(move(nvar(xv[i], Copy)));
       }
       
       break;
@@ -705,8 +698,8 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       nlist& l = *h_.l;
       const nlist& xl = *x.h_.l;
       
-      for(auto& itr : xl){
-        l.emplace_back(nvar(itr, Copy));
+      for(const nvar& vi : xl){
+        l.emplace_back(move(nvar(vi, Copy)));
       }
       
       break;
@@ -719,7 +712,7 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       size_t size = xq.size();
       
       for(size_t i = 0; i < size; ++i){
-        q.emplace_back(nvar(xq[i], Copy));
+        q.emplace_back(move(nvar(xq[i], Copy)));
       }
       
       break;
@@ -733,7 +726,7 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       v.reserve(size);
       
       for(size_t i = 0; i < size; ++i){
-        v.emplace_back(nvar(xv[i], Copy));
+        v.emplace_back(move(nvar(xv[i], Copy)));
       }
       
       if(x.h_.f->m){
@@ -759,8 +752,8 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       nset& s = *h_.set;
       const nset& xs = *x.h_.set;
       
-      for(auto& itr : xs){
-        s.emplace(nvar(*itr, Copy));
+      for(const nvar& vi : xs){
+        s.emplace(nvar(vi, Copy));
       }
       
       break;
@@ -770,8 +763,8 @@ nvar::nvar(const nvar& x, const CopyFlag*)
       nhset& s = *h_.hset;
       const nhset& xs = *x.h_.hset;
       
-      for(auto& itr : xs){
-        s.emplace(nvar(*itr, Copy));
+      for(const nvar& vi : xs){
+        s.emplace(nvar(vi, Copy));
       }
       
       break;
@@ -940,7 +933,7 @@ bool nvar::toBool() const{
     case Reference:
       return h_.ref->v->toBool();
     case Pointer:
-      return h_.vp;
+      return h_.vp->toBool();
     default:
       return false;
   }
@@ -1109,7 +1102,7 @@ void nvar::pushBack(const nvar& x){
       hv.v = new nvec(1, x);
       
       CHeadMap* hm = h_.hm;
-      h_.hsm = new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+      h_.hsm = new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
       delete hm;
       t_ = HeadSequenceMap;
       break;
@@ -1218,7 +1211,7 @@ void nvar::pushFront(const nvar& x){
       hv.v = new nvec(1, x);
       
       CHeadMap* hm = h_.hm;
-      h_.hsm = new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+      h_.hsm = new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
       delete hm;
       t_ = HeadSequenceMap;
       break;
@@ -1295,30 +1288,30 @@ nvar nvar::popFront(){
   }
 }
 
-bool nvar::hasKey(const nvar& key) const{
+bool nvar::has(const nvar& key) const{
   switch(t_){
     case Function:
-      return h_.f->m && h_.f->m->hasKey(key);
+      return h_.f->m && h_.f->m->has(key);
     case Set:
       return h_.set->has(key);
     case HashSet:
       return h_.hset->has(key);
     case Map:
-      return h_.m->hasKey(key);
+      return h_.m->has(key);
     case HashMap:
-      return h_.h->hasKey(key);
+      return h_.h->has(key);
     case Multimap:
       return h_.mm->count(key) > 0;
     case HeadMap:
-      return h_.hm->m->hasKey(key);
+      return h_.hm->m->has(key);
     case SequenceMap:
-      return h_.sm->m->hasKey(key);
+      return h_.sm->m->has(key);
     case HeadSequenceMap:
-      return h_.hsm->m->hasKey(key);
+      return h_.hsm->m->has(key);
     case Reference:
-      return h_.ref->v->hasKey(key);
+      return h_.ref->v->has(key);
     case Pointer:
-      return h_.vp->hasKey(key);
+      return h_.vp->has(key);
     default:
       return false;
   }
@@ -1327,15 +1320,15 @@ bool nvar::hasKey(const nvar& key) const{
 size_t nvar::numKeys(const nvar& key){
   switch(t_){
     case Function:
-      return h_.f->m && h_.f->m->hasKey(key) ? 1 : 0;
+      return h_.f->m && h_.f->m->has(key) ? 1 : 0;
     case Set:
       return h_.set->has(key) ? 1 : 0;
     case HashSet:
       return h_.hset->has(key) ? 1 : 0;
     case Map:
-      return h_.m->hasKey(key) ? 1 : 0;
+      return h_.m->has(key) ? 1 : 0;
     case HashMap:
-      return h_.h->hasKey(key) ? 1 : 0;
+      return h_.h->has(key) ? 1 : 0;
     case Multimap:
       return h_.mm->count(key);
     case HeadMap:
@@ -1640,6 +1633,8 @@ nvar& nvar::operator=(const char* x){
       h_.s = new nstr(x);
       return *this;
     case String:
+      *h_.s = x;
+      return *this;
     case Binary:
     case Symbol:
       t_ = String;
@@ -1736,71 +1731,71 @@ nvar& nvar::operator=(void* p){
   switch(t_){
     case Rational:
       delete h_.r;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Real:
       delete h_.x;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case String:
     case Binary:
     case Symbol:
       delete h_.s;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Vector:
       delete h_.v;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case List:
       delete h_.l;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Queue:
       delete h_.q;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Function:
       delete h_.f;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Set:
       delete h_.set;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case HashSet:
       delete h_.hset;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Map:
       delete h_.m;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case HashMap:
       delete h_.h;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Multimap:
       delete h_.mm;
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case Reference:
       if(h_.ref->deref()){
         delete h_.ref;
       }
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
     case HeadSequence:
@@ -1811,6 +1806,9 @@ nvar& nvar::operator=(void* p){
       h_.hm->dealloc();
       delete h_.hm;
       break;
+    case RawPointer:
+      h_.p = p;
+      return *this;
     case LocalObject:
       delete h_.o;
       break;
@@ -1828,12 +1826,12 @@ nvar& nvar::operator=(void* p){
       delete h_.hsm;
       break;
     default:
-      t_ = Pointer;
+      t_ = RawPointer;
       h_.p = p;
       return *this;
   }
 
-  t_ = Pointer;
+  t_ = RawPointer;
   h_.p = p;
   return *this;
 }
@@ -2919,6 +2917,7 @@ nvar& nvar::operator=(const nvar& x){
         case String:
         case Binary:
         case Symbol:
+          t_ = x.t_;
           *h_.s = *x.h_.s;
           return *this;
         case LocalObject:
@@ -3744,8 +3743,7 @@ nvar& nvar::operator=(const nvar& x){
           h_.q = new nqueue(*x.h_.q);
           return *this;
         case Function:
-          h_.f->f = x.h_.f->f;
-          h_.f->v = x.h_.f->v;
+          h_.f->set(x.h_.f);
           return *this;
         case HeadSequence:
           delete h_.f;
@@ -4249,7 +4247,7 @@ nvar& nvar::operator=(const nvar& x){
           return *this;
         case HashSet:
           delete h_.h;
-          t_ = Set;
+          t_ = HashSet;
           h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
@@ -5672,6 +5670,7 @@ nvar& nvar::set(const nvar& x){
         case String:
         case Binary:
         case Symbol:
+          t_ = x.t_;
           *h_.s = *x.h_.s;
           return *this;
         case LocalObject:
@@ -6879,7 +6878,7 @@ nvar& nvar::set(const nvar& x){
           return *this;
         case HashSet:
           delete h_.h;
-          t_ = Set;
+          t_ = HashSet;
           h_.hset = new nhset(*x.h_.hset);
           return *this;
         case Map:
@@ -7218,9 +7217,6 @@ nvar& nvar::operator+=(nlonglong x){
     case Real:
       *h_.x += x;
       return *this;
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Symbol:
     case Function:{
       CFunction* f = new CFunction("Add");
@@ -7234,16 +7230,16 @@ nvar& nvar::operator+=(nlonglong x){
       *h_.v += x;
       return *this;
     case HeadSequence:
-      *h_.hs->s += x;
+      h_.hs->s->vec() += x;
       return *this;
     case HeadMap:
       *h_.hm->h += x;
       return *this;
     case SequenceMap:
-      *h_.sm->s += x;
+      h_.sm->s->vec() += x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s += x;
+      h_.hsm->s->vec() += x;
       return *this;
     case Reference:
       *h_.ref->v += x;
@@ -7296,16 +7292,16 @@ nvar& nvar::operator+=(double x){
       *h_.v += x;
       return *this;
     case HeadSequence:
-      *h_.hs->s += x;
+      h_.hs->s->vec() += x;
       return *this;
     case HeadMap:
       *h_.hm->h += x;
       return *this;
     case SequenceMap:
-      *h_.sm->s += x;
+      h_.sm->s->vec() += x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s += x;
+      h_.hsm->s->vec() += x;
       return *this;
     case Reference:
       *h_.ref->v += x;
@@ -7374,7 +7370,7 @@ nvar& nvar::operator+=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v += *x.h_.hs->s;
+          *v += x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7383,14 +7379,14 @@ nvar& nvar::operator+=(const nvar& x){
           return *this += *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v += *x.h_.sm->s;
+          *v += x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v += *x.h_.hsm->s;
+          *v += x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7439,12 +7435,14 @@ nvar& nvar::operator+=(const nvar& x){
           CFunction* f = new CFunction("Add");
           f->v.push_back(*h_.r);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.r;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.r);
+          delete h_.r;
           *v += *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -7452,7 +7450,8 @@ nvar& nvar::operator+=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *v += *x.h_.hs->s;
+          delete h_.r;
+          *v += x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7461,14 +7460,16 @@ nvar& nvar::operator+=(const nvar& x){
           return *this += *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *v += *x.h_.sm->s;
+          delete h_.r;
+          *v += x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *v += *x.h_.hsm->s;
+          delete h_.r;
+          *v += x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7515,7 +7516,7 @@ nvar& nvar::operator+=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.d);
-          *v += *x.h_.hs->s;
+          *v += x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7524,14 +7525,14 @@ nvar& nvar::operator+=(const nvar& x){
           return *this += *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.d);
-          *v += *x.h_.sm->s;
+          *v += x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *v += *x.h_.sm->s;
+          *v += x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7560,6 +7561,7 @@ nvar& nvar::operator+=(const nvar& x){
           delete h_.x;
           h_.d = d;
           t_ = Float;
+          return *this;
         }
         case Real:
           *h_.x += *x.h_.x;
@@ -7569,12 +7571,14 @@ nvar& nvar::operator+=(const nvar& x){
           CFunction* f = new CFunction("Add");
           f->v.push_back(*h_.x);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.x;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.x);
+          delete h_.x;
           *v += *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -7582,7 +7586,8 @@ nvar& nvar::operator+=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *v += *x.h_.hs->s;
+          delete h_.x;
+          *v += x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7591,14 +7596,16 @@ nvar& nvar::operator+=(const nvar& x){
           return *this += *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *v += *x.h_.sm->s;
+          delete h_.x;
+          *v += x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *v += *x.h_.hsm->s;
+          delete h_.x;
+          *v += x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -7624,11 +7631,20 @@ nvar& nvar::operator+=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case Symbol:
+    case Symbol:{
+      CFunction* f = new CFunction("Add");
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.s;
+      t_ = Function;
+      h_.f = f;
+      return *this;
+    }
     case Function:{
       CFunction* f = new CFunction("Add");
       f->v.emplace_back(new nvar(*this, Copy));
-      f->v.emplace_back(nvar(x, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.f;
       t_ = Function;
       h_.f = f;
       return *this;
@@ -7647,7 +7663,7 @@ nvar& nvar::operator+=(const nvar& x){
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Add");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
@@ -7657,15 +7673,16 @@ nvar& nvar::operator+=(const nvar& x){
           *h_.v += *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.v += *x.h_.hs->s;
+          *h_.v += x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this += *x.h_.hm->h;
+          *h_.v += *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.v += *x.h_.sm->s;
+          *h_.v += x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.v += *x.h_.hsm->s;
+          *h_.v += x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this += *x.h_.ref->v;
@@ -7683,30 +7700,31 @@ nvar& nvar::operator+=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hs->s += x;
+          h_.hs->s->vec() += x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Add");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hs->s += *x.h_.v;
+          h_.hs->s->vec() += *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hs->s += *x.h_.hs->s;
+          h_.hs->s->vec() += x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this += *x.h_.hm->h;
+          h_.hs->s->vec() += *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hs->s += *x.h_.sm->s;
+          h_.hs->s->vec() += x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hs->s += *x.h_.hsm->s;
+          h_.hs->s->vec() += x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this += *x.h_.ref->v;
@@ -7729,30 +7747,31 @@ nvar& nvar::operator+=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.sm->s += x;
+          h_.sm->s->vec() += x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Add");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.sm->s += *x.h_.v;
+          h_.sm->s->vec() += *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.sm->s += *x.h_.hs->s;
+          h_.sm->s->vec() += x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this += *x.h_.hm->h;
+          h_.sm->s->vec() += *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.sm->s += *x.h_.sm->s;
+          h_.sm->s->vec() += x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.sm->s += *x.h_.hsm->s;
+          h_.sm->s->vec() += x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this += *x.h_.ref->v;
@@ -7770,31 +7789,31 @@ nvar& nvar::operator+=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hsm->s += x;
+          h_.hsm->s->vec() += x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Add");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
-        case Vector:{
-          *h_.hsm->s += *x.h_.v;
+        case Vector:
+          h_.hsm->s->vec() += *x.h_.v;
           return *this;
-        }
         case HeadSequence:
-          *h_.hsm->s += *x.h_.hs->s;
+          h_.hsm->s->vec() += x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this += *x.h_.hm->h;
+          h_.hsm->s->vec() += *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hsm->s += *x.h_.sm->s;
+          h_.hsm->s->vec() += x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hsm->s += *x.h_.hsm->s;
+          h_.hsm->s->vec() += x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this += *x.h_.ref->v;
@@ -7850,13 +7869,13 @@ nvar nvar::operator+(nlonglong x) const{
     case Vector:
       return *h_.v + x;
     case HeadSequence:
-      return *h_.hs->s + x;
+      return h_.hs->s->vec() + x;
     case HeadMap:
       return *h_.hm->h + x;
     case SequenceMap:
-      return *h_.sm->s + x;
+      return h_.sm->s->vec() + x;
     case HeadSequenceMap:
-      return *h_.hsm->s + x;
+      return h_.hsm->s->vec() + x;
     case Reference:
       return *h_.ref->v + x;
     case Pointer:
@@ -7879,10 +7898,6 @@ nvar nvar::operator+(double x) const{
       return h_.d + x;
     case Real:
       return h_.x->toDouble() + x;
-    case Binary:
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Function:
     case Symbol:{
       Head h;
@@ -7894,13 +7909,13 @@ nvar nvar::operator+(double x) const{
     case Vector:
       return *h_.v + x;
     case HeadSequence:
-      return *h_.hs->s + x;
+      return h_.hs->s->vec() + x;
     case HeadMap:
       return *h_.hm->h + x;
     case SequenceMap:
-      return *h_.sm->s = x;
+      return h_.sm->s->vec() + x;
     case HeadSequenceMap:
-      return *h_.hsm->s + x;
+      return h_.hsm->s->vec() + x;
     case Reference:
       return *h_.ref->v + x;
     case Pointer:
@@ -7959,31 +7974,31 @@ nvar nvar::operator+(const nvar& x) const{
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v += *x.h_.hs->s;
+          *v += x.h_.hs->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this + *x.h_.hm->h;
+          return h_.i + *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v += *x.h_.sm->s;
+          *v += x.h_.sm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v += *x.h_.hsm->s;
+          *v += x.h_.hsm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case Reference:
-          return *this + *x.h_.ref->v;
+          return h_.i + *x.h_.ref->v;
         case Pointer:
-          return *this + *x.h_.vp;
+          return h_.i + *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -8034,7 +8049,7 @@ nvar nvar::operator+(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *h.v += *x.h_.hs->s;
+          *h.v += x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -8042,13 +8057,13 @@ nvar nvar::operator+(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *h.v += *x.h_.sm->s;
+          *h.v += x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *h.v += *x.h_.hsm->s;
+          *h.v += x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -8088,7 +8103,7 @@ nvar nvar::operator+(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), h_.d);
-          *h.v += *x.h_.hs->s;
+          *h.v += x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -8096,19 +8111,19 @@ nvar nvar::operator+(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
-          *h.v += *x.h_.sm->s;
+          *h.v += x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *h.v += *x.h_.hsm->s;
+          *h.v += x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
-          return *this + *x.h_.ref->v;
+          return h_.d + *x.h_.ref->v;
         case Pointer:
-          return *this + *x.h_.vp;
+          return h_.d + *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -8153,7 +8168,7 @@ nvar nvar::operator+(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *h.v += *x.h_.hs->s;
+          *h.v += x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -8161,13 +8176,13 @@ nvar nvar::operator+(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *h.v += *x.h_.sm->s;
+          *h.v += x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *h.v += *x.h_.hsm->s;
+          *h.v += x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -8201,7 +8216,7 @@ nvar nvar::operator+(const nvar& x) const{
       Head h;
       h.f = new CFunction("Add");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -8226,14 +8241,13 @@ nvar nvar::operator+(const nvar& x) const{
         case Vector:
           return *h_.v + *x.h_.v;
         case HeadSequence:
-          return *h_.v + *x.h_.hs->s;
-          return *this;
+          return *h_.v + x.h_.hs->s->vec();
         case HeadMap:
           return *this + *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v + *x.h_.sm->s;
+          return *h_.v + x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v + *x.h_.hsm->s;
+          return *h_.v + x.h_.hsm->s->vec();
         case Reference:
           return *this + *x.h_.ref->v;
         case Pointer:
@@ -8250,7 +8264,7 @@ nvar nvar::operator+(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s + x;
+          return h_.hs->s->vec() + x;
         case Function:
         case Symbol:{
           Head h;
@@ -8260,15 +8274,15 @@ nvar nvar::operator+(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s + *x.h_.v;
+          return h_.hs->s->vec() + *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s + *x.h_.hs->s;
+          return h_.hs->s->vec() + x.h_.hs->s->vec();
         case HeadMap:
-          return *this + *x.h_.hm->h;
+          return h_.hs->s->vec() + *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s + *x.h_.sm->s;
+          return h_.hs->s->vec() + x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s + *x.h_.hsm->s;
+          return h_.hs->s->vec() + x.h_.hsm->s->vec();
         case Reference:
           return *this + *x.h_.ref->v;
         case Pointer:
@@ -8287,7 +8301,7 @@ nvar nvar::operator+(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s + x;
+          return h_.sm->s->vec() + x;
         case Function:
         case Symbol:{
           Head h;
@@ -8297,15 +8311,15 @@ nvar nvar::operator+(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s + *x.h_.v;
+          return h_.sm->s->vec() + *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s + *x.h_.hs->s;
+          return h_.sm->s->vec() + x.h_.hs->s->vec();
         case HeadMap:
-          return *this + *x.h_.hm->h;
+          return h_.sm->s->vec() + *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s + *x.h_.sm->s;
+          return h_.sm->s->vec() + x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s + *x.h_.hsm->s;
+          return h_.sm->s->vec() + x.h_.hsm->s->vec();
         case Reference:
           return *this + *x.h_.ref->v;
         case Pointer:
@@ -8322,7 +8336,7 @@ nvar nvar::operator+(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s + x;
+          return h_.hsm->s->vec() + x;
         case Function:
         case Symbol:{
           Head h;
@@ -8332,15 +8346,15 @@ nvar nvar::operator+(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s + *x.h_.v;
+          return h_.hsm->s->vec() + *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s + *x.h_.hs->s;
+          return h_.hsm->s->vec() + x.h_.hs->s->vec();
         case HeadMap:
-          return *this + *x.h_.hm->h;
+          return h_.hsm->s->vec() + *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s + *x.h_.sm->s;
+          return h_.hsm->s->vec() + x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s + *x.h_.hsm->s;
+          return h_.hsm->s->vec() + x.h_.hsm->s->vec();
         case Reference:
           return *this + *x.h_.ref->v;
         case Pointer:
@@ -8374,9 +8388,6 @@ nvar& nvar::operator-=(nlonglong x){
     case Real:
       *h_.x -= x;
       return *this;
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Symbol:
     case Function:{
       CFunction* f = new CFunction("Sub");
@@ -8390,16 +8401,16 @@ nvar& nvar::operator-=(nlonglong x){
       *h_.v -= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s -= x;
+      h_.hs->s->vec() -= x;
       return *this;
     case HeadMap:
       *h_.hm->h -= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s -= x;
+      h_.sm->s->vec() -= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s -= x;
+      h_.hsm->s->vec() -= x;
       return *this;
     case Reference:
       *h_.ref->v -= x;
@@ -8453,16 +8464,16 @@ nvar& nvar::operator-=(double x){
       *h_.v -= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s -= x;
+      h_.hs->s->vec() -= x;
       return *this;
     case HeadMap:
       *h_.hm->h -= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s -= x;
+      h_.sm->s->vec() -= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s -= x;
+      h_.hsm->s->vec() -= x;
       return *this;
     case Reference:
       *h_.ref->v -= x;
@@ -8530,7 +8541,7 @@ nvar& nvar::operator-=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v -= *x.h_.hs->s;
+          *v -= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8539,14 +8550,14 @@ nvar& nvar::operator-=(const nvar& x){
           return *this -= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v -= *x.h_.sm->s;
+          *v -= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v -= *x.h_.hsm->s;
+          *v -= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8595,12 +8606,14 @@ nvar& nvar::operator-=(const nvar& x){
           CFunction* f = new CFunction("Sub");
           f->v.push_back(*h_.r);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.r;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.r);
+          delete h_.r;
           *v -= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -8608,7 +8621,8 @@ nvar& nvar::operator-=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *v -= *x.h_.hs->s;
+          delete h_.r;
+          *v -= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8617,14 +8631,16 @@ nvar& nvar::operator-=(const nvar& x){
           return *this -= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *v -= *x.h_.sm->s;
+          delete h_.r;
+          *v -= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *v -= *x.h_.hsm->s;
+          delete h_.r;
+          *v -= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8671,7 +8687,7 @@ nvar& nvar::operator-=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.d);
-          *v -= *x.h_.hs->s;
+          *v -= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8680,14 +8696,14 @@ nvar& nvar::operator-=(const nvar& x){
           return *this -= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.d);
-          *v -= *x.h_.sm->s;
+          *v -= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *v -= *x.h_.sm->s;
+          *v -= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8716,6 +8732,7 @@ nvar& nvar::operator-=(const nvar& x){
           delete h_.x;
           h_.d = d;
           t_ = Float;
+          return *this;
         }
         case Real:
           *h_.x -= *x.h_.x;
@@ -8725,12 +8742,14 @@ nvar& nvar::operator-=(const nvar& x){
           CFunction* f = new CFunction("Sub");
           f->v.push_back(*h_.x);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.x;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.x);
+          delete h_.x;
           *v -= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -8738,7 +8757,8 @@ nvar& nvar::operator-=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *v -= *x.h_.hs->s;
+          delete h_.x;
+          *v -= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8747,14 +8767,16 @@ nvar& nvar::operator-=(const nvar& x){
           return *this -= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *v -= *x.h_.sm->s;
+          delete h_.x;
+          *v -= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *v -= *x.h_.hsm->s;
+          delete h_.x;
+          *v -= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -8766,12 +8788,20 @@ nvar& nvar::operator-=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case Symbol:
+    case Symbol:{
+      CFunction* f = new CFunction("Sub");
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.s;
+      t_ = Function;
+      h_.f = f;
+      return *this;
+    }
     case Function:{
       CFunction* f = new CFunction("Sub");
       f->v.emplace_back(new nvar(*this, Copy));
-      f->v.emplace_back(nvar(x, Copy));
-      
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.f;
       t_ = Function;
       h_.f = f;
       return *this;
@@ -8790,7 +8820,7 @@ nvar& nvar::operator-=(const nvar& x){
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Sub");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
@@ -8800,15 +8830,16 @@ nvar& nvar::operator-=(const nvar& x){
           *h_.v -= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.v -= *x.h_.hs->s;
+          *h_.v -= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this -= *x.h_.hm->h;
+          *h_.v -= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.v -= *x.h_.sm->s;
+          *h_.v -= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.v -= *x.h_.hsm->s;
+          *h_.v -= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this -= *x.h_.ref->v;
@@ -8826,31 +8857,31 @@ nvar& nvar::operator-=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hs->s -= x;
+          h_.hs->s->vec() -= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Sub");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
-        case Vector:{
-          *h_.hs->s -= *x.h_.v;
+        case Vector:
+          h_.hs->s->vec() -= *x.h_.v;
           return *this;
-        }
         case HeadSequence:
-          *h_.hs->s -= *x.h_.hs->s;
+          h_.hs->s->vec() -= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this -= *x.h_.hm->h;
+          h_.hs->s->vec() -= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hs->s -= *x.h_.sm->s;
+          h_.hs->s->vec() -= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hs->s -= *x.h_.hsm->s;
+          h_.hs->s->vec() -= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this -= *x.h_.ref->v;
@@ -8873,30 +8904,31 @@ nvar& nvar::operator-=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.sm->s -= x;
+          h_.sm->s->vec() -= x;
           return *this;
         case Vector:
-          *h_.sm->s -= *x.h_.v;
+          h_.sm->s->vec() -= *x.h_.v;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Sub");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case HeadSequence:
-          *h_.sm->s -= *x.h_.hs->s;
+          h_.sm->s->vec() -= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this -= *x.h_.hm->h;
+          h_.sm->s->vec() -= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.sm->s -= *x.h_.sm->s;
+          h_.sm->s->vec() -= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.sm->s -= *x.h_.hsm->s;
+          h_.sm->s->vec() -= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this -= *x.h_.ref->v;
@@ -8914,30 +8946,31 @@ nvar& nvar::operator-=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hsm->s -= x;
+          h_.hsm->s->vec() -= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Sub");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hsm->s -= *x.h_.v;
+          h_.hsm->s->vec() -= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hsm->s -= *x.h_.hs->s;
+          h_.hsm->s->vec() -= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this -= *x.h_.hm->h;
+          h_.hsm->s->vec() -= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hsm->s -= *x.h_.sm->s;
+          h_.hsm->s->vec() -= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hsm->s -= *x.h_.hsm->s;
+          h_.hsm->s->vec() -= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this -= *x.h_.ref->v;
@@ -8978,10 +9011,6 @@ nvar nvar::operator-(nlonglong x) const{
       h.x -= x;
       return nvar(Real, h);
     }
-    case Binary:
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Function:
     case Symbol:{
       Head h;
@@ -8993,13 +9022,13 @@ nvar nvar::operator-(nlonglong x) const{
     case Vector:
       return *h_.v - x;
     case HeadSequence:
-      return *h_.hs->s - x;
+      return h_.hs->s->vec() - x;
     case HeadMap:
       return *h_.hm->h - x;
     case SequenceMap:
-      return *h_.sm->s - x;
+      return h_.sm->s->vec() - x;
     case HeadSequenceMap:
-      return *h_.hsm->s - x;
+      return h_.hsm->s->vec() - x;
     case Reference:
       return *h_.ref->v - x;
     case Pointer:
@@ -9033,13 +9062,13 @@ nvar nvar::operator-(double x) const{
     case Vector:
       return *h_.v - x;
     case HeadSequence:
-      return *h_.hs->s - x;
+      return h_.hs->s->vec() - x;
     case HeadMap:
       return *h_.hm->h - x;
     case SequenceMap:
-      return *h_.sm->s - x;
+      return h_.sm->s->vec() - x;
     case HeadSequenceMap:
-      return *h_.hsm->s - x;
+      return h_.hsm->s->vec() - x;
     case Reference:
       return *h_.ref->v - x;
     case Pointer:
@@ -9098,31 +9127,31 @@ nvar nvar::operator-(const nvar& x) const{
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v -= *x.h_.hs->s;
+          *v -= x.h_.hs->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return h_.i - *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v -= *x.h_.sm->s;
+          *v -= x.h_.sm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v -= *x.h_.hsm->s;
+          *v -= x.h_.hsm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case Reference:
-          return *this - *x.h_.ref->v;
+          return h_.i - *x.h_.ref->v;
         case Pointer:
-          return *this - *x.h_.vp;
+          return h_.i - *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -9173,7 +9202,7 @@ nvar nvar::operator-(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *h.v -= *x.h_.hs->s;
+          *h.v -= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -9181,13 +9210,13 @@ nvar nvar::operator-(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *h.v -= *x.h_.sm->s;
+          *h.v -= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *h.v -= *x.h_.hsm->s;
+          *h.v -= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -9227,27 +9256,27 @@ nvar nvar::operator-(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), h_.d);
-          *h.v -= *x.h_.hs->s;
+          *h.v -= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return h_.d - *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
-          *h.v -= *x.h_.sm->s;
+          *h.v -= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *h.v -= *x.h_.hsm->s;
+          *h.v -= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
-          return *this - *x.h_.ref->v;
+          return h_.d - *x.h_.ref->v;
         case Pointer:
-          return *this - *x.h_.vp;
+          return h_.d - *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -9292,7 +9321,7 @@ nvar nvar::operator-(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *h.v -= *x.h_.hs->s;
+          *h.v -= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -9300,13 +9329,13 @@ nvar nvar::operator-(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *h.v -= *x.h_.sm->s;
+          *h.v -= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *h.v -= *x.h_.hsm->s;
+          *h.v -= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -9321,7 +9350,7 @@ nvar nvar::operator-(const nvar& x) const{
       Head h;
       h.f = new CFunction("Sub");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -9346,14 +9375,13 @@ nvar nvar::operator-(const nvar& x) const{
         case Vector:
           return *h_.v - *x.h_.v;
         case HeadSequence:
-          return *h_.v - *x.h_.hs->s;
-          return *this;
+          return *h_.v - x.h_.hs->s->vec();
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return *h_.v - *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v - *x.h_.sm->s;
+          return *h_.v - x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v - *x.h_.hsm->s;
+          return *h_.v - x.h_.hsm->s->vec();
         case Reference:
           return *this - *x.h_.ref->v;
         case Pointer:
@@ -9370,7 +9398,7 @@ nvar nvar::operator-(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s - x;
+          return h_.hs->s->vec() - x;
         case Function:
         case Symbol:{
           Head h;
@@ -9380,15 +9408,15 @@ nvar nvar::operator-(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s - *x.h_.v;
+          return h_.hs->s->vec() - *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s - *x.h_.hs->s;
+          return h_.hs->s->vec() - x.h_.hs->s->vec();
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return h_.hs->s->vec() - *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s - *x.h_.sm->s;
+          return h_.hs->s->vec() - x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s - *x.h_.hsm->s;
+          return h_.hs->s->vec() - x.h_.hsm->s->vec();
         case Reference:
           return *this - *x.h_.ref->v;
         case Pointer:
@@ -9407,7 +9435,7 @@ nvar nvar::operator-(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s - x;
+          return h_.sm->s->vec() - x;
         case Function:
         case Symbol:{
           Head h;
@@ -9417,15 +9445,15 @@ nvar nvar::operator-(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s - *x.h_.v;
+          return h_.sm->s->vec() - *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s - *x.h_.hs->s;
+          return h_.sm->s->vec() - x.h_.hs->s->vec();
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return h_.sm->s->vec() - *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s - *x.h_.sm->s;
+          return h_.sm->s->vec() - x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s - *x.h_.hsm->s;
+          return h_.sm->s->vec() - x.h_.hsm->s->vec();
         case Reference:
           return *this - *x.h_.ref->v;
         case Pointer:
@@ -9442,7 +9470,7 @@ nvar nvar::operator-(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s - x;
+          return h_.hsm->s->vec() - x;
         case Function:
         case Symbol:{
           Head h;
@@ -9452,15 +9480,15 @@ nvar nvar::operator-(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s - *x.h_.v;
+          return h_.hsm->s->vec() - *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s - *x.h_.hs->s;
+          return h_.hsm->s->vec() - x.h_.hs->s->vec();
         case HeadMap:
-          return *this - *x.h_.hm->h;
+          return h_.hsm->s->vec() - *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s - *x.h_.sm->s;
+          return h_.hsm->s->vec() - x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s - *x.h_.hsm->s;
+          return h_.hsm->s->vec() - x.h_.hsm->s->vec();
         case Reference:
           return *this - *x.h_.ref->v;
         case Pointer:
@@ -9494,9 +9522,6 @@ nvar& nvar::operator*=(nlonglong x){
     case Real:
       *h_.x *= x;
       return *this;
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Symbol:
     case Function:{
       CFunction* f = new CFunction("Mul");
@@ -9510,16 +9535,16 @@ nvar& nvar::operator*=(nlonglong x){
       *h_.v *= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s *= x;
+      h_.hs->s->vec() *= x;
       return *this;
     case HeadMap:
       *h_.hm->h *= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s *= x;
+      h_.sm->s->vec() *= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s *= x;
+      h_.hsm->s->vec() *= x;
       return *this;
     case Reference:
       *h_.ref->v *= x;
@@ -9573,16 +9598,16 @@ nvar& nvar::operator*=(double x){
       *h_.v *= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s *= x;
+      h_.hs->s->vec() *= x;
       return *this;
     case HeadMap:
       *h_.hm->h *= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s *= x;
+      h_.sm->s->vec() *= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s *= x;
+      h_.hsm->s->vec() *= x;
       return *this;
     case Reference:
       *h_.ref->v *= x;
@@ -9650,7 +9675,7 @@ nvar& nvar::operator*=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v *= *x.h_.hs->s;
+          *v *= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9659,14 +9684,14 @@ nvar& nvar::operator*=(const nvar& x){
           return *this *= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v *= *x.h_.sm->s;
+          *v *= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v *= *x.h_.hsm->s;
+          *v *= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9715,12 +9740,14 @@ nvar& nvar::operator*=(const nvar& x){
           CFunction* f = new CFunction("Mul");
           f->v.push_back(*h_.r);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.r;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.r);
+          delete h_.r;
           *v *= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -9728,7 +9755,8 @@ nvar& nvar::operator*=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *v *= *x.h_.hs->s;
+          delete h_.r;
+          *v *= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9737,14 +9765,16 @@ nvar& nvar::operator*=(const nvar& x){
           return *this *= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *v *= *x.h_.sm->s;
+          delete h_.r;
+          *v *= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *v *= *x.h_.hsm->s;
+          delete h_.r;
+          *v *= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9791,7 +9821,7 @@ nvar& nvar::operator*=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.d);
-          *v *= *x.h_.hs->s;
+          *v *= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9800,14 +9830,14 @@ nvar& nvar::operator*=(const nvar& x){
           return *this *= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.d);
-          *v *= *x.h_.sm->s;
+          *v *= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *v *= *x.h_.sm->s;
+          *v *= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9836,6 +9866,7 @@ nvar& nvar::operator*=(const nvar& x){
           delete h_.x;
           h_.d = d;
           t_ = Float;
+          return *this;
         }
         case Real:
           *h_.x *= *x.h_.x;
@@ -9845,12 +9876,14 @@ nvar& nvar::operator*=(const nvar& x){
           CFunction* f = new CFunction("Mul");
           f->v.push_back(*h_.x);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.x;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.x);
+          delete h_.x;
           *v *= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -9858,7 +9891,8 @@ nvar& nvar::operator*=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *v *= *x.h_.hs->s;
+          delete h_.x;
+          *v *= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9867,14 +9901,16 @@ nvar& nvar::operator*=(const nvar& x){
           return *this *= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *v *= *x.h_.sm->s;
+          delete h_.x;
+          *v *= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *v *= *x.h_.hsm->s;
+          delete h_.x;
+          *v *= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -9886,12 +9922,20 @@ nvar& nvar::operator*=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case Symbol:
+    case Symbol:{
+      CFunction* f = new CFunction("Mul");
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.s;
+      t_ = Function;
+      h_.f = f;
+      return *this;
+    }
     case Function:{
       CFunction* f = new CFunction("Mul");
       f->v.emplace_back(new nvar(*this, Copy));
-      f->v.emplace_back(nvar(x, Copy));
-      
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.f;
       t_ = Function;
       h_.f = f;
       return *this;
@@ -9910,7 +9954,7 @@ nvar& nvar::operator*=(const nvar& x){
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mul");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
@@ -9920,15 +9964,16 @@ nvar& nvar::operator*=(const nvar& x){
           *h_.v *= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.v *= *x.h_.hs->s;
+          *h_.v *= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this *= *x.h_.hm->h;
+          *h_.v *= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.v *= *x.h_.sm->s;
+          *h_.v *= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.v *= *x.h_.hsm->s;
+          *h_.v *= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this *= *x.h_.ref->v;
@@ -9946,30 +9991,31 @@ nvar& nvar::operator*=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hs->s *= x;
+          h_.hs->s->vec() *= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mul");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hs->s *= *x.h_.v;
+          h_.hs->s->vec() *= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hs->s *= *x.h_.hs->s;
+          h_.hs->s->vec() *= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this *= *x.h_.hm->h;
+          h_.hs->s->vec() *= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hs->s *= *x.h_.sm->s;
+          h_.hs->s->vec() *= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hs->s *= *x.h_.hsm->s;
+          h_.hs->s->vec() *= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this *= *x.h_.ref->v;
@@ -9992,30 +10038,31 @@ nvar& nvar::operator*=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.sm->s *= x;
+          h_.sm->s->vec() *= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mul");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.sm->s *= *x.h_.v;
+          h_.sm->s->vec() *= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.sm->s *= *x.h_.hs->s;
+          h_.sm->s->vec() *= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this *= *x.h_.hm->h;
+          h_.sm->s->vec() *= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.sm->s *= *x.h_.sm->s;
+          h_.sm->s->vec() *= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.sm->s *= *x.h_.hsm->s;
+          h_.sm->s->vec() *= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this *= *x.h_.ref->v;
@@ -10033,30 +10080,31 @@ nvar& nvar::operator*=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hsm->s *= x;
+          h_.hsm->s->vec() *= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mul");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hsm->s *= *x.h_.v;
+          h_.hsm->s->vec() *= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hsm->s *= *x.h_.hs->s;
+          h_.hsm->s->vec() *= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this *= *x.h_.hm->h;
+          h_.hsm->s->vec() *= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hsm->s *= *x.h_.sm->s;
+          h_.hsm->s->vec() *= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hsm->s *= *x.h_.hsm->s;
+          h_.hsm->s->vec() *= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this *= *x.h_.ref->v;
@@ -10125,33 +10173,32 @@ nvar nvar::operator*(const nvar& x) const{
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v *= *x.h_.hs->s;
+          *v *= x.h_.hs->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return h_.i * *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v *= *x.h_.sm->s;
+          *v *= x.h_.sm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v *= *x.h_.hsm->s;
+          *v *= x.h_.hsm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case Reference:
-          return *this * *x.h_.ref->v;
+          return h_.i * *x.h_.ref->v;
         case Pointer:
-          return *this * *x.h_.vp;
+          return h_.i * *x.h_.vp;
         default:
-          cout << "x.t_ is: " << int(x.t_) << endl;
           NERROR("invalid operands");
       }
     case Rational:
@@ -10201,7 +10248,7 @@ nvar nvar::operator*(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *h.v *= *x.h_.hs->s;
+          *h.v *= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -10209,13 +10256,13 @@ nvar nvar::operator*(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *h.v *= *x.h_.sm->s;
+          *h.v *= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *h.v *= *x.h_.hsm->s;
+          *h.v *= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -10255,27 +10302,27 @@ nvar nvar::operator*(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), h_.d);
-          *h.v *= *x.h_.hs->s;
+          *h.v *= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return h_.d * *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
-          *h.v *= *x.h_.sm->s;
+          *h.v *= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *h.v *= *x.h_.hsm->s;
+          *h.v *= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
-          return *this * *x.h_.ref->v;
+          return h_.d * *x.h_.ref->v;
         case Pointer:
-          return *this * *x.h_.vp;
+          return h_.d * *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -10320,7 +10367,7 @@ nvar nvar::operator*(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *h.v *= *x.h_.hs->s;
+          *h.v *= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -10328,13 +10375,13 @@ nvar nvar::operator*(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *h.v *= *x.h_.sm->s;
+          *h.v *= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *h.v *= *x.h_.hsm->s;
+          *h.v *= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -10374,14 +10421,13 @@ nvar nvar::operator*(const nvar& x) const{
         case Vector:
           return *h_.v * *x.h_.v;
         case HeadSequence:
-          return *h_.v * *x.h_.hs->s;
-          return *this;
+          return *h_.v * x.h_.hs->s->vec();
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return *h_.v * *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v * *x.h_.sm->s;
+          return *h_.v * x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v * *x.h_.hsm->s;
+          return *h_.v * x.h_.hsm->s->vec();
         case Reference:
           return *this * *x.h_.ref->v;
         case Pointer:
@@ -10398,7 +10444,7 @@ nvar nvar::operator*(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s * x;
+          return h_.hs->s->vec() * x;
         case Function:
         case Symbol:{
           Head h;
@@ -10408,15 +10454,15 @@ nvar nvar::operator*(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s * *x.h_.v;
+          return h_.hs->s->vec() * *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s * *x.h_.hs->s;
+          return h_.hs->s->vec() * x.h_.hs->s->vec();
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return h_.hs->s->vec() * *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s * *x.h_.sm->s;
+          return h_.hs->s->vec() * x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s * *x.h_.hsm->s;
+          return h_.hs->s->vec() * x.h_.hsm->s->vec();
         case Reference:
           return *this * *x.h_.ref->v;
         case Pointer:
@@ -10435,7 +10481,7 @@ nvar nvar::operator*(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s = x;
+          return h_.sm->s->vec() * x;
         case Function:
         case Symbol:{
           Head h;
@@ -10445,15 +10491,15 @@ nvar nvar::operator*(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s * *x.h_.v;
+          return h_.sm->s->vec() * *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s * *x.h_.hs->s;
+          return h_.sm->s->vec() * x.h_.hs->s->vec();
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return h_.sm->s->vec() * *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s * *x.h_.sm->s;
+          return h_.sm->s->vec() * x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s * *x.h_.hsm->s;
+          return h_.sm->s->vec() * x.h_.hsm->s->vec();
         case Reference:
           return *this * *x.h_.ref->v;
         case Pointer:
@@ -10470,7 +10516,7 @@ nvar nvar::operator*(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s * x;
+          return h_.hsm->s->vec() * x;
         case Function:
         case Symbol:{
           Head h;
@@ -10480,15 +10526,15 @@ nvar nvar::operator*(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s * *x.h_.v;
+          return h_.hsm->s->vec() * *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s * *x.h_.hs->s;
+          return h_.hsm->s->vec() * x.h_.hs->s->vec();
         case HeadMap:
-          return *this * *x.h_.hm->h;
+          return h_.hsm->s->vec() * *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s * *x.h_.sm->s;
+          return h_.hsm->s->vec() * x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s * *x.h_.hsm->s;
+          return h_.hsm->s->vec() * x.h_.hsm->s->vec();
         case Reference:
           return *this * *x.h_.ref->v;
         case Pointer:
@@ -10526,10 +10572,6 @@ nvar nvar::operator*(nlonglong x) const{
       *h.x *= x;
       return nvar(Real, h);
     }
-    case Binary:
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Function:
     case Symbol:{
       Head h;
@@ -10541,13 +10583,13 @@ nvar nvar::operator*(nlonglong x) const{
     case Vector:
       return *h_.v * x;
     case HeadSequence:
-      return *h_.hs->s * x;
+      return h_.hs->s->vec() * x;
     case HeadMap:
       return *h_.hm->h * x;
     case SequenceMap:
-      return *h_.sm->s * x;
+      return h_.sm->s->vec() * x;
     case HeadSequenceMap:
-      return *h_.hsm->s * x;
+      return h_.hsm->s->vec() * x;
     case Reference:
       return *h_.ref->v * x;
     case Pointer:
@@ -10570,10 +10612,6 @@ nvar nvar::operator*(double x) const{
       return h_.d * x;
     case Real:
       return h_.x->toDouble() * x;
-    case Binary:
-    case String:
-    case StringPointer:
-      NERROR("invalid operands");
     case Function:
     case Symbol:{
       Head h;
@@ -10585,13 +10623,13 @@ nvar nvar::operator*(double x) const{
     case Vector:
       return *h_.v * x;
     case HeadSequence:
-      return *h_.hs->s * x;
+      return h_.hs->s->vec() * x;
     case HeadMap:
       return *h_.hm->h * x;
     case SequenceMap:
-      return *h_.sm->s * x;
+      return h_.sm->s->vec() * x;
     case HeadSequenceMap:
-      return *h_.hsm->s * x;
+      return h_.hsm->s->vec() * x;
     case Reference:
       return *h_.ref->v * x;
     case Pointer:
@@ -10650,16 +10688,16 @@ nvar& nvar::operator/=(nlonglong x){
       *h_.v /= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s /= x;
+      h_.hs->s->vec() /= x;
       return *this;
     case HeadMap:
       *h_.hm->h /= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s /= x;
+      h_.sm->s->vec() /= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s /= x;
+      h_.hsm->s->vec() /= x;
       return *this;
     case Reference:
       *h_.ref->v /= x;
@@ -10690,7 +10728,7 @@ nvar& nvar::operator/=(double x){
       double d = h_.r->toDouble();
       delete h_.r;
       t_ = Float;
-      h_.d = d + x;
+      h_.d = d / x;
       return *this;
     }
     case Float:
@@ -10717,16 +10755,16 @@ nvar& nvar::operator/=(double x){
       *h_.v /= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s /= x;
+      h_.hs->s->vec() /= x;
       return *this;
     case HeadMap:
       *h_.hm->h /= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s /= x;
+      h_.sm->s->vec() /= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s /= x;
+      h_.hsm->s->vec() /= x;
       return *this;
     case Reference:
       *h_.ref->v /= x;
@@ -10819,7 +10857,7 @@ nvar& nvar::operator/=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v /= *x.h_.hs->s;
+          *v /= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -10828,14 +10866,14 @@ nvar& nvar::operator/=(const nvar& x){
           return *this /= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v /= *x.h_.sm->s;
+          *v /= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v /= *x.h_.hsm->s;
+          *v /= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -10896,12 +10934,14 @@ nvar& nvar::operator/=(const nvar& x){
           CFunction* f = new CFunction("Div");
           f->v.push_back(*h_.r);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.r;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.r);
+          delete h_.r;
           *v /= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -10909,7 +10949,8 @@ nvar& nvar::operator/=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *v /= *x.h_.hs->s;
+          delete h_.r;
+          *v /= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -10918,14 +10959,16 @@ nvar& nvar::operator/=(const nvar& x){
           return *this /= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *v /= *x.h_.sm->s;
+          delete h_.r;
+          *v /= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *v /= *x.h_.hsm->s;
+          delete h_.r;
+          *v /= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -10988,7 +11031,7 @@ nvar& nvar::operator/=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.d);
-          *v /= *x.h_.hs->s;
+          *v /= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -10997,14 +11040,14 @@ nvar& nvar::operator/=(const nvar& x){
           return *this /= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.d);
-          *v /= *x.h_.sm->s;
+          *v /= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *v /= *x.h_.sm->s;
+          *v /= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -11045,6 +11088,7 @@ nvar& nvar::operator/=(const nvar& x){
           delete h_.x;
           h_.d = d;
           t_ = Float;
+          return *this;
         }
         case Real:
           if(*x.h_.x == 0){
@@ -11058,12 +11102,14 @@ nvar& nvar::operator/=(const nvar& x){
           CFunction* f = new CFunction("Div");
           f->v.push_back(*h_.x);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.x;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.x);
+          delete h_.x;
           *v /= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -11071,7 +11117,8 @@ nvar& nvar::operator/=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *v /= *x.h_.hs->s;
+          delete h_.x;
+          *v /= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -11080,14 +11127,16 @@ nvar& nvar::operator/=(const nvar& x){
           return *this /= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *v /= *x.h_.sm->s;
+          delete h_.x;
+          *v /= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *v /= *x.h_.hsm->s;
+          delete h_.x;
+          *v /= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -11099,12 +11148,20 @@ nvar& nvar::operator/=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case Symbol:
+    case Symbol:{
+      CFunction* f = new CFunction("Div");
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.s;
+      t_ = Function;
+      h_.f = f;
+      return *this;
+    }
     case Function:{
       CFunction* f = new CFunction("Div");
       f->v.emplace_back(new nvar(*this, Copy));
-      f->v.emplace_back(nvar(x, Copy));
-      
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.f;
       t_ = Function;
       h_.f = f;
       return *this;
@@ -11120,19 +11177,29 @@ nvar& nvar::operator/=(const nvar& x){
         case Real:
           *h_.v /= x;
           return *this;
+        case Symbol:
+        case Function:{
+          CFunction* f = new CFunction("Div");
+          f->v.emplace_back(move(*this));
+          f->v.push_back(new nvar(x, Copy));
+          t_ = Function;
+          h_.f = f;
+          return *this;
+        }
         case Vector:
           *h_.v /= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.v /= *x.h_.hs->s;
+          *h_.v /= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this /= *x.h_.hm->h;
+          *h_.v /= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.v /= *x.h_.sm->s;
+          *h_.v /= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.v /= *x.h_.hsm->s;
+          *h_.v /= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this /= *x.h_.ref->v;
@@ -11150,21 +11217,31 @@ nvar& nvar::operator/=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hs->s /= x;
+          h_.hs->s->vec() /= x;
           return *this;
+        case Symbol:
+        case Function:{
+          CFunction* f = new CFunction("Div");
+          f->v.emplace_back(move(*this));
+          f->v.push_back(new nvar(x, Copy));
+          t_ = Function;
+          h_.f = f;
+          return *this;
+        }
         case Vector:
-          *h_.hs->s /= *x.h_.v;
+          h_.hs->s->vec() /= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hs->s /= *x.h_.hs->s;
+          h_.hs->s->vec() /= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this /= *x.h_.hm->h;
+          h_.hs->s->vec() /= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hs->s /= *x.h_.sm->s;
+          h_.hs->s->vec() /= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hs->s /= *x.h_.hsm->s;
+          h_.hs->s->vec() /= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this /= *x.h_.ref->v;
@@ -11187,21 +11264,31 @@ nvar& nvar::operator/=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.sm->s /= x;
+          h_.sm->s->vec() /= x;
           return *this;
+        case Symbol:
+        case Function:{
+          CFunction* f = new CFunction("Div");
+          f->v.emplace_back(move(*this));
+          f->v.push_back(new nvar(x, Copy));
+          t_ = Function;
+          h_.f = f;
+          return *this;
+        }
         case Vector:
-          *h_.sm->s /= *x.h_.v;
+          h_.sm->s->vec() /= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.sm->s /= *x.h_.hs->s;
+          h_.sm->s->vec() /= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this /= *x.h_.hm->h;
+          h_.sm->s->vec() /= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.sm->s /= *x.h_.sm->s;
+          h_.sm->s->vec() /= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.sm->s /= *x.h_.hsm->s;
+          h_.sm->s->vec() /= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this /= *x.h_.ref->v;
@@ -11219,21 +11306,31 @@ nvar& nvar::operator/=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hsm->s /= x;
+          h_.hsm->s->vec() /= x;
           return *this;
+        case Symbol:
+        case Function:{
+          CFunction* f = new CFunction("Div");
+          f->v.emplace_back(move(*this));
+          f->v.push_back(new nvar(x, Copy));
+          t_ = Function;
+          h_.f = f;
+          return *this;
+        }
         case Vector:
-          *h_.hsm->s /= *x.h_.v;
+          h_.hsm->s->vec() /= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hsm->s /= *x.h_.hs->s;
+          h_.hsm->s->vec() /= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this /= *x.h_.hm->h;
+          h_.hsm->s->vec() /= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hsm->s /= *x.h_.sm->s;
+          h_.hsm->s->vec() /= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hsm->s /= *x.h_.hsm->s;
+          h_.hsm->s->vec() /= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this /= *x.h_.ref->v;
@@ -11309,13 +11406,13 @@ nvar nvar::operator/(nlonglong x) const{
     case Vector:
       return *h_.v / x;
     case HeadSequence:
-      return *h_.hs->s / x;
+      return h_.hs->s->vec() / x;
     case HeadMap:
       return *h_.hm->h / x;
     case SequenceMap:
-      return *h_.sm->s / x;
+      return h_.sm->s->vec() / x;
     case HeadSequenceMap:
-      return *h_.hsm->s / x;
+      return h_.hsm->s->vec() / x;
     case Reference:
       return *h_.ref->v / x;
     case Pointer:
@@ -11357,13 +11454,13 @@ nvar nvar::operator/(double x) const{
     case Vector:
       return *h_.v / x;
     case HeadSequence:
-      return *h_.hs->s / x;
+      return h_.hs->s->vec() / x;
     case HeadMap:
       return *h_.hm->h / x;
     case SequenceMap:
-      return *h_.sm->s / x;
+      return h_.sm->s->vec() / x;
     case HeadSequenceMap:
-      return *h_.hsm->s / x;
+      return h_.hsm->s->vec() / x;
     case Reference:
       return *h_.ref->v / x;
     case Pointer:
@@ -11446,31 +11543,31 @@ nvar nvar::operator/(const nvar& x) const{
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v /= *x.h_.hs->s;
+          *v /= x.h_.hs->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return h_.i / *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v /= *x.h_.sm->s;
+          *v /= x.h_.sm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v /= *x.h_.hsm->s;
+          *v /= x.h_.hsm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case Reference:
-          return *this / *x.h_.ref->v;
+          return h_.i / *x.h_.ref->v;
         case Pointer:
-          return *this / *x.h_.vp;
+          return h_.i / *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -11544,7 +11641,7 @@ nvar nvar::operator/(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *h.v /= *x.h_.hs->s;
+          *h.v /= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -11552,13 +11649,13 @@ nvar nvar::operator/(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *h.v /= *x.h_.sm->s;
+          *h.v /= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *h.v /= *x.h_.hsm->s;
+          *h.v /= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -11613,27 +11710,27 @@ nvar nvar::operator/(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), h_.d);
-          *h.v /= *x.h_.hs->s;
+          *h.v /= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return h_.d / *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
-          *h.v /= *x.h_.sm->s;
+          *h.v /= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *h.v /= *x.h_.hsm->s;
+          *h.v /= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
-          return *this / *x.h_.ref->v;
+          return h_.d / *x.h_.ref->v;
         case Pointer:
-          return *this / *x.h_.vp;
+          return h_.d / *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -11694,7 +11791,7 @@ nvar nvar::operator/(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *h.v /= *x.h_.hs->s;
+          *h.v /= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -11702,13 +11799,13 @@ nvar nvar::operator/(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *h.v /= *x.h_.sm->s;
+          *h.v /= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *h.v /= *x.h_.hsm->s;
+          *h.v /= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -11723,7 +11820,7 @@ nvar nvar::operator/(const nvar& x) const{
       Head h;
       h.f = new CFunction("Div");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -11740,7 +11837,7 @@ nvar nvar::operator/(const nvar& x) const{
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Div");
-          f->v.emplace_back(*this);
+          f->v.push_back(*this);
           f->v.push_back(new nvar(x, Copy));
           Head h;
           h.f = f;
@@ -11749,14 +11846,13 @@ nvar nvar::operator/(const nvar& x) const{
         case Vector:
           return *h_.v / *x.h_.v;
         case HeadSequence:
-          return *h_.v / *x.h_.hs->s;
-          return *this;
+          return *h_.v / x.h_.hs->s->vec();
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return *h_.v / *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v / *x.h_.sm->s;
+          return *h_.v / x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v / *x.h_.hsm->s;
+          return *h_.v / x.h_.hsm->s->vec();
         case Reference:
           return *this / *x.h_.ref->v;
         case Pointer:
@@ -11773,26 +11869,26 @@ nvar nvar::operator/(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s / x;
+          return h_.hs->s->vec() / x;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Div");
-          f->v.emplace_back(*this);
+          f->v.push_back(*this);
           f->v.push_back(new nvar(x, Copy));
           Head h;
           h.f = f;
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s / *x.h_.v;
+          return h_.hs->s->vec() / *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s / *x.h_.hs->s;
+          return h_.hs->s->vec() / x.h_.hs->s->vec();
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return h_.hs->s->vec() / *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s / *x.h_.sm->s;
+          return h_.hs->s->vec() / x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s / *x.h_.hsm->s;
+          return h_.hs->s->vec() / x.h_.hsm->s->vec();
         case Reference:
           return *this / *x.h_.ref->v;
         case Pointer:
@@ -11811,26 +11907,26 @@ nvar nvar::operator/(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s / x;
+          return h_.sm->s->vec() / x;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Div");
-          f->v.emplace_back(*this);
+          f->v.push_back(*this);
           f->v.push_back(new nvar(x, Copy));
           Head h;
           h.f = f;
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s / *x.h_.v;
+          return h_.sm->s->vec() / *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s / *x.h_.hs->s;
+          return h_.sm->s->vec() / x.h_.hs->s->vec();
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return h_.sm->s->vec() / *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s / *x.h_.sm->s;
+          return h_.sm->s->vec() / x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s / *x.h_.hsm->s;
+          return h_.sm->s->vec() / x.h_.hsm->s->vec();
         case Reference:
           return *this / *x.h_.ref->v;
         case Pointer:
@@ -11847,26 +11943,26 @@ nvar nvar::operator/(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s / x;
+          return h_.hsm->s->vec() / x;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Div");
-          f->v.emplace_back(*this);
+          f->v.push_back(*this);
           f->v.push_back(new nvar(x, Copy));
           Head h;
           h.f = f;
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s / *x.h_.v;
+          return h_.hsm->s->vec() / *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s / *x.h_.hs->s;
+          return h_.hsm->s->vec() / x.h_.hs->s->vec();
         case HeadMap:
-          return *this / *x.h_.hm->h;
+          return h_.hsm->s->vec() / *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s / *x.h_.sm->s;
+          return h_.hsm->s->vec() / x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s / *x.h_.hsm->s;
+          return h_.hsm->s->vec() / x.h_.hsm->s->vec();
         case Reference:
           return *this / *x.h_.ref->v;
         case Pointer:
@@ -11917,16 +12013,16 @@ nvar& nvar::operator%=(nlonglong x){
       *h_.v %= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s %= x;
+      h_.hs->s->vec() %= x;
       return *this;
     case HeadMap:
       *h_.hm->h %= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s %= x;
+      h_.sm->s->vec() %= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s %= x;
+      h_.hsm->s->vec() %= x;
       return *this;
     case Reference:
       *h_.ref->v %= x;
@@ -11982,16 +12078,16 @@ nvar& nvar::operator%=(double x){
       *h_.v %= x;
       return *this;
     case HeadSequence:
-      *h_.hs->s %= x;
+      h_.hs->s->vec() %= x;
       return *this;
     case HeadMap:
       *h_.hm->h %= x;
       return *this;
     case SequenceMap:
-      *h_.sm->s %= x;
+      h_.sm->s->vec() %= x;
       return *this;
     case HeadSequenceMap:
-      *h_.hsm->s %= x;
+      h_.hsm->s->vec() %= x;
       return *this;
     case Reference:
       *h_.ref->v %= x;
@@ -12072,7 +12168,7 @@ nvar& nvar::operator%=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v %= *x.h_.hs->s;
+          *v %= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12081,14 +12177,14 @@ nvar& nvar::operator%=(const nvar& x){
           return *this %= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v %= *x.h_.sm->s;
+          *v %= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v %= *x.h_.hsm->s;
+          *v %= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12153,12 +12249,14 @@ nvar& nvar::operator%=(const nvar& x){
           CFunction* f = new CFunction("Mod");
           f->v.push_back(*h_.r);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.r;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.r);
+          delete h_.r;
           *v %= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -12166,7 +12264,8 @@ nvar& nvar::operator%=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *v %= *x.h_.hs->s;
+          delete h_.r;
+          *v %= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12175,14 +12274,16 @@ nvar& nvar::operator%=(const nvar& x){
           return *this %= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *v %= *x.h_.sm->s;
+          delete h_.r;
+          *v %= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *v %= *x.h_.hsm->s;
+          delete h_.r;
+          *v %= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12245,7 +12346,7 @@ nvar& nvar::operator%=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.d);
-          *v %= *x.h_.hs->s;
+          *v %= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12254,14 +12355,14 @@ nvar& nvar::operator%=(const nvar& x){
           return *this %= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.d);
-          *v %= *x.h_.sm->s;
+          *v %= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *v %= *x.h_.sm->s;
+          *v %= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12301,7 +12402,7 @@ nvar& nvar::operator%=(const nvar& x){
           delete h_.x;
           h_.d = fmod(d, x.h_.d);
           t_ = Float;
-          break;
+          return *this;
         }
         case Real:
           if(*x.h_.x == 0){
@@ -12315,12 +12416,14 @@ nvar& nvar::operator%=(const nvar& x){
           CFunction* f = new CFunction("Mod");
           f->v.push_back(*h_.x);
           f->v.push_back(new nvar(x, Copy));
+          delete h_.x;
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:{
           nvec* v = new nvec(x.h_.v->size(), *h_.x);
+          delete h_.x;
           *v %= *x.h_.v;
           h_.v = v;
           t_ = Vector;
@@ -12328,7 +12431,8 @@ nvar& nvar::operator%=(const nvar& x){
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *v %= *x.h_.hs->s;
+          delete h_.x;
+          *v %= x.h_.hs->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12337,14 +12441,16 @@ nvar& nvar::operator%=(const nvar& x){
           return *this %= *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *v %= *x.h_.sm->s;
+          delete h_.x;
+          *v %= x.h_.sm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *v %= *x.h_.hsm->s;
+          delete h_.x;
+          *v %= x.h_.hsm->s->vec();
           h_.v = v;
           t_ = Vector;
           return *this;
@@ -12356,12 +12462,20 @@ nvar& nvar::operator%=(const nvar& x){
         default:
           NERROR("invalid operands");
       }
-    case Symbol:
+    case Symbol:{
+      CFunction* f = new CFunction("Mod");
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.s;
+      t_ = Function;
+      h_.f = f;
+      return *this;
+    }
     case Function:{
       CFunction* f = new CFunction("Mod");
-      f->v.emplace_back(new nvar(*this), Copy);
-      f->v.emplace_back(nvar(x, Copy));
-      
+      f->v.emplace_back(new nvar(*this, Copy));
+      f->v.emplace_back(move(nvar(x, Copy)));
+      delete h_.f;
       t_ = Function;
       h_.f = f;
       return *this;
@@ -12380,7 +12494,7 @@ nvar& nvar::operator%=(const nvar& x){
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mod");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
@@ -12390,15 +12504,16 @@ nvar& nvar::operator%=(const nvar& x){
           *h_.v %= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.v %= *x.h_.hs->s;
+          *h_.v %= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this %= *x.h_.hm->h;
+          *h_.v %= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.v %= *x.h_.sm->s;
+          *h_.v %= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.v %= *x.h_.hsm->s;
+          *h_.v %= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this %= *x.h_.ref->v;
@@ -12416,30 +12531,31 @@ nvar& nvar::operator%=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hs->s %= x;
+          h_.hs->s->vec() %= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mod");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hs->s %= *x.h_.v;
+          h_.hs->s->vec() %= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hs->s %= *x.h_.hs->s;
+          h_.hs->s->vec() %= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this %= *x.h_.hm->h;
+          h_.hs->s->vec() %= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hs->s %= *x.h_.sm->s;
+          h_.hs->s->vec() %= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hs->s %= *x.h_.hsm->s;
+          h_.hs->s->vec() %= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this %= *x.h_.ref->v;
@@ -12462,30 +12578,31 @@ nvar& nvar::operator%=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.sm->s %= x;
+          h_.sm->s->vec() %= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mod");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.sm->s %= *x.h_.v;
+          h_.sm->s->vec() %= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.sm->s %= *x.h_.hs->s;
+          h_.sm->s->vec() %= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this %= *x.h_.hm->h;
+          h_.sm->s->vec() %= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.sm->s %= *x.h_.sm->s;
+          h_.sm->s->vec() %= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.sm->s %= *x.h_.hsm->s;
+          h_.sm->s->vec() %= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this %= *x.h_.ref->v;
@@ -12503,30 +12620,31 @@ nvar& nvar::operator%=(const nvar& x){
         case Rational:
         case Float:
         case Real:
-          *h_.hsm->s %= x;
+          h_.hsm->s->vec() %= x;
           return *this;
         case Symbol:
         case Function:{
           CFunction* f = new CFunction("Mod");
-          f->v.emplace_back(*this);
+          f->v.emplace_back(move(*this));
           f->v.push_back(new nvar(x, Copy));
           t_ = Function;
           h_.f = f;
           return *this;
         }
         case Vector:
-          *h_.hsm->s %= *x.h_.v;
+          h_.hsm->s->vec() %= *x.h_.v;
           return *this;
         case HeadSequence:
-          *h_.hsm->s %= *x.h_.hs->s;
+          h_.hsm->s->vec() %= x.h_.hs->s->vec();
           return *this;
         case HeadMap:
-          return *this %= *x.h_.hm->h;
+          h_.hsm->s->vec() %= *x.h_.hm->h;
+          return *this;
         case SequenceMap:
-          *h_.hsm->s %= *x.h_.sm->s;
+          h_.hsm->s->vec() %= x.h_.sm->s->vec();
           return *this;
         case HeadSequenceMap:
-          *h_.hsm->s %= *x.h_.hsm->s;
+          h_.hsm->s->vec() %= x.h_.hsm->s->vec();
           return *this;
         case Reference:
           return *this %= *x.h_.ref->v;
@@ -12582,13 +12700,13 @@ nvar nvar::operator%(nlonglong x) const{
     case Vector:
       return *h_.v % x;
     case HeadSequence:
-      return *h_.hs->s % x;
+      return h_.hs->s->vec() % x;
     case HeadMap:
       return *h_.hm->h % x;
     case SequenceMap:
-      return *h_.sm->s % x;
+      return h_.sm->s->vec() % x;
     case HeadSequenceMap:
-      return *h_.hsm->s % x;
+      return h_.hsm->s->vec() % x;
     case Reference:
       return *h_.ref->v % x;
     case Pointer:
@@ -12626,13 +12744,13 @@ nvar nvar::operator%(double x) const{
     case Vector:
       return *h_.v % x;
     case HeadSequence:
-      return *h_.hs->s % x;
+      return h_.hs->s->vec() % x;
     case HeadMap:
       return *h_.hm->h % x;
     case SequenceMap:
-      return *h_.sm->s % x;
+      return h_.sm->s->vec() % x;
     case HeadSequenceMap:
-      return *h_.hsm->s % x;
+      return h_.hsm->s->vec() % x;
     case Reference:
       return *h_.ref->v % x;
     case Pointer:
@@ -12706,31 +12824,31 @@ nvar nvar::operator%(const nvar& x) const{
         }
         case HeadSequence:{
           nvec* v = new nvec(x.h_.hs->s->size(), h_.i);
-          *v %= *x.h_.hs->s;
+          *v %= x.h_.hs->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return h_.i % *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
-          *v %= *x.h_.sm->s;
+          *v %= x.h_.sm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           nvec* v = new nvec(x.h_.hsm->s->size(), h_.i);
-          *v %= *x.h_.hsm->s;
+          *v %= x.h_.hsm->s->vec();
           Head h;
           h.v = v;
           return nvar(Vector, h);
         }
         case Reference:
-          return *this % *x.h_.ref->v;
+          return h_.i % *x.h_.ref->v;
         case Pointer:
-          return *this % *x.h_.vp;
+          return h_.i % *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -12798,7 +12916,7 @@ nvar nvar::operator%(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.r);
-          *h.v %= *x.h_.hs->s;
+          *h.v %= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -12806,13 +12924,13 @@ nvar nvar::operator%(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.r);
-          *h.v %= *x.h_.sm->s;
+          *h.v %= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.r);
-          *h.v %= *x.h_.hsm->s;
+          *h.v %= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -12867,27 +12985,27 @@ nvar nvar::operator%(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), h_.d);
-          *h.v %= *x.h_.hs->s;
+          *h.v %= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return h_.d % *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
-          *h.v %= *x.h_.sm->s;
+          *h.v %= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), h_.d);
-          *h.v %= *x.h_.hsm->s;
+          *h.v %= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
-          return *this % *x.h_.ref->v;
+          return h_.d % *x.h_.ref->v;
         case Pointer:
-          return *this % *x.h_.vp;
+          return h_.d % *x.h_.vp;
         default:
           NERROR("invalid operands");
       }
@@ -12948,7 +13066,7 @@ nvar nvar::operator%(const nvar& x) const{
         case HeadSequence:{
           Head h;
           h.v = new nvec(x.h_.hs->s->size(), *h_.x);
-          *h.v %= *x.h_.hs->s;
+          *h.v %= x.h_.hs->s->vec();
           return nvar(Vector, h);
         }
         case HeadMap:
@@ -12956,13 +13074,13 @@ nvar nvar::operator%(const nvar& x) const{
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), *h_.x);
-          *h.v %= *x.h_.sm->s;
+          *h.v %= x.h_.sm->s->vec();
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
           h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
-          *h.v %= *x.h_.hsm->s;
+          *h.v %= x.h_.hsm->s->vec();
           return nvar(Vector, h);
         }
         case Reference:
@@ -12977,7 +13095,7 @@ nvar nvar::operator%(const nvar& x) const{
       Head h;
       h.f = new CFunction("Mod");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -13002,13 +13120,13 @@ nvar nvar::operator%(const nvar& x) const{
         case Vector:
           return *h_.v % *x.h_.v;
         case HeadSequence:
-          return *h_.v % *x.h_.hs->s;
+          return *h_.v % x.h_.hs->s->vec();
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return *h_.v % *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v % *x.h_.sm->s;
+          return *h_.v % x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v % *x.h_.hsm->s;
+          return *h_.v % x.h_.hsm->s->vec();
         case Reference:
           return *this % *x.h_.ref->v;
         case Pointer:
@@ -13025,7 +13143,7 @@ nvar nvar::operator%(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s % x;
+          return h_.hs->s->vec() % x;
         case Function:
         case Symbol:{
           Head h;
@@ -13035,15 +13153,15 @@ nvar nvar::operator%(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s % *x.h_.v;
+          return h_.hs->s->vec() % *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s % *x.h_.hs->s;
+          return h_.hs->s->vec() % x.h_.hs->s->vec();
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return h_.hs->s->vec() % *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s % *x.h_.sm->s;
+          return h_.hs->s->vec() % x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s % *x.h_.hsm->s;
+          return h_.hs->s->vec() % x.h_.hsm->s->vec();
         case Reference:
           return *this % *x.h_.ref->v;
         case Pointer:
@@ -13062,7 +13180,7 @@ nvar nvar::operator%(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s % x;
+          return h_.sm->s->vec() % x;
         case Function:
         case Symbol:{
           Head h;
@@ -13072,15 +13190,15 @@ nvar nvar::operator%(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s % *x.h_.v;
+          return h_.sm->s->vec() % *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s % *x.h_.hs->s;
+          return h_.sm->s->vec() % x.h_.hs->s->vec();
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return h_.sm->s->vec() % *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s % *x.h_.sm->s;
+          return h_.sm->s->vec() % x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s % *x.h_.hsm->s;
+          return h_.sm->s->vec() % x.h_.hsm->s->vec();
         case Reference:
           return *this % *x.h_.ref->v;
         case Pointer:
@@ -13097,7 +13215,7 @@ nvar nvar::operator%(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s % x;
+          return h_.hsm->s->vec() % x;
         case Function:
         case Symbol:{
           Head h;
@@ -13107,15 +13225,15 @@ nvar nvar::operator%(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s % *x.h_.v;
+          return h_.hsm->s->vec() % *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s % *x.h_.hs->s;
+          return h_.hsm->s->vec() % x.h_.hs->s->vec();
         case HeadMap:
-          return *this % *x.h_.hm->h;
+          return h_.hsm->s->vec() % *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s % *x.h_.sm->s;
+          return h_.hsm->s->vec() % x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s % *x.h_.hsm->s;
+          return h_.hsm->s->vec() % x.h_.hsm->s->vec();
         case Reference:
           return *this % *x.h_.ref->v;
         case Pointer:
@@ -13791,7 +13909,7 @@ bool nvar::less(const nvar& x) const{
           else if(y > 0){
             return false;
           }
-         
+          
           nvar m1(*this);
           m1.intoMap();
           
@@ -13909,784 +14027,6 @@ bool nvar::less(const nvar& x) const{
       return h_.ref->v->less(x);
     case Pointer:
       return h_.vp->less(x);
-    default:
-      return false;
-  }
-}
-
-bool nvar::greater(const nvar& x) const{
-  switch(t_){
-    case None:
-      switch(x.t_){
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Undefined:
-      switch(x.t_){
-        case None:
-          return true;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case False:
-      switch(x.t_){
-        case None:
-        case Undefined:
-          return true;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case True:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-          return true;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Integer:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-          return true;
-        case Integer:
-          return h_.i > x.h_.i;
-        case Rational:
-          return h_.i > *x.h_.r;
-        case Float:
-          return h_.i > x.h_.d;
-        case Real:
-          return h_.i > x.h_.x->toLong();
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Rational:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-          return true;
-        case Integer:
-          return *h_.r > x.h_.i;
-        case Rational:
-          return *h_.r > *x.h_.r;
-        case Float:
-          return *h_.r > x.h_.d;
-        case Real:
-          return *h_.r > *x.h_.x;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Float:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-          return true;
-        case Integer:
-          return h_.d > x.h_.i;
-        case Rational:
-          return h_.d > *x.h_.r;
-        case Float:
-          return h_.d > x.h_.d;
-        case Real:
-          return h_.d > x.h_.x->toDouble();
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Real:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-          return true;
-        case Integer:
-          return *h_.x > x.h_.i;
-        case Rational:
-          return *h_.x > nreal(*x.h_.r);
-        case Float:
-          return *h_.x > x.h_.d;
-        case Real:
-          return *h_.x > *x.h_.x;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case StringPointer:
-    case String:
-    case Binary:
-    case Symbol:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-          return true;
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-          return *h_.s > *x.h_.s;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case RawPointer:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-          return true;
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-          return h_.p > x.h_.o;
-        case RawPointer:
-          return h_.p > x.h_.p;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case ObjectPointer:
-    case LocalObject:
-    case SharedObject:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-          return true;
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-          return h_.o > x.h_.o;
-        case RawPointer:
-          return h_.o > x.h_.p;
-        case HeadSequence:
-          return greater(*x.h_.hs->h);
-        case HeadMap:
-          return greater(*x.h_.hm->h);
-        case HeadSequenceMap:
-          return greater(*x.h_.hsm->h);
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Vector:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-          return true;
-        case Vector:{
-          size_t s1 = h_.v->size();
-          size_t s2 = x.h_.v->size();
-          
-          if(s1 > s2){
-            return true;
-          }
-          else if(s2 > s1){
-            return false;
-          }
-          
-          for(size_t i = 0; i < s1; ++i){
-            if((*h_.v)[i].greater((*x.h_.v)[i])){
-              return true;
-            }
-            else if((*x.h_.v)[i].greater((*h_.v)[i])){
-              return false;
-            }
-          }
-          
-          return false;
-        }
-        case HeadMap:
-          return !x.h_.hm->m->hasKeys();
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case List:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-          return true;
-        case List:{
-          size_t s1 = h_.l->size();
-          size_t s2 = x.h_.l->size();
-          
-          if(s1 > s2){
-            return true;
-          }
-          else if(s2 > s1){
-            return false;
-          }
-          
-          for(size_t i = 0; i < s1; ++i){
-            if((*h_.l)[i].greater((*x.h_.l)[i])){
-              return true;
-            }
-            else if((*x.h_.l)[i].greater((*h_.l)[i])){
-              return false;
-            }
-          }
-          
-          return false;
-        }
-        case HeadMap:
-          return !x.h_.hm->m->hasKeys();
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Queue:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-          return true;
-        case Queue:{
-          size_t s1 = h_.q->size();
-          size_t s2 = x.h_.q->size();
-          
-          if(s1 > s2){
-            return true;
-          }
-          else if(s2 > s1){
-            return false;
-          }
-          
-          for(size_t i = 0; i < s1; ++i){
-            if((*h_.q)[i].greater((*x.h_.q)[i])){
-              return true;
-            }
-            else if((*x.h_.q)[i].greater((*h_.q)[i])){
-              return false;
-            }
-          }
-          
-          return false;
-        }
-        case HeadMap:
-          return !x.h_.hm->m->hasKeys();
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Function:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-          return true;
-        case Function:{
-          int y = h_.f->v.size() - x.h_.f->v.size();
-          
-          if(y > 0){
-            return true;
-          }
-          else if(y < 0){
-            return false;
-          }
-          
-          return h_.f->f > x.h_.f->f;
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case HeadSequence:
-      return h_.hs->h->greater(x);
-    case Set:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Function:
-        case HeadSequence:
-          return true;
-        case Set:{
-          int y = h_.set->size() - x.h_.set->size();
-          
-          if(y > 0){
-            return true;
-          }
-          else if(y < 0){
-            return false;
-          }
-          
-          return *h_.set > *x.h_.set;
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case HashSet:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Set:
-        case Function:
-        case HeadSequence:
-          return true;
-        case HashSet:{
-          int y = h_.hset->size() - x.h_.hset->size();
-          
-          if(y > 0){
-            return true;
-          }
-          else if(y < 0){
-            return false;
-          }
-          
-          nvar m1(*this);
-          m1.intoSet();
-          
-          nvar m2(x);
-          m2.intoSet();
-          
-          return m1.greater(m2);
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Map:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Function:
-        case HeadSequence:
-        case Set:
-        case HashSet:
-          return true;
-        case Map:{
-          int y = h_.m->size() - x.h_.m->size();
-          
-          if(y > 0){
-            return true;
-          }
-          else if(y < 0){
-            return false;
-          }
-          
-          return *h_.m > *x.h_.m;
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case HashMap:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Function:
-        case HeadSequence:
-        case Map:
-          return true;
-        case HashMap:{
-          int y = h_.h->size() - x.h_.h->size();
-          
-          if(y < 0){
-            return false;
-          }
-          else if(y > 0){
-            return true;
-          }
-          
-          nvar m1(*this);
-          m1.intoMap();
-          
-          nvar m2(x);
-          m2.intoMap();
-          
-          return m1.greater(m2);
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case Multimap:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Function:
-        case HeadSequence:
-        case Set:
-        case HashSet:
-        case Map:
-        case HashMap:
-          return true;
-        case Multimap:{
-          int y = h_.mm->size() - x.h_.mm->size();
-          
-          if(y < 0){
-            return true;
-          }
-          else if(y > 0){
-            return false;
-          }
-          
-          return *h_.mm > *x.h_.mm;
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case HeadMap:
-      return h_.hm->h->greater(x);
-    case SequenceMap:
-      switch(x.t_){
-        case None:
-        case Undefined:
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case Binary:
-        case String:
-        case StringPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-        case RawPointer:
-        case Vector:
-        case List:
-        case Queue:
-        case Function:
-        case HeadSequence:
-        case Set:
-        case HashSet:
-        case Map:
-        case HashMap:
-        case Multimap:
-        case HeadMap:
-          return true;
-        case SequenceMap:{
-          int y = h_.sm->s->size() - x.h_.sm->s->size();
-          
-          if(y > 0){
-            return true;
-          }
-          else if(y < 0){
-            return false;
-          }
-          
-          return *h_.sm->s > *x.h_.sm->s;
-        }
-        case Reference:
-          return greater(*x.h_.ref->v);
-        case Pointer:
-          return greater(*x.h_.vp);
-        default:
-          return false;
-      }
-    case HeadSequenceMap:
-      return h_.hsm->h->greater(x);
-    case Reference:
-      return h_.ref->v->greater(x);
-    case Pointer:
-      return h_.vp->greater(x);
     default:
       return false;
   }
@@ -14921,6 +14261,10 @@ bool nvar::equal(const nvar& x) const{
             return false;
           }
 
+          if(h_.f->f != x.h_.f->f){
+            return false;
+          }
+          
           for(size_t i = 0; i < size; ++i){
             if(!h_.f->v[i].equal((x.h_.f->v[i]))){
               return false;
@@ -14955,16 +14299,9 @@ bool nvar::equal(const nvar& x) const{
             return false;
           }
           
-          for(auto& itr : *h_.set){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.set){
             auto itr2 = x.h_.set->find(k);
             if(itr2 == x.h_.set->end()){
-              return false;
-            }
-            
-            const nvar& k2 = *itr2;
-            if(!k.equal(k2)){
               return false;
             }
           }
@@ -14985,16 +14322,9 @@ bool nvar::equal(const nvar& x) const{
             return false;
           }
           
-          for(auto& itr : *h_.hset){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.hset){
             auto itr2 = x.h_.hset->find(k);
             if(itr2 == x.h_.hset->end()){
-              return false;
-            }
-            
-            const nvar& k2 = *itr2;
-            if(!k.equal(k2)){
               return false;
             }
           }
@@ -15016,16 +14346,12 @@ bool nvar::equal(const nvar& x) const{
           }
 
           for(auto& itr : *h_.m){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.m->find(k);
+            auto itr2 = x.h_.m->find(itr.first);
             if(itr2 == x.h_.m->end()){
               return false;
             }
-            
-            const nvar& v2 = itr2->second;
-            if(!v.equal(v2)){
+
+            if(!itr.second.equal(itr2->second)){
               return false;
             }
           }
@@ -15047,16 +14373,12 @@ bool nvar::equal(const nvar& x) const{
           }
           
           for(auto& itr : *h_.h){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.h->find(k);
+            auto itr2 = x.h_.h->find(itr.first);
             if(itr2 == x.h_.h->end()){
               return false;
             }
             
-            const nvar& v2 = itr2->second;
-            if(!v.equal(v2)){
+            if(!itr.second.equal(itr2->second)){
               return false;
             }
           }
@@ -15078,16 +14400,12 @@ bool nvar::equal(const nvar& x) const{
           }
           
           for(auto& itr : *h_.mm){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.mm->find(k);
+            auto itr2 = x.h_.mm->find(itr.first);
             if(itr2 == x.h_.mm->end()){
               return false;
             }
             
-            const nvar& v2 = itr2->second;
-            if(!v.equal(v2)){
+            if(!itr.second.equal(itr2->second)){
               return false;
             }
           }
@@ -15289,14 +14607,17 @@ bool nvar::hashEqual(const nvar& x) const{
     case Vector:
       switch(x.t_){
         case Vector:{
-          size_t size = h_.v->size();
+          const nvec& v1 = *h_.v;
+          const nvec& v2 = *x.h_.v;
           
-          if(size != x.h_.v->size()){
+          size_t size = v1.size();
+          
+          if(size != v2.size()){
             return false;
           }
           
           for(size_t i = 0; i < size; ++i){
-            if(!(*h_.v)[i].hashEqual((*x.h_.v)[i])){
+            if(!v1[i].hashEqual(v2[i])){
               return false;
             }
           }
@@ -15313,14 +14634,17 @@ bool nvar::hashEqual(const nvar& x) const{
     case List:
       switch(x.t_){
         case List:{
-          size_t size = h_.l->size();
+          const nlist& l1 = *h_.l;
+          const nlist& l2 = *x.h_.l;
           
-          if(size != x.h_.l->size()){
+          size_t size = l1.size();
+          
+          if(size != l2.size()){
             return false;
           }
           
           for(size_t i = 0; i < size; ++i){
-            if(!(*h_.l)[i].hashEqual((*x.h_.l)[i])){
+            if(!l1[i].hashEqual(l2[i])){
               return false;
             }
           }
@@ -15337,14 +14661,17 @@ bool nvar::hashEqual(const nvar& x) const{
     case Queue:
       switch(x.t_){
         case Queue:{
-          size_t size = h_.q->size();
+          const nqueue& q1 = *h_.q;
+          const nqueue& q2 = *x.h_.q;
           
-          if(size != x.h_.q->size()){
+          size_t size = q1.size();
+          
+          if(size != q2.size()){
             return false;
           }
           
           for(size_t i = 0; i < size; ++i){
-            if(!(*h_.q)[i].hashEqual((*x.h_.q)[i])){
+            if(!q1[i].hashEqual(q2[i])){
               return false;
             }
           }
@@ -15361,14 +14688,21 @@ bool nvar::hashEqual(const nvar& x) const{
     case Function:
       switch(x.t_){
         case Function:{
-          size_t size = h_.f->v.size();
+          if(h_.f->f != x.h_.f->f){
+            return false;
+          }
           
-          if(size != h_.f->v.size()){
+          const nvec& v1 = h_.f->v;
+          const nvec& v2 = x.h_.f->v;
+          
+          size_t size = v1.size();
+          
+          if(size != v2.size()){
             return false;
           }
           
           for(size_t i = 0; i < size; ++i){
-            if(!h_.f->v[i].hashEqual((x.h_.f->v[i]))){
+            if(!v1[i].hashEqual(v2[i])){
               return false;
             }
           }
@@ -15401,16 +14735,9 @@ bool nvar::hashEqual(const nvar& x) const{
             return false;
           }
           
-          for(auto& itr : *h_.set){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.set){
             auto itr2 = x.h_.set->find(k);
             if(itr2 == x.h_.set->end()){
-              return false;
-            }
-            
-            const nvar& k2 = *itr2;
-            if(!k.hashEqual(k2)){
               return false;
             }
           }
@@ -15431,16 +14758,9 @@ bool nvar::hashEqual(const nvar& x) const{
             return false;
           }
           
-          for(auto& itr : *h_.hset){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.hset){
             auto itr2 = x.h_.hset->find(k);
             if(itr2 == x.h_.hset->end()){
-              return false;
-            }
-            
-            const nvar& k2 = *itr2;
-            if(!k.hashEqual(k2)){
               return false;
             }
           }
@@ -15462,16 +14782,12 @@ bool nvar::hashEqual(const nvar& x) const{
           }
           
           for(auto& itr : *h_.m){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.m->find(k);
+            auto itr2 = x.h_.m->find(itr.first);
             if(itr2 == x.h_.m->end()){
               return false;
             }
             
-            const nvar& v2 = itr2->second;
-            if(!v.hashEqual(v2)){
+            if(!itr.second.hashEqual(itr2->second)){
               return false;
             }
           }
@@ -15493,16 +14809,12 @@ bool nvar::hashEqual(const nvar& x) const{
           }
           
           for(auto& itr : *h_.h){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.h->find(k);
+            auto itr2 = x.h_.h->find(itr.first);
             if(itr2 == x.h_.h->end()){
               return false;
             }
             
-            const nvar& v2 = itr2->second;
-            if(!v.hashEqual(v2)){
+            if(!itr.second.hashEqual(itr2->second)){
               return false;
             }
           }
@@ -15524,16 +14836,12 @@ bool nvar::hashEqual(const nvar& x) const{
           }
           
           for(auto& itr : *h_.mm){
-            const nvar& k = itr.first;
-            const nvar& v = itr.second;
-            
-            auto itr2 = x.h_.mm->find(k);
+            auto itr2 = x.h_.mm->find(itr.first);
             if(itr2 == x.h_.mm->end()){
               return false;
             }
             
-            const nvar& v2 = itr2->second;
-            if(!v.hashEqual(v2)){
+            if(!itr.second.hashEqual(itr2->second)){
               return false;
             }
           }
@@ -15597,9 +14905,7 @@ nvar nvar::operator<(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return true;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i < x;
     case Rational:
@@ -15627,7 +14933,7 @@ nvar nvar::operator<(nlonglong x) const{
     case Pointer:
       return *h_.vp < x;
     default:
-      return false;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -15635,9 +14941,7 @@ nvar nvar::operator<(double x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return true;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i < x;
     case Rational:
@@ -15665,7 +14969,7 @@ nvar nvar::operator<(double x) const{
     case Pointer:
       return *h_.vp < x;
     default:
-      return false;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -16257,8 +15561,24 @@ nvar nvar::operator<(const nvar& x) const{
         case Set:
         case Map:
           return false;
-        case HashMap:
-          return h_.h->size() < x.h_.h->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          nvar m1 = *this;
+          m1.intoMap();
+          
+          nvar m2 = x;
+          m2.intoMap();
+          
+          return m1 < m2;
+        }
         case Symbol:
         case Function:
           return nfunc("LT") << *this << new nvar(x, Copy);
@@ -16357,7 +15677,7 @@ nvar nvar::operator<(const nvar& x) const{
             return false;
           }
           
-          return *h_.sm->s < *x.h_.sm->s;
+          return h_.sm->s->vec() < x.h_.sm->s->vec();
         }
         case Symbol:
         case Function:
@@ -16384,9 +15704,7 @@ nvar nvar::operator<=(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return true;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i <= x;
     case Rational:
@@ -16414,7 +15732,7 @@ nvar nvar::operator<=(nlonglong x) const{
     case Pointer:
       return *h_.vp <= x;
     default:
-      return false;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -16422,9 +15740,7 @@ nvar nvar::operator<=(double x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return true;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i <= x;
     case Rational:
@@ -16452,7 +15768,7 @@ nvar nvar::operator<=(double x) const{
     case Pointer:
       return *h_.vp <= x;
     default:
-      return false;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -17045,8 +16361,24 @@ nvar nvar::operator<=(const nvar& x) const{
         case HashSet:
         case Map:
           return false;
-        case HashMap:
-          return h_.m->size() <= x.h_.m->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          nvar m1 = *this;
+          m1.intoMap();
+          
+          nvar m2 = x;
+          m2.intoMap();
+          
+          return m1 <= m2;
+        }
         case Symbol:
         case Function:
           return nfunc("LE") << *this << new nvar(x, Copy);
@@ -17147,7 +16479,7 @@ nvar nvar::operator<=(const nvar& x) const{
             return false;
           }
           
-          return *h_.sm->s <= *x.h_.sm->s;
+          return h_.sm->s->vec() <= x.h_.sm->s->vec();
         }
         case Symbol:
         case Function:
@@ -17174,9 +16506,7 @@ nvar nvar::operator>(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return false;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i > x;
     case Rational:
@@ -17204,7 +16534,7 @@ nvar nvar::operator>(nlonglong x) const{
     case Pointer:
       return *h_.vp > x;
     default:
-      return true;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -17212,9 +16542,7 @@ nvar nvar::operator>(double x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return false;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i > x;
     case Rational:
@@ -17242,7 +16570,7 @@ nvar nvar::operator>(double x) const{
     case Pointer:
       return *h_.vp > x;
     default:
-      return true;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -17555,7 +16883,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Vector:{
           int y = h_.v->size() - x.h_.v->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17597,7 +16925,7 @@ nvar nvar::operator>(const nvar& x) const{
         case List:{
           int y = h_.l->size() - x.h_.l->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17640,7 +16968,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Queue:{
           int y = h_.q->size() - x.h_.q->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17690,10 +17018,10 @@ nvar nvar::operator>(const nvar& x) const{
         case Set:{
           int y = h_.set->size() - x.h_.set->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
-          else if(y > 0){
+          else if(y < 0){
             return true;
           }
           
@@ -17736,7 +17064,7 @@ nvar nvar::operator>(const nvar& x) const{
         case HashSet:{
           int y = h_.hset->size() - x.h_.hset->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17789,7 +17117,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Map:{
           int y = h_.m->size() - x.h_.m->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17834,8 +17162,24 @@ nvar nvar::operator>(const nvar& x) const{
         case Map:
         case HeadSequence:
           return true;
-        case HashMap:
-          return h_.m->size() > x.h_.m->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return false;
+          }
+          else if(y > 0){
+            return true;
+          }
+          
+          nvar m1 = *this;
+          m1.intoMap();
+          
+          nvar m2 = x;
+          m2.intoMap();
+          
+          return m1 > m2;
+        }
         case Symbol:
         case Function:
           return nfunc("GT") << *this << new nvar(x, Copy);
@@ -17876,7 +17220,7 @@ nvar nvar::operator>(const nvar& x) const{
         case Multimap:{
           int y = h_.mm->size() - x.h_.mm->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
@@ -17929,14 +17273,14 @@ nvar nvar::operator>(const nvar& x) const{
         case SequenceMap:{
           int y = h_.sm->s->size() - x.h_.sm->s->size();
           
-          if(y > 0){
+          if(y < 0){
             return false;
           }
           else if(y > 0){
             return true;
           }
           
-          return *h_.sm->s > *x.h_.sm->s;
+          return h_.sm->s->vec() > x.h_.sm->s->vec();
         }
         case Symbol:
         case Function:
@@ -17963,9 +17307,7 @@ nvar nvar::operator>=(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
-    case False:
-    case True:
-      return false;
+      NERROR("left operand is undefined");
     case Integer:
       return h_.i >= x;
     case Rational:
@@ -17993,7 +17335,7 @@ nvar nvar::operator>=(nlonglong x) const{
     case Pointer:
       return *h_.vp >= x;
     default:
-      return true;
+      NERROR("left operand is invalid");
   }
 }
 
@@ -18625,8 +17967,24 @@ nvar nvar::operator>=(const nvar& x) const{
         case Map:
         case HeadSequence:
           return true;
-        case HashMap:
-          return h_.m->size() >= x.h_.m->size();
+        case HashMap:{
+          int y = h_.h->size() - x.h_.h->size();
+          
+          if(y < 0){
+            return false;
+          }
+          else if(y > 0){
+            return true;
+          }
+          
+          nvar m1 = *this;
+          m1.intoMap();
+          
+          nvar m2 = x;
+          m2.intoMap();
+          
+          return m1 >= m2;
+        }
         case Symbol:
         case Function:
           return nfunc("GE") << *this << new nvar(x, Copy);
@@ -18727,7 +18085,7 @@ nvar nvar::operator>=(const nvar& x) const{
             return true;
           }
           
-          return *h_.sm->s >= *x.h_.sm->s;
+          return h_.sm->s->vec() >= x.h_.sm->s->vec();
         }
         case Symbol:
         case Function:
@@ -19470,7 +18828,7 @@ nvar nvar::operator!=(const nvar& x) const{
     case HeadSequence:
       switch(x.t_){
         case HeadSequence:
-          return *h_.hs->h != *x.h_.hs->h && *h_.hs->s != *x.h_.hs->s;
+          return *h_.hs->h != *x.h_.hs->h || *h_.hs->s != *x.h_.hs->s;
         case Symbol:
         case Function:
           return nfunc("NE") << *this << new nvar(x, Copy);
@@ -19554,7 +18912,7 @@ nvar nvar::operator!=(const nvar& x) const{
     case HeadMap:
       switch(x.t_){
         case HeadMap:
-          return *h_.hm->h != *x.h_.hm->h && *h_.hm->m != *x.h_.hm->m;
+          return *h_.hm->h != *x.h_.hm->h || *h_.hm->m != *x.h_.hm->m;
         case Symbol:
         case Function:
           return nfunc("NE") << *this << new nvar(x, Copy);
@@ -19568,7 +18926,7 @@ nvar nvar::operator!=(const nvar& x) const{
     case SequenceMap:
       switch(x.t_){
         case SequenceMap:
-          return *h_.sm->s != *x.h_.sm->s && *h_.sm->m != *x.h_.sm->m;
+          return *h_.sm->s != *x.h_.sm->s || *h_.sm->m != *x.h_.sm->m;
         case Symbol:
         case Function:
           return nfunc("NE") << *this << new nvar(x, Copy);
@@ -19582,8 +18940,8 @@ nvar nvar::operator!=(const nvar& x) const{
     case HeadSequenceMap:
       switch(x.t_){
         case HeadSequenceMap:
-          return *h_.hsm->h != *x.h_.hsm->h &&
-          *h_.hsm->s != *x.h_.hsm->s &&
+          return *h_.hsm->h != *x.h_.hsm->h ||
+          *h_.hsm->s != *x.h_.hsm->s ||
           *h_.hsm->m != *x.h_.hsm->m;
         case Symbol:
         case Function:
@@ -19680,7 +19038,7 @@ nvar nvar::operator&&(const nvar& x) const{
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return h_.i && *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
           v->andBy(*x.h_.sm->s);
@@ -19796,7 +19154,7 @@ nvar nvar::operator&&(const nvar& x) const{
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return h_.d && *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
@@ -19900,13 +19258,13 @@ nvar nvar::operator&&(const nvar& x) const{
         }
         case Vector:{
           Head h;
-          h.v = new nvec(x.h_.v->size(), *h_.x);
+          h.v = new nvec(x.h_.v->size(), *h_.s);
           h.v->andBy(*x.h_.v);
           return nvar(Vector, h);
         }
         case HeadSequence:{
           Head h;
-          h.v = new nvec(x.h_.hs->s->size(), *h_.x);
+          h.v = new nvec(x.h_.hs->s->size(), *h_.s);
           h.v->andBy(*x.h_.hs->s);
           return nvar(Vector, h);
         }
@@ -19914,13 +19272,13 @@ nvar nvar::operator&&(const nvar& x) const{
           return *this && *x.h_.hm->h;
         case SequenceMap:{
           Head h;
-          h.v = new nvec(x.h_.sm->s->size(), *h_.x);
+          h.v = new nvec(x.h_.sm->s->size(), *h_.s);
           h.v->andBy(*x.h_.sm->s);
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
-          h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
+          h.v = new nvec(x.h_.hsm->s->size(), *h_.s);
           h.v->andBy(*x.h_.hsm->s);
           return nvar(Vector, h);
         }
@@ -19936,7 +19294,7 @@ nvar nvar::operator&&(const nvar& x) const{
       Head h;
       h.f = new CFunction("And");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -19952,7 +19310,7 @@ nvar nvar::operator&&(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return h_.v && x;
+          return *h_.v && x;
         case Function:
         case Symbol:{
           Head h;
@@ -19964,13 +19322,13 @@ nvar nvar::operator&&(const nvar& x) const{
         case Vector:
           return *h_.v && *x.h_.v;
         case HeadSequence:
-          return *h_.v && *x.h_.hs->s;
+          return *h_.v && x.h_.hs->s->vec();
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return *h_.v && *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v && *x.h_.sm->s;
+          return *h_.v && x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v && *x.h_.hsm->s;
+          return *h_.v && x.h_.hsm->s->vec();
         case Reference:
           return *this && *x.h_.ref->v;
         case Pointer:
@@ -19990,7 +19348,7 @@ nvar nvar::operator&&(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s && x;
+          return h_.hs->s->vec() && x;
         case Function:
         case Symbol:{
           Head h;
@@ -20000,15 +19358,15 @@ nvar nvar::operator&&(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s && *x.h_.v;
+          return h_.hs->s->vec() && *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s && *x.h_.hs->s;
+          return h_.hs->s->vec() && x.h_.hs->s->vec();
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return h_.hs->s->vec() && *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s && *x.h_.sm->s;
+          return h_.hs->s->vec() && x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s && *x.h_.hsm->s;
+          return h_.hs->s->vec() && x.h_.hsm->s->vec();
         case Reference:
           return *this && *x.h_.ref->v;
         case Pointer:
@@ -20030,7 +19388,7 @@ nvar nvar::operator&&(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s && x;
+          return h_.sm->s->vec() && x;
         case Function:
         case Symbol:{
           Head h;
@@ -20040,15 +19398,15 @@ nvar nvar::operator&&(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s && *x.h_.v;
+          return h_.sm->s->vec() && *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s && *x.h_.hs->s;
+          return h_.sm->s->vec() && x.h_.hs->s->vec();
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return h_.sm->s->vec() && *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s && *x.h_.sm->s;
+          return h_.sm->s->vec() && x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s && *x.h_.hsm->s;
+          return h_.sm->s->vec() && x.h_.hsm->s->vec();
         case Reference:
           return *this && *x.h_.ref->v;
         case Pointer:
@@ -20068,7 +19426,7 @@ nvar nvar::operator&&(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s && x;
+          return h_.hsm->s->vec() && x;
         case Function:
         case Symbol:{
           Head h;
@@ -20078,15 +19436,15 @@ nvar nvar::operator&&(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s && *x.h_.v;
+          return h_.hsm->s->vec() && *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s && *x.h_.hs->s;
+          return h_.hsm->s->vec() && x.h_.hs->s->vec();
         case HeadMap:
-          return *this && *x.h_.hm->h;
+          return h_.hsm->s->vec() && *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s && *x.h_.sm->s;
+          return h_.hsm->s->vec() && x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s && *x.h_.hsm->s;
+          return h_.hsm->s->vec() && x.h_.hsm->s->vec();
         case Reference:
           return *this && *x.h_.ref->v;
         case Pointer:
@@ -20131,36 +19489,16 @@ nvar nvar::operator||(const nvar& x) const{
           h.f->v.push_back(new nvar(x, Copy));
           return new nvar(Function, h);
         }
-        case Vector:{
-          nvec* v = new nvec(x.h_.v->size(), undef);
-          v->orBy(*x.h_.v);
-          Head h;
-          h.v = v;
-          return nvar(Vector, h);
-        }
-        case HeadSequence:{
-          nvec* v = new nvec(x.h_.hs->s->size(), undef);
-          v->orBy(*x.h_.hs->s);
-          Head h;
-          h.v = v;
-          return nvar(Vector, h);
-        }
+        case Vector:
+          return *x.h_.v;
+        case HeadSequence:
+          return *x.h_.hs->s;
         case HeadMap:
           return *h_.hm->h;
-        case SequenceMap:{
-          nvec* v = new nvec(x.h_.sm->s->size(), undef);
-          v->orBy(*x.h_.sm->s);
-          Head h;
-          h.v = v;
-          return nvar(Vector, h);
-        }
-        case HeadSequenceMap:{
-          nvec* v = new nvec(x.h_.hsm->s->size(), undef);
-          v->orBy(*x.h_.hsm->s);
-          Head h;
-          h.v = v;
-          return nvar(Vector, h);
-        }
+        case SequenceMap:
+          return *x.h_.sm->s;
+        case HeadSequenceMap:
+          return *x.h_.hsm->s;
         case Reference:
           return *this || *x.h_.ref->v;
         case Pointer:
@@ -20209,7 +19547,7 @@ nvar nvar::operator||(const nvar& x) const{
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return h_.i || *x.h_.hm->h;
         case SequenceMap:{
           nvec* v = new nvec(x.h_.sm->s->size(), h_.i);
           v->orBy(*x.h_.sm->s);
@@ -20325,7 +19663,7 @@ nvar nvar::operator||(const nvar& x) const{
           return nvar(Vector, h);
         }
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return h_.d || *x.h_.hm->h;
         case SequenceMap:{
           Head h;
           h.v = new nvec(x.h_.sm->s->size(), h_.d);
@@ -20358,7 +19696,7 @@ nvar nvar::operator||(const nvar& x) const{
         case Rational:
           return *h_.x != 0 || *x.h_.r != 0;
         case Float:
-          return h_.d != 0.0 || x.h_.d != 0.0;
+          return *h_.x != 0 || x.h_.d != 0.0;
         case Real:
           return *h_.x != 0 || *x.h_.x != 0;
         case Function:
@@ -20429,13 +19767,13 @@ nvar nvar::operator||(const nvar& x) const{
         }
         case Vector:{
           Head h;
-          h.v = new nvec(x.h_.v->size(), *h_.x);
+          h.v = new nvec(x.h_.v->size(), *h_.s);
           h.v->orBy(*x.h_.v);
           return nvar(Vector, h);
         }
         case HeadSequence:{
           Head h;
-          h.v = new nvec(x.h_.hs->s->size(), *h_.x);
+          h.v = new nvec(x.h_.hs->s->size(), *h_.s);
           h.v->orBy(*x.h_.hs->s);
           return nvar(Vector, h);
         }
@@ -20443,13 +19781,13 @@ nvar nvar::operator||(const nvar& x) const{
           return *this || *x.h_.hm->h;
         case SequenceMap:{
           Head h;
-          h.v = new nvec(x.h_.sm->s->size(), *h_.x);
+          h.v = new nvec(x.h_.sm->s->size(), *h_.s);
           h.v->orBy(*x.h_.sm->s);
           return nvar(Vector, h);
         }
         case HeadSequenceMap:{
           Head h;
-          h.v = new nvec(x.h_.hsm->s->size(), *h_.x);
+          h.v = new nvec(x.h_.hsm->s->size(), *h_.s);
           h.v->orBy(*x.h_.hsm->s);
           return nvar(Vector, h);
         }
@@ -20465,7 +19803,7 @@ nvar nvar::operator||(const nvar& x) const{
       Head h;
       h.f = new CFunction("Or");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -20481,7 +19819,7 @@ nvar nvar::operator||(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return h_.v || x;
+          return *h_.v || x;
         case Function:
         case Symbol:{
           Head h;
@@ -20493,14 +19831,13 @@ nvar nvar::operator||(const nvar& x) const{
         case Vector:
           return *h_.v || *x.h_.v;
         case HeadSequence:
-          return *h_.v || *x.h_.hs->s;
-          return *this;
+          return *h_.v || x.h_.hs->s->vec();
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return *h_.v || *x.h_.hm->h;
         case SequenceMap:
-          return *h_.v || *x.h_.sm->s;
+          return *h_.v || x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.v || *x.h_.hsm->s;
+          return *h_.v || x.h_.hsm->s->vec();
         case Reference:
           return *this || *x.h_.ref->v;
         case Pointer:
@@ -20520,7 +19857,7 @@ nvar nvar::operator||(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hs->s || x;
+          return h_.hs->s->vec() || x;
         case Function:
         case Symbol:{
           Head h;
@@ -20530,15 +19867,15 @@ nvar nvar::operator||(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hs->s || *x.h_.v;
+          return h_.hs->s->vec() || *x.h_.v;
         case HeadSequence:
-          return *h_.hs->s || *x.h_.hs->s;
+          return h_.hs->s->vec() || x.h_.hs->s->vec();
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return h_.hs->s->vec() || *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hs->s || *x.h_.sm->s;
+          return h_.hs->s->vec() || x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hs->s || *x.h_.hsm->s;
+          return h_.hs->s->vec() || x.h_.hsm->s->vec();
         case Reference:
           return *this || *x.h_.ref->v;
         case Pointer:
@@ -20558,7 +19895,7 @@ nvar nvar::operator||(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.sm->s || x;
+          return h_.sm->s->vec() || x;
         case Function:
         case Symbol:{
           Head h;
@@ -20568,15 +19905,15 @@ nvar nvar::operator||(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.sm->s || *x.h_.v;
+          return h_.sm->s->vec() || *x.h_.v;
         case HeadSequence:
-          return *h_.sm->s || *x.h_.hs->s;
+          return h_.sm->s->vec() || x.h_.hs->s->vec();
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return h_.sm->s->vec() || *x.h_.hm->h;
         case SequenceMap:
-          return *h_.sm->s || *x.h_.sm->s;
+          return h_.sm->s->vec() || x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.sm->s || *x.h_.hsm->s;
+          return h_.sm->s->vec() || x.h_.hsm->s->vec();
         case Reference:
           return *this || *x.h_.ref->v;
         case Pointer:
@@ -20596,7 +19933,7 @@ nvar nvar::operator||(const nvar& x) const{
         case Rational:
         case Float:
         case Real:
-          return *h_.hsm->s || x;
+          return h_.hsm->s->vec() || x;
         case Function:
         case Symbol:{
           Head h;
@@ -20606,15 +19943,15 @@ nvar nvar::operator||(const nvar& x) const{
           return new nvar(Function, h);
         }
         case Vector:
-          return *h_.hsm->s || *x.h_.v;
+          return h_.hsm->s->vec() || *x.h_.v;
         case HeadSequence:
-          return *h_.hsm->s || *x.h_.hs->s;
+          return h_.hsm->s->vec() || x.h_.hs->s->vec();
         case HeadMap:
-          return *this || *x.h_.hm->h;
+          return h_.hsm->s->vec() || *x.h_.hm->h;
         case SequenceMap:
-          return *h_.hsm->s || *x.h_.sm->s;
+          return h_.hsm->s->vec() || x.h_.sm->s->vec();
         case HeadSequenceMap:
-          return *h_.hsm->s || *x.h_.hsm->s;
+          return h_.hsm->s->vec() || x.h_.hsm->s->vec();
         case Reference:
           return *this || *x.h_.ref->v;
         case Pointer:
@@ -20647,9 +19984,10 @@ nvar nvar::operator!() const{
       return h_.d == 0.0;
     case Real:
       return *h_.x == 0;
+    case Binary:
     case String:
     case StringPointer:
-      return false;
+      return h_.s->empty();
     case Function:
     case Symbol:{
       Head h;
@@ -20664,13 +20002,13 @@ nvar nvar::operator!() const{
       return ret;
     }
     case HeadSequence:
-      return !*h_.hs->s;
+      return !h_.hs->s->vec();
     case HeadMap:
       return !*h_.hm->h;
     case SequenceMap:
-      return !*h_.sm->s;
+      return !h_.sm->s->vec();
     case HeadSequenceMap:
-      return !*h_.hsm->s;
+      return !h_.hsm->s->vec();
     default:
       NERROR("invalid operand");
   }
@@ -20681,35 +20019,35 @@ nvar& nvar::operator[](const nvar& key){
     case Integer:
       switch(t_){
         case Vector:{
-          size_t k = key.asLong();
+          size_t k = key.h_.i;
           if(k >= h_.v->size()){
             NERROR("index out of range: " + key);
           }
           return (*h_.v)[k];
         }
         case List:{
-          size_t k = key.asLong();
+          size_t k = key.h_.i;
           if(k >= h_.l->size()){
             NERROR("index out of range: " + key);
           }
           return (*h_.l)[k];
         }
         case Queue:{
-          size_t k = key.asLong();
+          size_t k = key.h_.i;
           if(k >= h_.q->size()){
             NERROR("index out of range: " + key);
           }
           return (*h_.q)[k];
         }
         case Function:{
-          size_t k = key.asLong();
+          size_t k = key.h_.i;
           if(k >= h_.f->v.size()){
             NERROR("index out of range: "  + key);
           }
           return h_.f->v[k];
         }
         case HeadSequence:
-          return (*h_.hs->s)[key];
+          return (*h_.hs->s)[int(key.h_.i)];
         case Map:{
           auto itr = h_.m->find(key);
           if(itr == h_.m->end()){
@@ -20718,22 +20056,22 @@ nvar& nvar::operator[](const nvar& key){
           return itr->second;
         }
         case HashMap:{
-          auto itr = h_.h->find(key);
+          auto itr = h_.h->find(key.h_.i);
           if(itr == h_.h->end()){
             NERROR("invalid key: " + key);
           }
           return itr->second;
         }
         case HeadMap:
-          return (*h_.hm->m)[key];
+          return (*h_.hm->m)[int(key.h_.i)];
         case SequenceMap:
-          return (*h_.sm->s)[key];
+          return (*h_.sm->s)[int(key.h_.i)];
         case HeadSequenceMap:
-          return (*h_.hsm->s)[key];
+          return (*h_.hsm->s)[int(key.h_.i)];
         case Reference:
-          return (*h_.ref->v)[key];
+          return (*h_.ref->v)[int(key.h_.i)];
         case Pointer:
-          return (*h_.vp)[key];
+          return (*h_.vp)[int(key.h_.i)];
         default:
           NERROR("invalid operand");
       }
@@ -20786,22 +20124,22 @@ nvar& nvar::operator[](int k){
   switch(t_){
     case Vector:
       if(k >= h_.v->size()){
-        NERROR("index out of range: " + nstr::toStr(k));
+        NERROR("index out of range: " + nvar(k));
       }
       return (*h_.v)[k];
     case List:
       if(k >= h_.l->size()){
-        NERROR("index out of range: " + nstr::toStr(k));
+        NERROR("index out of range: " + nvar(k));
       }
       return (*h_.l)[k];
     case Queue:
       if(k >= h_.q->size()){
-        NERROR("index out of range: " + nstr::toStr(k));
+        NERROR("index out of range: " + nvar(k));
       }
       return (*h_.q)[k];
     case Function:
       if(k >= h_.f->v.size()){
-        NERROR("index out of range: " + nstr::toStr(k));
+        NERROR("index out of range: " + nvar(k));
       }
       return h_.f->v[k];
     case HeadSequence:
@@ -20809,14 +20147,14 @@ nvar& nvar::operator[](int k){
     case Map:{
       auto itr = h_.m->find(k);
       if(itr == h_.m->end()){
-        NERROR("invalid key: " + nstr::toStr(k));
+        NERROR("invalid key: " + nvar(k));
       }
       return itr->second;
     }
     case HashMap:{
       auto itr = h_.h->find(k);
       if(itr == h_.h->end()){
-        NERROR("invalid key: " + nstr::toStr(k));
+        NERROR("invalid key: " + nvar(k));
       }
       return itr->second;
     }
@@ -20840,14 +20178,14 @@ nvar& nvar::operator[](const char* key){
     case Map:{
       auto itr = h_.m->find(key);
       if(itr == h_.m->end()){
-        NERROR("invalid key: " + nstr::toStr(key));
+        NERROR("invalid key: " + nvar(key));
       }
       return itr->second;
     }
     case HashMap:{
       auto itr = h_.h->find(key);
       if(itr == h_.h->end()){
-        NERROR("invalid key: " + nstr::toStr(key));
+        NERROR("invalid key: " + nvar(key));
       }
       return itr->second;
     }
@@ -20855,7 +20193,7 @@ nvar& nvar::operator[](const char* key){
       if(h_.f->m){
         auto itr = h_.f->m->find(key);
         if(itr == h_.f->m->end()){
-          NERROR("invalid key: " + nstr::toStr(key));
+          NERROR("invalid key: " + nvar(key));
         }
         return itr->second;
       }
@@ -20901,11 +20239,11 @@ nvar& nvar::get(const nvar& key){
       return itr->second;
     }
     case HeadMap:
-      return (*h_.hm->m)[key];
+      return h_.hm->m->get(key);
     case SequenceMap:
-      return (*h_.sm->m)[key];
+      return h_.sm->m->get(key);
     case HeadSequenceMap:
-      return (*h_.hsm->m)[key];
+      return h_.hsm->m->get(key);
     case Reference:
       return h_.ref->v->get(key);
     case Pointer:
@@ -21076,6 +20414,13 @@ nvar nvar::keys() const{
   return nvar(move(ks));
 }
 
+nvar nvar::enumerate() const{
+  nvec v;
+  enumerate(v);
+  
+  return nvar(move(v));
+}
+
 nvar nvar::allKeys() const{
   nvec ks;
   allKeys(ks);
@@ -21144,7 +20489,7 @@ void nvar::intoVector(){
       h.v = new nvec;
       CHeadMap* hm = h_.hm;
       h_.hsm =
-      new CHeadSequenceMap(hm->h, new nvar(t_, h_), hm->m);
+      new CHeadSequenceMap(hm->h, new nvar(Vector, h), hm->m);
       t_ = HeadSequenceMap;
       delete hm;
       break;
@@ -21209,7 +20554,7 @@ void nvar::intoVector(size_t size, const nvar& v){
       h.v = new nvec(size, v);
       CHeadMap* hm = h_.hm;
       h_.hsm =
-      new CHeadSequenceMap(hm->h, new nvar(t_, h_), hm->m);
+      new CHeadSequenceMap(hm->h, new nvar(Vector, h), hm->m);
       t_ = HeadSequenceMap;
       delete hm;
       break;
@@ -21287,7 +20632,7 @@ void nvar::intoList(){
       h.l = new nlist;
       CHeadMap* hm = h_.hm;
       h_.hsm =
-      new CHeadSequenceMap(hm->h, new nvar(t_, h_), hm->m);
+      new CHeadSequenceMap(hm->h, new nvar(List, h), hm->m);
       t_ = HeadSequenceMap;
       delete hm;
       break;
@@ -21346,10 +20691,9 @@ void nvar::intoMap(){
       break;
     }
     case Function:
-      if(h_.f->m){
-        break;
+      if(!h_.f->m){
+        h_.f->m = new nmap;
       }
-      h_.f->m = new nmap;
       break;
     case HeadSequence:{
       Head h;
@@ -21363,8 +20707,8 @@ void nvar::intoMap(){
     case Set:{
       nmap* m = new nmap;
       
-      for(auto& itr : *h_.set){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.set){
+        m->insert({vi, true});
       }
       
       delete h_.set;
@@ -21375,8 +20719,8 @@ void nvar::intoMap(){
     case HashSet:{
       nmap* m = new nmap;
       
-      for(auto& itr : *h_.hset){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.hset){
+        m->insert({vi, true});
       }
       
       delete h_.hset;
@@ -21480,8 +20824,8 @@ void nvar::intoMultimap(){
     case Set:{
       nmmap* m = new nmmap;
       
-      for(auto& itr : *h_.set){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.set){
+        m->insert({vi, true});
       }
       
       delete h_.set;
@@ -21492,8 +20836,8 @@ void nvar::intoMultimap(){
     case HashSet:{
       nmmap* m = new nmmap;
       
-      for(auto& itr : *h_.hset){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.hset){
+        m->insert({vi, true});
       }
       
       delete h_.hset;
@@ -21502,8 +20846,9 @@ void nvar::intoMultimap(){
       break;
     }
     case Map:{
-      const nmap& m = *h_.m;
-      h_.mm = new nmmap(m.begin(), m.end());
+      nmap* m = h_.m;
+      h_.mm = new nmmap(m->begin(), m->end());
+      delete m;
       t_ = Multimap;
       break;
     }
@@ -21590,7 +20935,7 @@ void nvar::intoQueue(){
     case Multimap:{
       Head h;
       h.q = new nqueue;
-      h_.sm = new CSequenceMap(new nvar(Vector, h), new nvar(t_, h_));
+      h_.sm = new CSequenceMap(new nvar(Queue, h), new nvar(t_, h_));
       t_ = SequenceMap;
       break;
     }
@@ -21655,7 +21000,7 @@ void nvar::intoQueue(size_t size, const nvar& v){
     case Multimap:{
       Head h;
       h.q = new nqueue(size, v);
-      h_.sm = new CSequenceMap(new nvar(Vector, h), new nvar(t_, h_));
+      h_.sm = new CSequenceMap(new nvar(Queue, h), new nvar(t_, h_));
       t_ = SequenceMap;
       break;
     }
@@ -21729,7 +21074,9 @@ void nvar::intoSet(){
       break;
     case HashSet:{
       t_ = Set;
+      nhset* s = h_.hset;
       h_.set = new nset(h_.hset->begin(), h_.hset->end());
+      delete s;
       break;
     }
     case Map:{
@@ -21738,6 +21085,8 @@ void nvar::intoSet(){
       for(auto& itr : *h_.m){
         s->add(itr.first);
       }
+      
+      delete h_.m;
       
       t_ = Set;
       h_.set = s;
@@ -21750,6 +21099,8 @@ void nvar::intoSet(){
         s->add(itr.first);
       }
       
+      delete h_.h;
+      
       t_ = Set;
       h_.set = s;
       break;
@@ -21760,6 +21111,8 @@ void nvar::intoSet(){
       for(auto& itr : *h_.mm){
         s->add(itr.first);
       }
+      
+      delete h_.mm;
       
       t_ = Set;
       h_.set = s;
@@ -21837,6 +21190,8 @@ void nvar::intoHashSet(){
         s->add(*itr);
       }
       
+      delete h_.set;
+      
       t_ = HashSet;
       h_.hset = s;
       break;
@@ -21850,6 +21205,8 @@ void nvar::intoHashSet(){
         s->add(itr.first);
       }
       
+      delete h_.m;
+      
       t_ = HashSet;
       h_.hset = s;
       break;
@@ -21861,6 +21218,8 @@ void nvar::intoHashSet(){
         s->add(itr.first);
       }
       
+      delete h_.h;
+      
       t_ = HashSet;
       h_.hset = s;
       break;
@@ -21871,6 +21230,8 @@ void nvar::intoHashSet(){
       for(auto& itr : *h_.mm){
         s->add(itr.first);
       }
+      
+      delete h_.mm;
       
       t_ = HashSet;
       h_.hset = s;
@@ -21944,8 +21305,8 @@ void nvar::intoHashMap(){
     case Set:{
       nhmap* m = new nhmap;
       
-      for(auto& itr : *h_.set){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.set){
+        m->insert({vi, true});
       }
       
       delete h_.set;
@@ -21956,8 +21317,8 @@ void nvar::intoHashMap(){
     case HashSet:{
       nhmap* m = new nhmap;
       
-      for(auto& itr : *h_.hset){
-        m->insert({*itr, true});
+      for(const nvar& vi : *h_.hset){
+        m->insert({vi, true});
       }
       
       delete h_.hset;
@@ -22180,8 +21541,8 @@ void nvar::append(const nvar& x){
         case List:{
           const nlist& l = *x.h_.l;
           
-          for(auto& itr : l){
-            h_.q->push_back(*itr);
+          for(const nvar& vi : l){
+            h_.q->push_back(vi);
           }
           break;
         }
@@ -22253,15 +21614,13 @@ void nvar::append(const nvar& x){
     case HashSet:
     case Map:
     case HashMap:
+    case Multimap:
       switch(x.t_){
         case Vector:{
           Head hv;
           hv.v = new nvec(*x.h_.v);
           
-          Head hm;
-          hm.m = h_.m;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(t_, hm));
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(t_, h_));
           t_ = SequenceMap;
           break;
         }
@@ -22269,10 +21628,7 @@ void nvar::append(const nvar& x){
           Head hl;
           hl.l = new nlist(*x.h_.l);
           
-          Head hm;
-          hm.m = h_.m;
-          
-          h_.sm = new CSequenceMap(new nvar(List, hl), new nvar(t_, hm));
+          h_.sm = new CSequenceMap(new nvar(List, hl), new nvar(t_, h_));
           t_ = SequenceMap;
           break;
         }
@@ -22280,10 +21636,7 @@ void nvar::append(const nvar& x){
           Head hq;
           hq.q = new nqueue(*x.h_.q);
           
-          Head hm;
-          hm.m = h_.m;
-          
-          h_.sm = new CSequenceMap(new nvar(Queue, hq), new nvar(t_, hm));
+          h_.sm = new CSequenceMap(new nvar(Queue, hq), new nvar(t_, h_));
           t_ = SequenceMap;
           break;
         }
@@ -22291,10 +21644,7 @@ void nvar::append(const nvar& x){
           Head hv;
           hv.v = new nvec(x.h_.f->v);
           
-          Head hm;
-          hm.m = h_.m;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, hm));
+          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Map, h_));
           t_ = SequenceMap;
           break;
         }
@@ -22321,36 +21671,48 @@ void nvar::append(const nvar& x){
           Head hv;
           hv.v = new nvec(*x.h_.v);
           
+          CHeadMap* hm = h_.hm;
+          
           h_.hsm =
-          new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+          new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
           t_ = HeadSequenceMap;
+          delete hm;
           break;
         }
         case List:{
           Head hl;
           hl.l = new nlist(*x.h_.l);
           
+          CHeadMap* hm = h_.hm;
+          
           h_.hsm =
-          new CHeadSequenceMap(h_.hm->h, new nvar(List, hl), h_.hm->m);
+          new CHeadSequenceMap(hm->h, new nvar(List, hl), hm->m);
           t_ = HeadSequenceMap;
+          delete hm;
           break;
         }
         case Queue:{
           Head hq;
           hq.q = new nqueue(*x.h_.q);
           
+          CHeadMap* hm = h_.hm;
+          
           h_.hsm =
-          new CHeadSequenceMap(h_.hm->h, new nvar(Queue, hq), h_.hm->m);
+          new CHeadSequenceMap(hm->h, new nvar(Queue, hq), hm->m);
           t_ = HeadSequenceMap;
+          delete hm;
           break;
         }
         case Function:{
           Head hv;
           hv.v = new nvec(x.h_.f->v);
           
+          CHeadMap* hm = h_.hm;
+          
           h_.hsm =
-          new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+          new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
           t_ = HeadSequenceMap;
+          delete hm;
           break;
         }
         case HeadSequence:
@@ -22907,8 +22269,7 @@ void nvar::setHead(const nvar& x){
           h_.o->ref();
           break;
         case Function:
-          h_.f->f = x.h_.f->f;
-          h_.f->v = x.h_.f->v;
+          h_.f->set(x.h_.f);
           break;
         case HeadSequence:
           setHead(*x.h_.hs->h);
@@ -22996,8 +22357,12 @@ void nvar::setHead(const nvar& x){
       nvar* h = new nvar;
       h->setHead(x);
       
+      CSequenceMap* sm = h_.sm;
+      
       t_ = HeadSequenceMap;
-      h_.hsm = new CHeadSequenceMap(h, h_.sm->s, h_.sm->m);
+      h_.hsm = new CHeadSequenceMap(h, sm->s, sm->m);
+      
+      delete sm;
       break;
     }
     case HeadSequenceMap:
@@ -23097,8 +22462,9 @@ void nvar::merge(const nvar& x){
           break;
         case Function:
           if(x.h_.f->m){
-            intoMap();
-            h_.m->merge(*x.h_.f->m);
+            for(auto& itr : *x.h_.f->m){
+              h_.set->add(itr.first);
+            }
           }
           break;
         case HeadMap:
@@ -23145,8 +22511,9 @@ void nvar::merge(const nvar& x){
           break;
         case Function:
           if(x.h_.f->m){
-            intoMap();
-            h_.m->merge(*x.h_.f->m);
+            for(auto& itr : *x.h_.f->m){
+              h_.hset->add(itr.first);
+            }
           }
           break;
         case HeadMap:
@@ -23168,13 +22535,13 @@ void nvar::merge(const nvar& x){
     case Map:
       switch(x.t_){
         case Set:
-          for(auto& itr : *x.h_.set){
-            h_.m->insert({*itr, true});
+          for(const nvar& vi : *x.h_.set){
+            h_.m->insert({vi, true});
           }
           break;
         case HashSet:
-          for(auto& itr : *x.h_.hset){
-            h_.m->insert({*itr, true});
+          for(const nvar& vi : *x.h_.hset){
+            h_.m->insert({vi, true});
           }
           break;
         case Map:
@@ -23211,13 +22578,13 @@ void nvar::merge(const nvar& x){
     case HashMap:
       switch(x.t_){
         case Set:
-          for(auto& itr : *x.h_.set){
-            h_.h->insert({*itr, true});
+          for(const nvar& vi : *x.h_.set){
+            h_.h->insert({vi, true});
           }
           break;
         case HashSet:
-          for(auto& itr : *x.h_.hset){
-            h_.h->insert({*itr, true});
+          for(const nvar& vi : *x.h_.hset){
+            h_.h->insert({vi, true});
           }
           break;
         case Map:
@@ -23254,13 +22621,13 @@ void nvar::merge(const nvar& x){
     case Multimap:
       switch(x.t_){
         case Set:
-          for(auto& itr : *x.h_.set){
-            h_.mm->insert({*itr, true});
+          for(const nvar& vi : *x.h_.set){
+            h_.mm->insert({vi, true});
           }
           break;
         case HashSet:
-          for(auto& itr : *x.h_.hset){
-            h_.mm->insert({*itr, true});
+          for(const nvar& vi : *x.h_.hset){
+            h_.mm->insert({vi, true});
           }
           break;
         case Map:
@@ -23306,8 +22673,8 @@ void nvar::merge(const nvar& x){
             m = h_.f->m;
           }
           
-          for(auto& itr : *x.h_.set){
-            m->insert({*itr, true});
+          for(const nvar& vi : *x.h_.set){
+            m->insert({vi, true});
           }
           
           break;
@@ -23323,8 +22690,8 @@ void nvar::merge(const nvar& x){
             m = h_.f->m;
           }
           
-          for(auto& itr : *x.h_.hset){
-            m->insert({*itr, true});
+          for(const nvar& vi : *x.h_.hset){
+            m->insert({vi, true});
           }
           
           break;
@@ -23406,13 +22773,20 @@ void nvar::merge(const nvar& x){
           intoHashMap();
           merge(x);
           break;
-        case Map:
-        case Multimap:
         case Function:
-        case HeadMap:
-        case HeadSequenceMap:
+        case Map:
           intoMap();
           merge(x);
+          break;
+        case Multimap:
+          intoMultimap();
+          merge(x);
+          break;
+        case HeadMap:
+          merge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          merge(*x.h_.hsm->m);
           break;
         case Reference:
           merge(*x.h_.ref->v);
@@ -23428,8 +22802,114 @@ void nvar::merge(const nvar& x){
 
 void nvar::outerMerge(const nvar& x){
   switch(t_){
+    case Set:
+      switch(x.t_){
+        case Set:
+          h_.set->unite(*x.h_.set);
+          break;
+        case HashSet:{
+          nvar s(x);
+          s.intoSet();
+          h_.set->unite(*s.h_.set);
+          break;
+        }
+        case Map:
+          for(auto& itr : *x.h_.m){
+            h_.set->add(itr.first);
+          }
+          break;
+        case HashMap:
+          for(auto& itr : *x.h_.h){
+            h_.set->add(itr.first);
+          }
+          break;
+        case Multimap:
+          for(auto& itr : *x.h_.mm){
+            h_.set->add(itr.first);
+          }
+          break;
+        case Function:
+          if(x.h_.f->m){
+            for(auto& itr : *x.h_.f->m){
+              h_.set->add(itr.first);
+            }
+          }
+          break;
+        case HeadMap:
+          outerMerge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          outerMerge(*x.h_.hsm->m);
+          break;
+        case Reference:
+          outerMerge(*x.h_.ref->v);
+          break;
+        case Pointer:
+          outerMerge(*x.h_.vp);
+          break;
+        default:
+          break;
+      }
+      break;
+    case HashSet:
+      switch(x.t_){
+        case Set:{
+          nvar s(x);
+          s.intoHashSet();
+          h_.hset->unite(*s.h_.hset);
+          break;
+        }
+        case HashSet:
+          h_.hset->unite(*x.h_.hset);
+          break;
+        case Map:
+          for(auto& itr : *x.h_.m){
+            h_.hset->add(itr.first);
+          }
+          break;
+        case HashMap:
+          for(auto& itr : *x.h_.h){
+            h_.hset->add(itr.first);
+          }
+          break;
+        case Multimap:
+          for(auto& itr : *x.h_.mm){
+            h_.hset->add(itr.first);
+          }
+          break;
+        case Function:
+          if(x.h_.f->m){
+            for(auto& itr : *x.h_.f->m){
+              h_.hset->add(itr.first);
+            }
+          }
+          break;
+        case HeadMap:
+          outerMerge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          outerMerge(*x.h_.hsm->m);
+          break;
+        case Reference:
+          outerMerge(*x.h_.ref->v);
+          break;
+        case Pointer:
+          outerMerge(*x.h_.vp);
+          break;
+        default:
+          break;
+      }
+      break;
     case Map:
       switch(x.t_){
+        case Set:
+        case HashSet:
+        case HashMap:{
+          nvar m = x;
+          m.intoMap();
+          h_.m->outerMerge(*m.h_.m);
+          break;
+        }
         case Map:
           h_.m->outerMerge(*x.h_.m);
           break;
@@ -23458,8 +22938,57 @@ void nvar::outerMerge(const nvar& x){
           break;
       }
       break;
+    case HashMap:
+      switch(x.t_){
+        case Set:
+        case HashSet:
+        case Map:{
+          nvar m = x;
+          m.intoHashMap();
+          h_.h->outerMerge(*m.h_.h);
+          break;
+        }
+        case HashMap:
+          h_.h->outerMerge(*x.h_.h);
+          break;
+        case Multimap:
+          intoMultimap();
+          h_.mm->merge(*x.h_.mm);
+          break;
+        case Function:
+          if(x.h_.f->m){
+            const nmap& m = *x.h_.f->m;
+            
+            nhmap hm(m.begin(), m.end());
+            h_.h->outerMerge(hm);
+          }
+          break;
+        case HeadMap:
+          outerMerge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          outerMerge(*x.h_.hsm->m);
+          break;
+        case Reference:
+          outerMerge(*x.h_.ref->v);
+          break;
+        case Pointer:
+          outerMerge(*x.h_.vp);
+          break;
+        default:
+          break;
+      }
+      break;
     case Multimap:
       switch(x.t_){
+        case Set:
+        case HashSet:
+        case HashMap:{
+          nvar m = x;
+          m.intoMultimap();
+          h_.mm->merge(*m.h_.mm);
+          break;
+        }
         case Map:
           h_.mm->insert(x.h_.m->begin(), x.h_.m->end());
           break;
@@ -23489,6 +23018,20 @@ void nvar::outerMerge(const nvar& x){
       break;
     case Function:
       switch(x.t_){
+        case Set:
+        case HashSet:
+        case HashMap:{
+          nvar m = x;
+          m.intoMap();
+          
+          if(h_.f->m){
+            h_.f->m->outerMerge(*m.h_.m);
+          }
+          else{
+            h_.f->m = new nmap(*m.h_.m);
+          }
+          break;
+        }
         case Map:
           if(h_.f->m){
             h_.f->m->outerMerge(*x.h_.m);
@@ -23540,13 +23083,32 @@ void nvar::outerMerge(const nvar& x){
       break;
     default:
       switch(x.t_){
-        case Map:
-        case Multimap:
+        case Set:
+          intoSet();
+          outerMerge(x);
+          break;
+        case HashSet:
+          intoHashSet();
+          outerMerge(x);
+          break;
+        case HashMap:
+          intoHashMap();
+          outerMerge(x);
+          break;
         case Function:
-        case HeadMap:
-        case HeadSequenceMap:
+        case Map:
           intoMap();
           outerMerge(x);
+          break;
+        case Multimap:
+          intoMultimap();
+          outerMerge(x);
+          break;
+        case HeadMap:
+          outerMerge(*x.h_.hm->m);
+          break;
+        case HeadSequenceMap:
+          outerMerge(*x.h_.hsm->m);
           break;
         case Reference:
           outerMerge(*x.h_.ref->v);
@@ -23826,8 +23388,8 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         pos += 4;
       }
       
-      for(auto& itr : l){
-        buf = itr.pack_(buf, size, pos);
+      for(const nvar& vi : l){
+        buf = vi.pack_(buf, size, pos);
       }
       break;
     }
@@ -23933,13 +23495,13 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     }
     case HeadSequence:{
       buf[pos++] = HeadSequence;
-      nvar h = head();
-      buf = h.pack_(buf, size, pos);
+      buf = h_.hs->h->pack_(buf, size, pos);
       buf = h_.hs->s->pack_(buf, size, pos);
       break;
     }
     case Set:{
       uint32_t len = h_.set->size();
+      
       if(len <= 255){
         buf[pos++] = PackShortSet;
         buf[pos++] = len;
@@ -23956,14 +23518,15 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         pos += 4;
       }
       
-      for(auto& itr : *h_.set){
-        buf = (*itr).pack_(buf, size, pos);
+      for(const nvar& vi : *h_.set){
+        buf = vi.pack_(buf, size, pos);
       }
 
       break;
     }
     case HashSet:{
       uint32_t len = h_.hset->size();
+      
       if(len <= 255){
         buf[pos++] = PackShortHashSet;
         buf[pos++] = len;
@@ -23980,14 +23543,15 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         pos += 4;
       }
       
-      for(auto& itr : *h_.hset){
-        buf = (*itr).pack_(buf, size, pos);
+      for(const nvar& vi : *h_.hset){
+        buf = vi.pack_(buf, size, pos);
       }
       
       break;
     }
     case Map:{
       uint32_t len = h_.m->size();
+      
       if(len <= 255){
         buf[pos++] = PackShortMap;
         buf[pos++] = len;
@@ -24012,6 +23576,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     }
     case HashMap:{
       uint32_t len = h_.h->size();
+      
       if(len <= 255){
         buf[pos++] = PackShortHashMap;
         buf[pos++] = len;
@@ -24036,6 +23601,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     }
     case Multimap:{
       uint32_t len = h_.mm->size();
+      
       if(len <= 255){
         buf[pos++] = PackShortMultimap;
         buf[pos++] = len;
@@ -24060,8 +23626,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     }
     case HeadMap:{
       buf[pos++] = HeadMap;
-      nvar h = head();
-      buf = h.pack_(buf, size, pos);
+      buf = h_.hm->h->pack_(buf, size, pos);
       buf = h_.hm->m->pack_(buf, size, pos);
       break;
     }
@@ -24073,10 +23638,9 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     }
     case HeadSequenceMap:{
       buf[pos++] = HeadSequenceMap;
-      nvar h = head();
-      buf = h.pack_(buf, size, pos);
-      buf = h_.sm->s->pack_(buf, size, pos);
-      buf = h_.sm->m->pack_(buf, size, pos);
+      buf = h_.hsm->h->pack_(buf, size, pos);
+      buf = h_.hsm->s->pack_(buf, size, pos);
+      buf = h_.hsm->m->pack_(buf, size, pos);
       break;
     }
     case Reference:
@@ -24429,8 +23993,8 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = List;
       h_.l = new nlist(len);
       nlist& l = *h_.l;
-      for(auto& itr : l){
-        itr.unpack_(buf, pos);
+      for(nvar& vi : l){
+        vi.unpack_(buf, pos);
       }
       break;
     }
@@ -24441,8 +24005,8 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = List;
       h_.l = new nlist(len);
       nlist& l = *h_.l;
-      for(auto& itr : l){
-        itr.unpack_(buf, pos);
+      for(nvar& vi : l){
+        vi.unpack_(buf, pos);
       }
       break;
     }
@@ -24453,8 +24017,8 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = List;
       h_.l = new nlist(len);
       nlist& l = *h_.l;
-      for(auto& itr : l){
-        itr.unpack_(buf, pos);
+      for(nvar& vi : l){
+        vi.unpack_(buf, pos);
       }
       break;
     }
@@ -24965,14 +24529,15 @@ void nvar::open(const nstr& path){
   if(n < size){
     NERROR("[2] failed to read file: " + path);
   }
-  
-  unpack(buf, size, 4);
+
   uint32_t vid;
   memcpy(&vid, buf, 4);
   
   if(vid != _vid){
     NERROR("invalid or deprecated nvar");
   }
+  
+  unpack(buf, size, 4);
   
   free(buf);
 }
@@ -25279,7 +24844,7 @@ nvar nvar::pow(const nvar& x, NObject* o) const{
       Head h;
       h.f = new CFunction("Pow");
       h.f->v.emplace_back(new nvar(*this, Copy));
-      h.f->v.emplace_back(nvar(x, Copy));
+      h.f->v.emplace_back(move(nvar(x, Copy)));
       
       return new nvar(Function, h);
     }
@@ -26227,12 +25792,12 @@ nvar& nvar::unite(const nvar& x){
       switch(x.t_){
         case Set:
           h_.set->unite(*x.h_.set);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoSet();
           h_.set->unite(s.set());
-          break;
+          return *this;
         }
       }
       break;
@@ -26240,12 +25805,12 @@ nvar& nvar::unite(const nvar& x){
       switch(x.t_){
         case HashSet:
           h_.hset->unite(*x.h_.hset);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoHashSet();
           h_.hset->unite(s.hset());
-          break;
+          return *this;
         }
       }
       break;
@@ -26262,9 +25827,8 @@ nvar& nvar::unite(const nvar& x){
     default:
       intoSet();
       unite(x);
+      return *this;
   }
-
-  return *this;
 }
 
 nvar& nvar::intersect(const nvar& x){
@@ -26273,12 +25837,12 @@ nvar& nvar::intersect(const nvar& x){
       switch(x.t_){
         case Set:
           h_.set->intersect(*x.h_.set);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoSet();
           h_.set->intersect(s.set());
-          break;
+          return *this;
         }
       }
       break;
@@ -26286,12 +25850,12 @@ nvar& nvar::intersect(const nvar& x){
       switch(x.t_){
         case HashSet:
           h_.hset->intersect(*x.h_.hset);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoHashSet();
           h_.hset->intersect(s.hset());
-          break;
+          return *this;
         }
       }
       break;
@@ -26308,9 +25872,8 @@ nvar& nvar::intersect(const nvar& x){
     default:
       intoSet();
       intersect(x);
+      return *this;
   }
-  
-  return *this;
 }
 
 nvar& nvar::complement(const nvar& x){
@@ -26319,12 +25882,12 @@ nvar& nvar::complement(const nvar& x){
       switch(x.t_){
         case Set:
           h_.set->complement(*x.h_.set);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoSet();
           h_.set->complement(s.set());
-          break;
+          return *this;
         }
       }
       break;
@@ -26332,12 +25895,12 @@ nvar& nvar::complement(const nvar& x){
       switch(x.t_){
         case HashSet:
           h_.hset->complement(*x.h_.hset);
-          break;
+          return *this;
         default:{
           nvar s(x);
           s.intoHashSet();
           h_.hset->complement(s.hset());
-          break;
+          return *this;
         }
       }
       break;
@@ -26354,9 +25917,8 @@ nvar& nvar::complement(const nvar& x){
     default:
       intoSet();
       complement(x);
+      return *this;
   }
-  
-  return *this;
 }
 
 void nvar::foldLeft(){

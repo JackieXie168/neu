@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -99,8 +99,6 @@ namespace neu{
   class npair;
   class NObject;
   
-  typedef nvar (*NFunc)(void*, const nvar&);
-  
   extern const class nvar none;
   extern const class nvar undef;
   
@@ -133,6 +131,8 @@ namespace neu{
   typedef NSet<nvar, nvarLess<nvar>> nset;
   typedef NHashSet<nvar, nvarHash<nvar>> nhset;
   typedef NQueue<nvar> nqueue;
+  
+  typedef nvar (*NFunc)(void*, nvec& v);
   
   extern const nvec _emptyVec;
   
@@ -183,6 +183,12 @@ namespace neu{
       : f(f),
       fp(0),
       m(0){}
+
+      CFunction(const nstr& f, NFunc fp, const nvec& v, nmap* m)
+      : f(f),
+      fp(fp),
+      v(v),
+      m(m ? new nmap(*m) : 0){}
       
       CFunction(nstr&& f, size_t n)
       : f(std::move(f)),
@@ -197,12 +203,26 @@ namespace neu{
       }
       
       CFunction* clone() const{
-        CFunction* c = new CFunction(f);
-        c->v = v;
-        c->fp = fp;
-        c->m = m ? new nmap(*m) : 0;
+        return new CFunction(f, fp, v, m);
+      }
+      
+      void set(CFunction* cf){
+        f = cf->f;
+        v = cf->v;
+        fp = cf->fp;
         
-        return c;
+        if(m){
+          if(cf->m){
+            *m = *cf->m;
+          }
+          else{
+            delete m;
+            m = 0;
+          }
+        }
+        else if(cf->m){
+          m = new nmap(*cf->m);
+        }
       }
       
       nstr f;
@@ -220,8 +240,7 @@ namespace neu{
       s(s){}
       
       CHeadSequence* clone(){
-        CHeadSequence* c = new CHeadSequence(new nvar(*h), new nvar(*s));
-        return c;
+        return new CHeadSequence(new nvar(*h), new nvar(*s));
       }
       
       void dealloc(){
@@ -242,8 +261,7 @@ namespace neu{
       m(m){}
       
       CHeadMap* clone(){
-        CHeadMap* c = new CHeadMap(new nvar(*h), new nvar(*m));
-        return c;
+        return new CHeadMap(new nvar(*h), new nvar(*m));
       }
       
       void dealloc(){
@@ -264,8 +282,7 @@ namespace neu{
       m(m){}
       
       CSequenceMap* clone(){
-        CSequenceMap* c = new CSequenceMap(new nvar(*s), new nvar(*m));
-        return c;
+        return new CSequenceMap(new nvar(*s), new nvar(*m));
       }
       
       void dealloc(){
@@ -287,10 +304,7 @@ namespace neu{
       m(m){}
       
       CHeadSequenceMap* clone(){
-        CHeadSequenceMap* c =
-        new CHeadSequenceMap(new nvar(*h), new nvar(*s), new nvar(*m));
-        
-        return c;
+        return new CHeadSequenceMap(new nvar(*h), new nvar(*s), new nvar(*m));
       }
       
       void dealloc(){
@@ -910,9 +924,9 @@ namespace neu{
         case Set:{
           const nset& s = *h_.set;
           
-          for(auto& itr : s){
+          for(const nvar& vi : s){
             T t;
-            x.insert((*itr).as(t));
+            x.insert(vi.as(t));
           }
           
           return x;
@@ -934,9 +948,9 @@ namespace neu{
         case HashSet:{
           const nhset& s = *h_.hset;
           
-          for(auto& itr : s){
+          for(const nvar& vi : s){
             T t;
-            x.insert((*itr).as(t));
+            x.insert(vi.as(t));
           }
           
           return x;
@@ -2116,7 +2130,7 @@ namespace neu{
           hv.v->emplace_back(std::move(x));
           
           CHeadMap* hm = h_.hm;
-          h_.hsm = new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+          h_.hsm = new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
           delete hm;
           t_ = HeadSequenceMap;
           break;
@@ -2168,28 +2182,12 @@ namespace neu{
         case HeadSequence:
           *h_.hs->s << x;
           break;
-        case Set:{
-          Head hv;
-          hv.v = new nvec(1, x);
-          
-          Head hm;
-          hm.set = h_.set;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Set, hm));
-          t_ = SequenceMap;
+        case Set:
+          *h_.set << x;
           break;
-        }
-        case HashSet:{
-          Head hv;
-          hv.v = new nvec(1, x);
-          
-          Head hm;
-          hm.hset = h_.hset;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashSet, hm));
-          t_ = SequenceMap;
+        case HashSet:
+          *h_.hset << x;
           break;
-        }
         case Map:{
           Head hv;
           hv.v = new nvec(1, x);
@@ -2228,7 +2226,7 @@ namespace neu{
           hv.v = new nvec(1, x);
           
           CHeadMap* hm = h_.hm;
-          h_.hsm = new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+          h_.hsm = new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
           delete hm;
           t_ = HeadSequenceMap;
           break;
@@ -2278,32 +2276,14 @@ namespace neu{
           h_.f->v.emplace_back(std::move(x));
           break;
         case HeadSequence:
-          *h_.hs->s << x;
+          *h_.hs->s << std::move(x);
           break;
-        case Set:{
-          Head hv;
-          hv.v = new nvec;
-          hv.v->emplace_back(std::move(x));
-          
-          Head hm;
-          hm.set = h_.set;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(Set, hm));
-          t_ = SequenceMap;
+        case Set:
+          *h_.set << std::move(x);
           break;
-        }
-        case HashSet:{
-          Head hv;
-          hv.v = new nvec;
-          hv.v->emplace_back(std::move(x));
-          
-          Head hm;
-          hm.hset = h_.hset;
-          
-          h_.sm = new CSequenceMap(new nvar(Vector, hv), new nvar(HashSet, hm));
-          t_ = SequenceMap;
+        case HashSet:
+          *h_.hset << std::move(x);
           break;
-        }
         case Map:{
           Head hv;
           hv.v = new nvec;
@@ -2346,7 +2326,7 @@ namespace neu{
           hv.v->emplace_back(std::move(x));
           
           CHeadMap* hm = h_.hm;
-          h_.hsm = new CHeadSequenceMap(h_.hm->h, new nvar(Vector, hv), h_.hm->m);
+          h_.hsm = new CHeadSequenceMap(hm->h, new nvar(Vector, hv), hm->m);
           delete hm;
           t_ = HeadSequenceMap;
           break;
@@ -2904,41 +2884,54 @@ namespace neu{
     
     void clearHead(){
       switch(t_){
-        case HeadSequence:
-          delete h_.hs->h;
+        case HeadSequence:{
+          CHeadSequence* hs = h_.hs;
           
-          if(h_.hs->s->t_ == Vector){
+          delete hs->h;
+          
+          if(hs->s->t_ == Vector){
             t_ = Vector;
-            h_.v = h_.hs->s->h_.v;
+            h_.v = hs->s->h_.v;
           }
           else{
             t_ = List;
-            h_.l = h_.hs->s->h_.l;
+            h_.l = hs->s->h_.l;
           }
           
-          break;
-        case HeadMap:
-          delete h_.hs->h;
+          delete hs;
           
-          if(h_.hm->m->t_ == Map){
+          break;
+        }
+        case HeadMap:{
+          CHeadMap* hm = h_.hm;
+          
+          delete hm->h;
+          
+          if(hm->m->t_ == Map){
             t_ = Map;
-            h_.m = h_.hm->m->h_.m;
+            h_.m = hm->m->h_.m;
           }
           else{
             t_ = Multimap;
-            h_.mm = h_.hs->s->h_.mm;
+            h_.mm = hm->m->h_.mm;
           }
           
+          delete hm;
+          
           break;
-        case HeadSequenceMap:
-          delete h_.hsm->h;
+        }
+        case HeadSequenceMap:{
+          CHeadSequenceMap* hsm = h_.hsm;
+          
+          delete hsm->h;
           
           t_ = SequenceMap;
-          h_.sm = new CSequenceMap(h_.hsm->s, h_.hsm->m);
+          h_.sm = new CSequenceMap(hsm->s, hsm->m);
           
-          delete h_.hsm;
+          delete hsm;
           
           break;
+        }
         case Rational:
           delete h_.r;
           t_ = Undefined;
@@ -2975,9 +2968,9 @@ namespace neu{
       }
     }
     
-    bool hasKey(const nvar& key) const;
+    bool has(const nvar& key) const;
     
-    bool hasKey(const nvar& key, Type t) const{
+    bool has(const nvar& key, Type t) const{
       switch(t_){
         case Function:
           if(h_.f->m){
@@ -2990,8 +2983,8 @@ namespace neu{
           return itr != h_.m->end() && itr->second.t_ == t;
         }
         case HashMap:{
-          auto itr = h_.m->find(key);
-          return itr != h_.m->end() && itr->second.t_ == t;
+          auto itr = h_.h->find(key);
+          return itr != h_.h->end() && itr->second.t_ == t;
         }
         case Multimap:{
           auto p = h_.mm->equal_range(key);
@@ -3005,15 +2998,15 @@ namespace neu{
           return false;
         }
         case HeadMap:
-          return h_.hm->m->hasKey(key, t);
+          return h_.hm->m->has(key, t);
         case SequenceMap:
-          return h_.sm->m->hasKey(key, t);
+          return h_.sm->m->has(key, t);
         case HeadSequenceMap:
-          return h_.hsm->m->hasKey(key, t);
+          return h_.hsm->m->has(key, t);
         case Reference:
-          return h_.ref->v->hasKey(key, t);
+          return h_.ref->v->has(key, t);
         case Pointer:
-          return h_.vp->hasKey(key, t);
+          return h_.vp->has(key, t);
         default:
           return false;
       }
@@ -3061,14 +3054,14 @@ namespace neu{
       switch(t_){
         case Symbol:
           return h_.s->beginsWith("__");
-        case Reference:
-          return h_.ref->v->isHidden();
         case HeadSequence:
           return h_.hs->h->isHidden();
         case HeadMap:
           return h_.hm->h->isHidden();
         case HeadSequenceMap:
           return h_.hsm->h->isHidden();
+        case Reference:
+          return h_.ref->v->isHidden();
         case Pointer:
           return h_.vp->isHidden();
         default:
@@ -3079,8 +3072,7 @@ namespace neu{
     template<class S>
     static void streamOutputSequence_(std::ostream& ostr,
                                       const S& s,
-                                      bool& first,
-                                      bool concise){
+                                      bool& first){
       for(const nvar& vi : s){
         if(first){
           first = false;
@@ -3088,19 +3080,16 @@ namespace neu{
         else{
           ostr << ",";
         }
-        vi.streamOutput_(ostr, concise);
+        vi.streamOutput_(ostr);
       }
     }
 
     template<class S>
     static bool streamOutputSet_(std::ostream& ostr,
                                  const S& s,
-                                 bool& first,
-                                 bool concise){
+                                 bool& first){
       bool found = false;
-      for(auto& itr : s){
-        const nvar& k = *itr;
-        
+      for(const nvar& k : s){
         if(k.isHidden()){
           continue;
         }
@@ -3112,7 +3101,7 @@ namespace neu{
           ostr << ", ";
         }
         
-        k.streamOutput_(ostr, concise);
+        k.streamOutput_(ostr);
         ostr << ":";
 
         found = true;
@@ -3124,15 +3113,16 @@ namespace neu{
     template<class T>
     static bool streamOutputMap_(std::ostream& ostr,
                                  const T& m,
-                                 bool& first,
-                                 bool concise){
+                                 bool& first){
       bool found = false;
       for(auto& itr : m){
-        const nvar& k = *itr.first;
+        const nvar& k = itr.first;
         
         if(k.isHidden()){
           continue;
         }
+
+        const nvar& v = itr.second;
         
         if(first){
           first = false;
@@ -3141,17 +3131,20 @@ namespace neu{
           ostr << ", ";
         }
         
-        k.streamOutput_(ostr, concise);
+        k.streamOutput_(ostr);
         ostr << ":";
-        itr.second.streamOutput_(ostr, concise);
-          
+        
+        if(v.t_ != True){
+          itr.second.streamOutput_(ostr);
+        }
+        
         found = true;
       }
       
       return found;
     }
     
-    void streamOutput_(std::ostream& ostr, bool concise=true) const;
+    void streamOutput_(std::ostream& ostr) const;
     
     nstr toStr(bool concise=true) const{
       std::stringstream ostr;
@@ -3160,7 +3153,7 @@ namespace neu{
         ostr.precision(16);
       }
       
-      streamOutput_(ostr, concise);
+      streamOutput_(ostr);
       
       return ostr.str();
     }
@@ -3516,6 +3509,31 @@ namespace neu{
       }
     }
     
+    bool hasAnyMap(){
+      switch(t_){
+        case Function:
+          return h_.f->m;
+        case Set:
+        case HashSet:
+        case Map:
+        case HashMap:
+        case Multimap:
+          return true;
+        case HeadMap:
+          return h_.hm->m->hasAnyMap();
+        case SequenceMap:
+          return h_.sm->m->hasAnyMap();
+        case HeadSequenceMap:
+          return h_.hsm->m->hasAnyMap();
+        case Reference:
+          return h_.ref->v->hasAnyMap();
+        case Pointer:
+          return h_.vp->hasAnyMap();
+        default:
+          return false;
+      }
+    }
+    
     nvar& operator=(nvar&& x){
       switch(t_){
         case Rational:
@@ -3831,9 +3849,7 @@ namespace neu{
     nvar operator%(double x) const;
     
     bool less(const nvar& x) const;
-    
-    bool greater(const nvar& x) const;
-    
+        
     bool hashEqual(const nvar& x) const;
     
     bool equal(const nvar& x) const;
@@ -4002,7 +4018,7 @@ namespace neu{
       return (*this)(nvar(k));
     }
 
-    void addKey(const nvar& key){
+    void add(const nvar& key){
       switch(t_){
         case Set:
           h_.set->add(key);
@@ -4020,19 +4036,19 @@ namespace neu{
           h_.mm->insert({key, true});
           break;
         case HeadMap:
-          h_.hm->m->addKey(key);
+          h_.hm->m->add(key);
           break;
         case SequenceMap:
-          h_.sm->m->addKey(key);
+          h_.sm->m->add(key);
           break;
         case HeadSequenceMap:
-          h_.hsm->m->addKey(key);
+          h_.hsm->m->add(key);
           break;
         case Reference:
-          h_.ref->v->addKey(key);
+          h_.ref->v->add(key);
           break;
         case Pointer:
-          h_.vp->addKey(key);
+          h_.vp->add(key);
           break;
         default:
           NERROR("invalid operand");
@@ -4084,9 +4100,7 @@ namespace neu{
           }
           break;
         case Set:
-          for(const auto& itr : *h_.set){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.set){
             if(k.isHidden()){
               continue;
             }
@@ -4095,9 +4109,7 @@ namespace neu{
           }
           break;
         case HashSet:
-          for(const auto& itr : *h_.hset){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.hset){
             if(k.isHidden()){
               continue;
             }
@@ -4170,18 +4182,14 @@ namespace neu{
           }
           return false;
         case Set:
-          for(const auto& itr : *h_.set){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.set){
             if(!k.isHidden()){
               return true;
             }
           }
           return false;
         case HashSet:
-          for(const auto& itr : *h_.hset){
-            const nvar& k = *itr;
-            
+          for(const nvar& k : *h_.hset){
             if(!k.isHidden()){
               return true;
             }
@@ -4242,13 +4250,13 @@ namespace neu{
           }
           break;
         case Set:
-          for(const auto& itr : *h_.set){
-            v.push_back(*itr);
+          for(const nvar& k : *h_.set){
+            v.push_back(k);
           }
           break;
         case HashSet:
-          for(const auto& itr : *h_.hset){
-            v.push_back(*itr);
+          for(const nvar& k : *h_.hset){
+            v.push_back(k);
           }
           break;
         case Map:
@@ -4279,6 +4287,142 @@ namespace neu{
     }
     
     nvar allKeys() const;
+    
+    void enumerate(nvec& v) const{
+      switch(t_){
+        case Vector:{
+          nvec& vv = *h_.v;
+          size_t size = vv.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            v.push_back({i, nvar(&vv[i], Ptr)});
+          }
+          
+          break;
+        }
+        case List:{
+          nlist& l = *h_.l;
+          size_t size = l.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            v.push_back({i, nvar(&l[i], Ptr)});
+          }
+          
+          break;
+        }
+        case Queue:{
+          nqueue& q = *h_.q;
+          size_t size = q.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            v.push_back({i, nvar(&q[i], Ptr)});
+          }
+          
+          break;
+        }
+        case Function:{
+          nvec& vv = h_.f->v;
+          
+          size_t size = vv.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            v.push_back({i, nvar(&vv[i], Ptr)});
+          }
+          
+          if(h_.f->m){
+            for(auto& itr : *h_.f->m){
+              const nvar& k = itr.first;
+              
+              if(!k.isHidden()){
+                v.push_back({k, nvar(&itr.second, Ptr)});
+              }
+            }
+          }
+          
+          break;
+        }
+        case HeadSequence:
+          h_.hs->s->enumerate(v);
+          break;
+        case Set:{
+          nset& s = *h_.set;
+          
+          for(const nvar& k : s){
+            if(!k.isHidden()){
+              v.push_back({k, true});
+            }
+          }
+          
+          break;
+        }
+        case HashSet:{
+          nhset& s = *h_.hset;
+          
+          for(const nvar& k : s){
+            if(!k.isHidden()){
+              v.push_back({k, true});
+            }
+          }
+          
+          break;
+        }
+        case Map:{
+          nmap& m = *h_.m;
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              v.push_back({k, nvar(&itr.second, Ptr)});
+            }
+          }
+          
+          break;
+        }
+        case HashMap:{
+          nhmap& m = *h_.h;
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              v.push_back({k, nvar(&itr.second, Ptr)});
+            }
+          }
+          
+          break;
+        }
+        case Multimap:{
+          nmmap& m = *h_.mm;
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              v.push_back({k, nvar(&itr.second, Ptr)});
+            }
+          }
+          
+          break;
+        }
+        case HeadMap:
+          h_.hm->m->enumerate(v);
+          break;
+        case SequenceMap:
+          h_.sm->s->enumerate(v);
+          h_.sm->m->enumerate(v);
+          break;
+        case HeadSequenceMap:
+          h_.hsm->s->enumerate(v);
+          h_.hsm->m->enumerate(v);
+          break;
+        case Reference:
+          return h_.ref->v->enumerate(v);
+        case Pointer:
+          return h_.vp->enumerate(v);
+        default:
+          break;
+      }
+    }
+    
+    nvar enumerate() const;
     
     nvec::iterator begin(){
       switch(t_){
@@ -4483,6 +4627,12 @@ namespace neu{
       return h_.f->fp;
     }
     
+    nvec& argVec() const{
+      assert(t_ == Function);
+      
+      return h_.f->v;
+    }
+    
     void sqrt(NObject* o=0);
     
     static nvar sqrt(const nvar& x, NObject* o=0){
@@ -4663,49 +4813,53 @@ namespace neu{
           return size_t(h_.o);
         case Vector:{
           size_t h = 0;
-          size_t size = h_.v->size();
+          const nvec& v = *h_.v;
+          size_t size = v.size();
           for(size_t i = 0; i < size; ++i){
-            h ^= (*h_.v)[i].hash();
+            h ^= v[i].hash();
           }
           return h + t_;
         }
         case List:{
           size_t h = 0;
-          size_t size = h_.l->size();
+          const nlist& l = *h_.l;
+          size_t size = l.size();
           for(size_t i = 0; i < size; ++i){
-            h ^= (*h_.l)[i].hash();
+            h ^= l[i].hash();
           }
           return h + t_;
         }
         case Queue:{
           size_t h = 0;
-          size_t size = h_.q->size();
+          const nqueue& q = *h_.q;
+          size_t size = q.size();
           for(size_t i = 0; i < size; ++i){
-            h ^= (*h_.q)[i].hash();
+            h ^= q[i].hash();
           }
           return h + t_;
         }
         case Function:{
           size_t h = std::hash<std::string>()(h_.f->f.str());
-          size_t size = h_.f->v.size();
+          const nvec& v = h_.f->v;
+          size_t size = v.size();
           for(size_t i = 0; i < size; ++i){
-            h ^= h_.f->v[i].hash();
+            h ^= v[i].hash();
           }
           return h + t_;
         }
         case HeadSequence:
-          return head().hash() ^ h_.hs->s->hash();
+          return h_.hs->h->hash() ^ h_.hs->s->hash();
         case Set:{
           size_t h = 0;
-          for(auto& itr : *h_.set){
-            h ^= (*itr).hash();
+          for(const nvar& vi : *h_.set){
+            h ^= vi.hash();
           }
           return h + t_;
         }
         case HashSet:{
           size_t h = 0;
-          for(auto& itr : *h_.hset){
-            h ^= (*itr).hash();
+          for(const nvar& vi : *h_.hset){
+            h ^= vi.hash();
           }
           return h + t_;
         }
@@ -4734,17 +4888,17 @@ namespace neu{
           return h + t_;
         }
         case HeadMap:
-          return head().hash() ^ h_.hm->m->hash() + t_;
+          return h_.hm->h->hash() ^ h_.hm->m->hash() + t_;
         case SequenceMap:
           return h_.sm->s->hash() ^ h_.sm->m->hash() + t_;
         case HeadSequenceMap:
-          return head().hash() ^ h_.hsm->s->hash() ^ h_.hsm->m->hash() + t_;
+          return h_.hsm->h->hash() ^ h_.hsm->s->hash() ^ h_.hsm->m->hash() + t_;
         case Pointer:
           return h_.vp->hash() + t_;
         case Reference:
           return h_.ref->v->hash() + t_;
         default:
-          assert(false && "unhandled case");
+          assert(false);
       }
     }
     
@@ -4838,11 +4992,11 @@ namespace neu{
     nstr getLocation() const{
       nstr loc;
       
-      if(hasKey("__file")){
+      if(has("__file")){
         loc = (*this)["__file"].str() + ":";
       }
       
-      if(hasKey("__line")){
+      if(has("__line")){
         loc += (*this)["__line"].toStr();
       }
       
@@ -4899,27 +5053,6 @@ namespace neu{
     return nsym(s.str());
   }
   
-  inline nvar nref(const nvar& v){
-    switch(v.fullType()){
-      case nvar::Reference:
-        return v;
-      case nvar::Pointer:
-        return new nvar(*v);
-      default:
-        return new nvar(v);
-    }
-  }
-  
-  inline nvar nptr(nvar& v){
-    switch(v.fullType()){
-      case nvar::Reference:
-      case nvar::Pointer:
-        return v;
-      default:
-        return nvar(&v, nvar::Ptr);
-    }
-  }
-
   class npair{
   public:
     npair(const nvar& key, const nvar& val)

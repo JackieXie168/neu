@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -68,13 +68,9 @@ namespace neu{
   class NResourceManager_{
   public:
     NResourceManager_(NResourceManager* o)
-    : o_(o){
-      
-    }
+    : o_(o){}
     
-    ~NResourceManager_(){
-      
-    }
+    ~NResourceManager_(){}
     
     void release(){
       releaseMutex_.lock();

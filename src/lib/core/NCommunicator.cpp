@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -105,9 +105,7 @@ namespace neu{
     socket_(0),
     sendProc_(0),
     receiveProc_(0),
-    encoder_(0){
-      
-    }
+    encoder_(0){}
     
     ~NCommunicator_(){
       if(socket_){
@@ -280,9 +278,7 @@ namespace neu{
 ReceiveProc::ReceiveProc(NProcTask* task, NCommunicator_* c)
 : task_(task),
 c_(c),
-s_(c_->socket()){
-  
-}
+s_(c_->socket()){}
 
 void ReceiveProc::run(nvar& r){
   if(!c_->isConnected()){
@@ -335,9 +331,7 @@ void ReceiveProc::run(nvar& r){
 SendProc::SendProc(NProcTask* task, NCommunicator_* c)
 : task_(task),
 c_(c),
-s_(c_->socket()){
-  
-}
+s_(c_->socket()){}
 
 void SendProc::run(nvar& r){
   if(!c_->isConnected()){

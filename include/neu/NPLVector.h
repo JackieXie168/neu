@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -64,9 +64,7 @@ namespace neu{
   template<typename T, size_t N>
   class NPLVector{
   public:
-    NPLVector(){
-      
-    }
+    NPLVector(){}
 
     NPLVector(std::initializer_list<T> il){
       std::copy(il.begin(), il.end(), vc_);

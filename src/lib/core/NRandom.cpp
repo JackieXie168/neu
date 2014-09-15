@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -67,52 +67,52 @@ namespace{
     FuncMap(){
       
       add("timeSeed", 0,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->timeSeed();
           });
       
       add("uniform", 0,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->uniform();
           });
       
       add("uniform", 2,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->uniform(v[0], v[1]);
           });
       
       add("equilikely", 2,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->equilikely(v[0], v[1]);
           });
       
       add("exponential", 1,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->exponential(v[0]);
           });
       
       add("normal", 2,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->normal(v[0], v[1]);
           });
       
       add("bernoulli", 1,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->bernoulli(v[0]);
           });
       
       add("binomial", 2,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->binomial(v[0], v[1]);
           });
       
       add("poisson", 1,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->poisson(v[0]);
           });
       
       add("expSelect", 2,
-          [](void* o, const nvar& v) -> nvar{
+          [](void* o, nvec& v) -> nvar{
             return obj(o)->expSelect(v[0], v[1]);
           });
     }
@@ -126,9 +126,7 @@ namespace{
   
   class Class : public NClass{
   public:
-    Class() : NClass("neu::NRandom"){
-      
-    }
+    Class() : NClass("neu::NRandom"){}
     
     NObjectBase* construct(const nvar& f){
       switch(f.size()){
@@ -149,4 +147,3 @@ namespace{
 NFunc NRandom::handle(const nvar& v, uint32_t flags){
   return _funcMap.map(v) ? : 0;
 }
-

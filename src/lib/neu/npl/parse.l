@@ -15,8 +15,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -404,7 +404,7 @@ DEFINE "#define"
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\&\~\?\@] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\&\~\?\@\`] {
   PS->advance(1, "operator");
   return *yytext;
 }

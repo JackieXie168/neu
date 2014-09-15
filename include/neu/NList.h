@@ -11,8 +11,8 @@
      |::/  /     \:\ \/__/     \:\/:/  /
      /:/  /       \:\__\        \::/  /
      \/__/         \/__/         \/__/
- 
- 
+
+
 The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
 
@@ -456,7 +456,7 @@ namespace neu{
     typename NList<T>::const_iterator itr = v.begin();
     size_t i = 0;
     bool index = v.size() > 10;
-    ostr << "(";
+    ostr << "`[";
     while(itr != v.end()){
       if(i > 0){
         ostr << ",";
@@ -469,7 +469,7 @@ namespace neu{
       ++i;
       ++itr;
     }
-    ostr << ")";
+    ostr << "]";
     return ostr;
   }
   

@@ -1,1 +1,1 @@
-args is: [bar:false, flag:true, foo:"/home/neu/stuff", include:[]]
+args is: [bar:false, flag:, foo:"/home/neu/stuff", include:[]]
