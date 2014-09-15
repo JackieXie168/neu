@@ -426,7 +426,7 @@ int main(int argc, char** argv){
 
       try{
         // interpret the parsed statements
-        nvar r = o.process(n);
+        nvar r = o.run(n);
 
         if(show){
           cout << ">> " << r << endl;
@@ -461,7 +461,7 @@ int main(int argc, char** argv){
     }
     
     // interpret the parsed statements
-    nvar r = o.process(n);
+    nvar r = o.run(n);
 
     if(show){
       cout << ">> " << r << endl;

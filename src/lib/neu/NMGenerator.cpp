@@ -678,7 +678,7 @@ namespace neu{
               ostr << "-Infinity";
               return;
             default:{
-              nvar p = obj_->process(n);
+              nvar p = obj_->run(n);
               if(p.isSymbol() && p.str() == n.str()){
                 ostr << p;
               }

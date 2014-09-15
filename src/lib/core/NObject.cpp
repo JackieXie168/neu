@@ -406,7 +406,7 @@ namespace neu{
       return false;
     }
     
-    nvar process(const nvar& v, uint32_t flags=0){
+    nvar run(const nvar& v, uint32_t flags=0){
       // ******* it can be helpful to uncomment this line for debugging
       //cout << "processing: " << v << endl;
       
@@ -440,7 +440,7 @@ namespace neu{
             }
             
             try{
-              nvar r = process(b);
+              nvar r = run(b);
               context->popScope();
 
               if(r.isFunction()){
@@ -483,7 +483,7 @@ namespace neu{
         msg += loc + ": ";
       }
       
-      msg += process(v2).str();
+      msg += run(v2).str();
       
       NERROR(msg);
       
@@ -541,266 +541,266 @@ namespace neu{
     }
     
     nvar Add(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 + p2;
     }
     
     nvar Sub(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 - p2;
     }
     
     nvar Mul(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 * p2;
     }
     
     nvar Div(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 / p2;
     }
     
     nvar Mod(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 % p2;
     }
     
     nvar Neg(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return -p;
     }
     
     nvar AddBy(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 += p2;
     }
     
     nvar SubBy(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 -= p2;
     }
     
     nvar MulBy(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 *= p2;
     }
     
     nvar DivBy(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 /= p2;
     }
     
     nvar ModBy(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 %= p2;
     }
     
     nvar Inc(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return ++p;
     }
     
     nvar PostInc(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p++;
     }
     
     nvar Dec(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return --p;
     }
     
     nvar PostDec(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p--;
     }
     
     nvar LT(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 < p2;
     }
     
     nvar LE(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 <= p2;
     }
     
     nvar GT(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 > p2;
     }
     
     nvar GE(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 >= p2;
     }
     
     nvar EQ(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 == p2;
     }
     
     nvar NE(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 != p2;
     }
     
     nvar And(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 && p2;
     }
     
     nvar Or(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1 || p2;
     }
     
     nvar Not(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return !p;
     }
 
     nvar Pow(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return nvar::pow(p1, p2, exact_ ? o_ : 0);
     }
     
     nvar Sqrt(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::sqrt(p, exact_ ? o_ : 0);
     }
     
     nvar Exp(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::exp(p, exact_ ? o_ : 0);
     }
     
     nvar Abs(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::abs(p);
     }
     
     nvar Floor(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::floor(p);
     }
     
     nvar Ceil(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::ceil(p);
     }
     
     nvar Log10(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::log10(p, exact_ ? o_ : 0);
     }
     
     nvar Log(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::log(p, exact_ ? o_ : 0);
     }
     
     nvar Cos(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::cos(p, exact_ ? o_ : 0);
     }
     
     nvar Acos(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::acos(p, exact_ ? o_ : 0);
     }
     
     nvar Cosh(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::cosh(p, exact_ ? o_ : 0);
     }
     
     nvar Sin(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::sin(p, exact_ ? o_ : 0);
     }
     
     nvar Asin(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::asin(p, exact_ ? o_ : 0);
     }
     
     nvar Sinh(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::sinh(p, exact_ ? o_ : 0);
     }
     
     nvar Tan(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::tan(p, exact_ ? o_ : 0);
     }
     
     nvar Atan(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::atan(p, exact_ ? o_ : 0);
     }
     
     nvar Tanh(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nvar::tanh(p, exact_ ? o_ : 0);
     }
@@ -820,7 +820,7 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
       
-      nvar r = new nvar(process(v2));
+      nvar r = new nvar(run(v2));
       
       currentScope->setSymbol(v1, r);
       
@@ -831,7 +831,7 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
       
-      nvar p1 = process(v2);
+      nvar p1 = run(v2);
       
       nvar r;
       if(v3.get("shared", false)){
@@ -850,14 +850,14 @@ namespace neu{
     }
     
     nvar Set(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1.set(p2);
     }
     
     nvar VarSet(const nvar& v1, const nvar& v2){
-      nvar p2 = process(v2);
+      nvar p2 = run(v2);
       
       ThreadContext* context = getContext();
       
@@ -887,34 +887,34 @@ namespace neu{
     }
 
     nvar Get(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1.get(p2).toPtr();
     }
     
     nvar Idx(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1[p2].toPtr();
     }
     
     nvar Dot(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1[v2].toPtr();
     }
     
     nvar Put(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1(p2).toPtr();
     }
     
     nvar DotPut(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1(v2).toPtr();
     }
@@ -930,14 +930,14 @@ namespace neu{
       
       size_t size = p.size();
       for(size_t i = 0; i < size; ++i){
-        f << process(p[i]);
+        f << run(p[i]);
       }
       
-      return process(f);
+      return run(f);
     }
     
     nvar Call(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       const nvar& p2 = *v2;
       
@@ -947,10 +947,10 @@ namespace neu{
       
       size_t size = p2.size();
       for(size_t i = 0; i < size; ++i){
-        f << process(p2[i]);
+        f << run(p2[i]);
       }
       
-      return o->process(f);
+      return o->run(f);
     }
     
     nvar Def(const nvar& v1, const nvar& v2){
@@ -963,7 +963,7 @@ namespace neu{
     }
     
     nvar Def(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       NScope* scope;
       
@@ -989,7 +989,7 @@ namespace neu{
     }
     
     nvar DefSym(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       NScope* scope;
       
@@ -1006,10 +1006,10 @@ namespace neu{
     }
     
     nvar In(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       NObject* o = static_cast<NObject*>(p1.obj());
  
-      return o->process(v2);
+      return o->run(v2);
     }
     
     nvar New(const nvar& v){
@@ -1057,11 +1057,11 @@ namespace neu{
 
         context->popScope();
         
-        o->process(s["stmts"]);
+        o->run(s["stmts"]);
         
         o->PushScope(&scope);
         try{
-          o->process(ctor[2]);
+          o->run(ctor[2]);
         }
         catch(NError& e){
           delete o;
@@ -1094,7 +1094,7 @@ namespace neu{
     }
 
     nvar Ret(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       nvar r = nfunc("Ret") << move(p);
       (*r).setFunc(_ret1Func);
@@ -1107,7 +1107,7 @@ namespace neu{
       nvar r = none;
 
       for(size_t i = 0; i < size; ++i){
-        r = process(v[i]);
+        r = run(v[i]);
         if(r.isFunction()){
           NFunc f = (*r).func();
           if(f == _ret0Func ||
@@ -1133,7 +1133,7 @@ namespace neu{
 
       for(size_t i = 0; i < size; ++i){
         try{
-          r = process(v[i]);
+          r = run(v[i]);
         }
         catch(NError& e){
           context->popScope();
@@ -1158,7 +1158,7 @@ namespace neu{
     }
     
     nvar Print_n(nvec& v){
-      nstr s = process(v[0]);
+      nstr s = run(v[0]);
       
       size_t size = v.size();
       size_t pos = 0;
@@ -1170,7 +1170,7 @@ namespace neu{
           return Throw(v, "Print[" + nvar(i) + "] missing token");
         }
 
-        nstr ri = process(v[i]).toStr();
+        nstr ri = run(v[i]).toStr();
         
         s.replace(p, 2, ri);
 
@@ -1183,7 +1183,7 @@ namespace neu{
     }
     
     nvar PushScope(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       NScope* scope = toScope(p);
       if(!scope){
@@ -1204,8 +1204,8 @@ namespace neu{
     }
     
     nvar PushBack(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.pushBack(p2);
       
@@ -1213,7 +1213,7 @@ namespace neu{
     }
 
     nvar TouchVector(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoVector();
       
@@ -1221,7 +1221,7 @@ namespace neu{
     }
 
     nvar TouchList(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoList();
       
@@ -1229,7 +1229,7 @@ namespace neu{
     }
     
     nvar TouchQueue(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoQueue();
       
@@ -1237,7 +1237,7 @@ namespace neu{
     }
     
     nvar TouchSet(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoSet();
       
@@ -1245,7 +1245,7 @@ namespace neu{
     }
     
     nvar TouchHashSet(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoHashSet();
       
@@ -1253,7 +1253,7 @@ namespace neu{
     }
     
     nvar TouchMap(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoMap();
       
@@ -1261,7 +1261,7 @@ namespace neu{
     }
     
     nvar TouchHashMap(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoHashMap();
       
@@ -1269,7 +1269,7 @@ namespace neu{
     }
     
     nvar TouchMultimap(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.intoMultimap();
       
@@ -1277,20 +1277,20 @@ namespace neu{
     }
     
     nvar Keys(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1.keys();
     }
 
     nvar Enumerate(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1.enumerate();
     }
     
     nvar PushFront(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.pushFront(p2);
       
@@ -1298,22 +1298,22 @@ namespace neu{
     }
     
     nvar PopBack(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1.popBack();
     }
     
     nvar Has(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1.has(p2);
     }
     
     nvar Insert(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
-      nvar p3 = process(v3);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
+      nvar p3 = run(v3);
       
       p1.insert(v2, v3);
       
@@ -1321,7 +1321,7 @@ namespace neu{
     }
     
     nvar Clear(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       p1.clear();
       
@@ -1329,20 +1329,20 @@ namespace neu{
     }
     
     nvar Empty(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1.empty();
     }
     
     nvar Back(const nvar& v1){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       
       return p1.back();
     }
     
     nvar Erase(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.erase(p2);
       
@@ -1350,8 +1350,8 @@ namespace neu{
     }
     
     nvar Merge(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.merge(p2);
       
@@ -1359,8 +1359,8 @@ namespace neu{
     }
     
     nvar OuterMerge(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.outerMerge(p2);
       
@@ -1378,15 +1378,15 @@ namespace neu{
     }
     
     nvar For(const nvar& v1, const nvar& v2, const nvar& v3, const nvar& v4){
-      process(v1);
+      run(v1);
       
       for(;;){
-        nvar c = process(v2);
+        nvar c = run(v2);
         if(!c){
           return none;
         }
 
-        nvar r = process(v4);
+        nvar r = run(v4);
 
         if(r.isFunction()){
           NFunc f = (*r).func();
@@ -1398,7 +1398,7 @@ namespace neu{
           }
         }
         
-        process(v3);
+        run(v3);
       }
       
       return none;
@@ -1408,7 +1408,7 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* scope = context->topScope();
       
-      nvar p2 = process(v2);
+      nvar p2 = run(v2);
       
       if(p2.hasAnyMap()){
         nvec es;
@@ -1419,7 +1419,7 @@ namespace neu{
         for(size_t i = 0; i < size; ++i){
           scope->setSymbol(v1, es[i]);
           
-          nvar r = process(v3);
+          nvar r = run(v3);
           
           if(r.isFunction()){
             NFunc f = (*r).func();
@@ -1438,7 +1438,7 @@ namespace neu{
         for(size_t i = 0; i < size; ++i){
           scope->setSymbol(v1, p2[i]);
           
-          nvar r = process(v3);
+          nvar r = run(v3);
           
           if(r.isFunction()){
             NFunc f = (*r).func();
@@ -1457,12 +1457,12 @@ namespace neu{
     
     nvar While(const nvar& v1, const nvar& v2){
       for(;;){
-        nvar c = process(v1);
+        nvar c = run(v1);
         if(!c){
           return none;
         }
         
-        nvar r = process(v2);
+        nvar r = run(v2);
         
         if(r.isFunction()){
           NFunc f = (*r).func();
@@ -1477,172 +1477,172 @@ namespace neu{
     }
     
     nvar If(const nvar& v1, const nvar& v2){
-      if(process(v1)){
-        return process(v2);
+      if(run(v1)){
+        return run(v2);
       }
       
       return none;
     }
     
     nvar If(const nvar& v1, const nvar& v2, const nvar& v3){
-      if(process(v1)){
-        return process(v2);
+      if(run(v1)){
+        return run(v2);
       }
       else{
-        return process(v3);
+        return run(v3);
       }
     }
     
     nvar Switch(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
+      nvar p1 = run(v1);
       const nmap& m = v3;
       
       auto itr = m.find(p1);
       if(itr == m.end()){
-        return process(v2);
+        return run(v2);
       }
       
-      return process(itr->second);
+      return run(itr->second);
     }
     
     nvar IsFalse(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isFalse();
     }
     
     nvar IsTrue(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isTrue();
     }
     
     nvar IsDefined(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isDefined();
     }
     
     nvar IsString(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isString();
     }
     
     nvar IsSymbol(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isSymbol();
     }
     
     nvar IsFunction(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isFunction();
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return p1.isFunction(p2);
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = process(v1);
-      nstr f = process(v2);
-      size_t arity = process(v3);
+      nvar p1 = run(v1);
+      nstr f = run(v2);
+      size_t arity = run(v3);
       
       return p1.isFunction(f, arity);
     }
     
     nvar IsSymbolic(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isSymbolic();
     }
     
     nvar IsNumeric(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isNumeric();
     }
     
     nvar IsReference(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isReference();
     }
     
     nvar IsPointer(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isPointer();
     }
     
     nvar IsInteger(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isInteger();
     }
     
     nvar IsRational(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isRational();
     }
     
     nvar IsReal(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.isReal();
     }
     
     nvar GetStr(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.str();
     }
     
     nvar GetVec(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.vec();
     }
     
     nvar GetList(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.list();
     }
     
     nvar GetAnySequence(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.anySequence();
     }
     
     nvar GetMap(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.map();
     }
     
     nvar GetMultimap(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.multimap();
     }
     
     nvar GetAnyMap(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.anyMap();
     }
     
     nvar Append(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.append(p2);
       
@@ -1650,20 +1650,20 @@ namespace neu{
     }
     
     nvar Normalize(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.normalize();
     }
     
     nvar Head(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.head();
     }
     
     nvar SetHead(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.setHead(p2);
       
@@ -1671,75 +1671,75 @@ namespace neu{
     }
     
     nvar ClearHead(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       p.clearHead();
       
       return none;
     }
     
     nvar NumKeys(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.numKeys();
     }
     
     nvar Size(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.size();
     }
     
     nvar MapEmpty(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.mapEmpty();
     }
     
     nvar AllEmpty(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.allEmpty();
     }
     
     nvar HasVector(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.hasVector();
     }
     
     nvar HasList(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.hasList();
     }
     
     nvar HasMap(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.hasMap();
     }
     
     nvar HasMultimap(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.hasMultimap();
     }
     
     nvar PopFront(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.popFront();
     }
     
     nvar AllKeys(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.allKeys();
     }
     
     nvar Open(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.open(p2);
       
@@ -1747,8 +1747,8 @@ namespace neu{
     }
     
     nvar Save(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.save(p2);
       
@@ -1756,8 +1756,8 @@ namespace neu{
     }
     
     nvar Unite(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.unite(p2);
       
@@ -1765,8 +1765,8 @@ namespace neu{
     }
     
     nvar Intersect(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.intersect(p2);
       
@@ -1774,8 +1774,8 @@ namespace neu{
     }
     
     nvar Complement(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       p1.complement(p2);
       
@@ -1807,45 +1807,45 @@ namespace neu{
     }
     
     nvar Max(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return nvar::max(p1, p2);
     }
     
     nvar Min(const nvar& v1, const nvar& v2){
-      nvar p1 = process(v1);
-      nvar p2 = process(v2);
+      nvar p1 = run(v1);
+      nvar p2 = run(v2);
       
       return nvar::min(p1, p2);
     }
     
     nvar Func(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nfunc(p);
     }
     
     nvar Sym(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nsym(p);
     }
     
     nvar VarRef(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.toRef();
     }
     
     nvar VarPtr(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return p.toPtr();
     }
     
     nvar NML(const nvar& v){
-      nvar p = process(v);
+      nvar p = run(v);
       
       return nml(p);
     }
@@ -2726,8 +2726,8 @@ void NObject::enableThreading(){
   x_->enableThreading();
 }
 
-nvar NObject::process(const nvar& v, uint32_t flags){
-  return x_->process(v, flags);
+nvar NObject::run(const nvar& v, uint32_t flags){
+  return x_->run(v, flags);
 }
 
 nvar NObject::remoteProcess(const nvar& v){

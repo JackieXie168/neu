@@ -79,7 +79,7 @@ namespace neu{
     
     nvar remoteProcess(const nvar& v);
     
-    nvar process(const nvar& v, uint32_t flags=0);
+    nvar run(const nvar& v, uint32_t flags=0);
     
     virtual NFunc handle(const nvar& v, uint32_t flags=0);
     

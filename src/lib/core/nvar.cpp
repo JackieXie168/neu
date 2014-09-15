@@ -24552,7 +24552,7 @@ void nvar::sqrt(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Sqrt") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sqrt") << *this, NObject::Delegated);
         break;
       }
       
@@ -24562,7 +24562,7 @@ void nvar::sqrt(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Sqrt") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sqrt") << *this, NObject::Delegated);
         break;
       }
       
@@ -24621,7 +24621,7 @@ void nvar::exp(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Exp") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Exp") << *this, NObject::Delegated);
         break;
       }
       
@@ -24631,7 +24631,7 @@ void nvar::exp(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Exp") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Exp") << *this, NObject::Delegated);
         break;
       }
       
@@ -24697,7 +24697,7 @@ nvar nvar::pow(const nvar& x, NObject* o) const{
           return std::pow(h_.i, x.h_.i);
         case Rational:
           if(o){
-            return o->process(nfunc("Pow") << h_.i << *x.h_.r,
+            return o->run(nfunc("Pow") << h_.i << *x.h_.r,
                               NObject::Delegated);
           }
           
@@ -24734,14 +24734,14 @@ nvar nvar::pow(const nvar& x, NObject* o) const{
           NERROR("right operand is undefined");
         case Integer:
           if(o){
-            return o->process(nfunc("Pow") << *h_.r << x.h_.i,
+            return o->run(nfunc("Pow") << *h_.r << x.h_.i,
                               NObject::Delegated);
           }
           
           return std::pow(h_.r->toDouble(), x.h_.i);
         case Rational:
           if(o){
-            return o->process(nfunc("Pow") << *h_.r << *x.h_.r,
+            return o->run(nfunc("Pow") << *h_.r << *x.h_.r,
                               NObject::Delegated);
           }
           
@@ -24928,7 +24928,7 @@ void nvar::log10(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Log10") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Log10") << *this, NObject::Delegated);
         break;
       }
       
@@ -24938,7 +24938,7 @@ void nvar::log10(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Log10") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Log10") << *this, NObject::Delegated);
         break;
       }
       
@@ -24997,7 +24997,7 @@ void nvar::log(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Log") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Log") << *this, NObject::Delegated);
         break;
       }
       
@@ -25007,7 +25007,7 @@ void nvar::log(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Log") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Log") << *this, NObject::Delegated);
         break;
       }
       
@@ -25066,7 +25066,7 @@ void nvar::cos(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Cos") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Cos") << *this, NObject::Delegated);
         break;
       }
       
@@ -25076,7 +25076,7 @@ void nvar::cos(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Cos") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Cos") << *this, NObject::Delegated);
         break;
       }
       
@@ -25135,7 +25135,7 @@ void nvar::acos(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Acos") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Acos") << *this, NObject::Delegated);
         break;
       }
       
@@ -25145,7 +25145,7 @@ void nvar::acos(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Acos") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Acos") << *this, NObject::Delegated);
         break;
       }
       
@@ -25204,7 +25204,7 @@ void nvar::cosh(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Cosh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Cosh") << *this, NObject::Delegated);
         break;
       }
       
@@ -25214,7 +25214,7 @@ void nvar::cosh(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Cosh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Cosh") << *this, NObject::Delegated);
         break;
       }
       
@@ -25273,7 +25273,7 @@ void nvar::sin(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Sin") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sin") << *this, NObject::Delegated);
         break;
       }
       
@@ -25283,7 +25283,7 @@ void nvar::sin(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Sin") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sin") << *this, NObject::Delegated);
         break;
       }
       
@@ -25342,7 +25342,7 @@ void nvar::asin(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Asin") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Asin") << *this, NObject::Delegated);
         break;
       }
       
@@ -25352,7 +25352,7 @@ void nvar::asin(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Asin") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Asin") << *this, NObject::Delegated);
         break;
       }
       
@@ -25411,7 +25411,7 @@ void nvar::sinh(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Sinh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sinh") << *this, NObject::Delegated);
         break;
       }
       
@@ -25421,7 +25421,7 @@ void nvar::sinh(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Sinh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Sinh") << *this, NObject::Delegated);
         break;
       }
       
@@ -25480,7 +25480,7 @@ void nvar::tan(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Tan") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Tan") << *this, NObject::Delegated);
         break;
       }
       
@@ -25490,7 +25490,7 @@ void nvar::tan(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Tan") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Tan") << *this, NObject::Delegated);
         break;
       }
       
@@ -25549,7 +25549,7 @@ void nvar::atan(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Atan") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Atan") << *this, NObject::Delegated);
         break;
       }
       
@@ -25559,7 +25559,7 @@ void nvar::atan(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Atan") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Atan") << *this, NObject::Delegated);
         break;
       }
       
@@ -25618,7 +25618,7 @@ void nvar::tanh(NObject* o){
       NERROR("operand is invalid");
     case Integer:
       if(o){
-        *this = o->process(nfunc("Tanh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Tanh") << *this, NObject::Delegated);
         break;
       }
       
@@ -25628,7 +25628,7 @@ void nvar::tanh(NObject* o){
       break;
     case Rational:{
       if(o){
-        *this = o->process(nfunc("Tanh") << *this, NObject::Delegated);
+        *this = o->run(nfunc("Tanh") << *this, NObject::Delegated);
         break;
       }
       

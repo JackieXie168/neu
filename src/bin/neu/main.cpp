@@ -176,7 +176,7 @@ int main(int argc, char** argv){
       }
 
       try{
-        nvar r = o->process(n);
+        nvar r = o->run(n);
 
         if(show){
           cout << ">> " << r << endl;
@@ -204,7 +204,7 @@ int main(int argc, char** argv){
       cout << "<< " << n << endl;
     }
     
-    nvar r = o->process(n);
+    nvar r = o->run(n);
 
     if(show){
       cout << ">> " << r << endl;

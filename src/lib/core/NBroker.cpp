@@ -413,7 +413,7 @@ void ServerProc::run(nvar& r){
       
       nvar resp;
       try{
-        resp("r") = obj_->obj->process(f);
+        resp("r") = obj_->obj->run(f);
       }
       catch(NError& e){
         resp("op") = OP_ERROR;

@@ -72,7 +72,7 @@ int main(int argc, char** argv){
 
   // execute the code we parsed
   NObject interpreter;
-  interpreter.process(code);
+  interpreter.run(code);
 
   return 0;
 }

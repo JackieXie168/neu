@@ -534,7 +534,7 @@ public:
     seq("static") = isStatic;
 
     if(obj){
-      obj->process(post_);
+      obj->run(post_);
       delete obj;
     }
   }
@@ -621,7 +621,7 @@ public:
           }
 
           try{
-            c->process(n);
+            c->run(n);
           }
           catch(NError& e){
             NERROR("On concept '" + concept_->name() +
@@ -653,7 +653,7 @@ public:
           }
           
           try{
-            itr->second->process(n);
+            itr->second->run(n);
           }
           catch(NError& e){
             NERROR("On concept '" + concept_->name() +
@@ -682,10 +682,10 @@ public:
 
           try{
             if(k == "self"){
-              this_->process(n);
+              this_->run(n);
             }
             else{
-              return_->process(n);
+              return_->run(n);
             }
           }
           catch(NError& e){
@@ -703,7 +703,7 @@ public:
         nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << value);
         
         try{
-          process(n);
+          NObject::run(n);
         }
         catch(NError& e){
           NERROR("On concept '" + concept_->name() +
@@ -1027,7 +1027,7 @@ public:
       nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << data_[k]);
 
       try{
-        concept_->process(n);
+        concept_->run(n);
       }
       catch(NError& e){
         NERROR("Error handling field '" + k + "' on concept: " + name_);
@@ -2401,7 +2401,7 @@ public:
     }
 
     try{
-      obj_.process(f);
+      obj_.run(f);
     }
     catch(NError& e){
       //cout << "e is: " << e << endl;
