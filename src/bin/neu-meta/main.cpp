@@ -1111,7 +1111,7 @@ public:
       
         if(isDist){
           ostr << "  if(isRemote()){" << endl;
-          ostr << "    return remoteProcess(nfunc(\"" << methodName <<
+          ostr << "    return remoteRun(nfunc(\"" << methodName <<
             "\")";
           for(FunctionDecl::param_iterator itr = md->param_begin(),
                 itrEnd = md->param_end(); itr != itrEnd; ++itr){

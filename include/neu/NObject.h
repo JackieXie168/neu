@@ -77,7 +77,7 @@ namespace neu{
     
     static const uint32_t Delegated = 0x00000001;
     
-    nvar remoteProcess(const nvar& v);
+    nvar remoteRun(const nvar& v);
     
     nvar run(const nvar& v, uint32_t flags=0);
     

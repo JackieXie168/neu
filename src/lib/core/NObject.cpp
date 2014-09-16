@@ -1611,7 +1611,7 @@ namespace neu{
       return static_cast<NObject*>(o)->objectScope();
     }
     
-    nvar remoteProcess(const nvar& n){
+    nvar remoteRun(const nvar& n){
       assert(broker_);
       
       return broker_->process_(o_, n);
@@ -2454,8 +2454,8 @@ nvar NObject::run(const nvar& v, uint32_t flags){
   return x_->run(v, flags);
 }
 
-nvar NObject::remoteProcess(const nvar& v){
-  return x_->remoteProcess(v);
+nvar NObject::remoteRun(const nvar& v){
+  return x_->remoteRun(v);
 }
 
 NFunc NObject::handle(const nvar& v, uint32_t flags){
