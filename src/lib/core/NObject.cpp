@@ -536,268 +536,167 @@ namespace neu{
     }
     
     nvar Add(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 + p2;
+      return run(v1) + run(v2);
     }
     
     nvar Sub(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 - p2;
+      return run(v1) - run(v2);
     }
     
     nvar Mul(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 * p2;
+      return run(v1) * run(v2);
     }
     
     nvar Div(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 / p2;
+      return run(v1) / run(v2);
     }
     
     nvar Mod(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 % p2;
+      return run(v1) % run(v2);
     }
     
     nvar Neg(const nvar& v){
-      nvar p = run(v);
-      
-      return -p;
+      return -run(v);
     }
     
     nvar AddBy(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 += p2;
+      return run(v1) += run(v2);
     }
     
     nvar SubBy(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 -= p2;
+      return run(v1) -= run(v2);
     }
     
     nvar MulBy(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 *= p2;
+      return run(v1) *= run(v2);
     }
     
     nvar DivBy(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 /= p2;
+      return run(v1) /= run(v2);
     }
     
     nvar ModBy(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 %= p2;
+      return run(v1) %= run(v2);
     }
     
     nvar Inc(const nvar& v){
-      nvar p = run(v);
-      
-      return ++p;
+      return ++run(v);
     }
     
     nvar PostInc(const nvar& v){
-      nvar p = run(v);
-      
-      return p++;
+      return run(v)++;
     }
     
     nvar Dec(const nvar& v){
-      nvar p = run(v);
-      
-      return --p;
+      return --run(v);
     }
     
     nvar PostDec(const nvar& v){
-      nvar p = run(v);
-      
-      return p--;
+      return run(v)--;
     }
     
     nvar LT(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 < p2;
+      return run(v1) < run(v2);
     }
     
     nvar LE(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 <= p2;
+      return run(v1) <= run(v2);
     }
     
     nvar GT(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 > p2;
+      return run(v1) > run(v2);
     }
     
     nvar GE(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 >= p2;
+      return run(v1) >= run(v2);
     }
     
     nvar EQ(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 == p2;
+      return run(v1) == run(v2);
     }
     
     nvar NE(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 != p2;
+      return run(v1) != run(v2);
     }
     
     nvar And(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 && p2;
+      return run(v1) && run(v2);
     }
     
     nvar Or(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1 || p2;
+      return run(v1) || run(v2);
     }
     
     nvar Not(const nvar& v){
-      nvar p = run(v);
-      
-      return !p;
+      return !run(v);
     }
 
     nvar Pow(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return nvar::pow(p1, p2, exact_ ? o_ : 0);
+      return nvar::pow(run(v1), run(v2), exact_ ? o_ : 0);
     }
     
     nvar Sqrt(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::sqrt(p, exact_ ? o_ : 0);
+      return nvar::sqrt(run(v), exact_ ? o_ : 0);
     }
     
     nvar Exp(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::exp(p, exact_ ? o_ : 0);
+      return nvar::exp(run(v), exact_ ? o_ : 0);
     }
     
     nvar Abs(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::abs(p);
+      return nvar::abs(run(v));
     }
     
     nvar Floor(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::floor(p);
+      return nvar::floor(run(v));
     }
     
     nvar Ceil(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::ceil(p);
+      return nvar::ceil(run(v));
     }
     
     nvar Log10(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::log10(p, exact_ ? o_ : 0);
+      return nvar::log10(run(v), exact_ ? o_ : 0);
     }
     
     nvar Log(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::log(p, exact_ ? o_ : 0);
+      return nvar::log(run(v), exact_ ? o_ : 0);
     }
     
     nvar Cos(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::cos(p, exact_ ? o_ : 0);
+      return nvar::cos(run(v), exact_ ? o_ : 0);
     }
     
     nvar Acos(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::acos(p, exact_ ? o_ : 0);
+      return nvar::acos(run(v), exact_ ? o_ : 0);
     }
     
     nvar Cosh(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::cosh(p, exact_ ? o_ : 0);
+      return nvar::cosh(run(v), exact_ ? o_ : 0);
     }
     
     nvar Sin(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::sin(p, exact_ ? o_ : 0);
+      return nvar::sin(run(v), exact_ ? o_ : 0);
     }
     
     nvar Asin(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::asin(p, exact_ ? o_ : 0);
+      return nvar::asin(run(v), exact_ ? o_ : 0);
     }
     
     nvar Sinh(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::sinh(p, exact_ ? o_ : 0);
+      return nvar::sinh(run(v), exact_ ? o_ : 0);
     }
     
     nvar Tan(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::tan(p, exact_ ? o_ : 0);
+      return nvar::tan(run(v), exact_ ? o_ : 0);
     }
     
     nvar Atan(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::atan(p, exact_ ? o_ : 0);
+      return nvar::atan(run(v), exact_ ? o_ : 0);
     }
     
     nvar Tanh(const nvar& v){
-      nvar p = run(v);
-      
-      return nvar::tanh(p, exact_ ? o_ : 0);
+      return nvar::tanh(run(v), exact_ ? o_ : 0);
     }
     
     nvar Var(const nvar& v){
@@ -845,10 +744,7 @@ namespace neu{
     }
     
     nvar Set(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1.set(p2);
+      return run(v1).set(run(v2));
     }
     
     nvar VarSet(const nvar& v1, const nvar& v2){
@@ -882,36 +778,23 @@ namespace neu{
     }
 
     nvar Get(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1.get(p2).toPtr();
+      return run(v1).get(run(v2)).toPtr();
     }
     
     nvar Idx(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1[p2].toPtr();
+      return run(v1)[run(v2)].toPtr();
     }
     
     nvar Dot(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      
-      return p1[v2].toPtr();
+      return run(v1)[v2].toPtr();
     }
     
     nvar Put(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1(p2).toPtr();
+      return run(v1)(run(v2)).toPtr();
     }
     
     nvar DotPut(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      
-      return p1(v2).toPtr();
+      return run(v1)(v2).toPtr();
     }
     
     nvar Cs(const nvar& v){
@@ -1194,164 +1077,116 @@ namespace neu{
     
     nvar PushBack(const nvar& v1, const nvar& v2){
       nvar p1 = run(v1);
-      nvar p2 = run(v2);
       
-      p1.pushBack(p2);
+      p1.pushBack(run(v2));
       
       return p1.toPtr();
     }
 
     nvar TouchVector(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoVector();
+      run(v1).intoVector();
       
       return none;
     }
 
     nvar TouchList(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoList();
+      run(v1).intoList();
       
       return none;
     }
     
     nvar TouchQueue(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoQueue();
+      run(v1).intoQueue();
       
       return none;
     }
     
     nvar TouchSet(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoSet();
+      run(v1).intoSet();
       
       return none;
     }
     
     nvar TouchHashSet(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoHashSet();
+      run(v1).intoHashSet();
       
       return none;
     }
     
     nvar TouchMap(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoMap();
+      run(v1).intoMap();
       
       return none;
     }
     
     nvar TouchHashMap(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoHashMap();
+      run(v1).intoHashMap();
       
       return none;
     }
     
     nvar TouchMultimap(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.intoMultimap();
+      run(v1).intoMultimap();
       
       return none;
     }
     
     nvar Keys(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      return p1.keys();
+      return run(v1).keys();
     }
 
     nvar Enumerate(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      return p1.enumerate();
+      return run(v1).enumerate();
     }
     
     nvar PushFront(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.pushFront(p2);
+      run(v1).pushFront(run(v2));
       
       return none;
     }
     
     nvar PopBack(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      return p1.popBack();
+      return run(v1).popBack();
     }
     
     nvar Has(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1.has(p2);
+      return run(v1).has(run(v2));
     }
     
     nvar Insert(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      nvar p3 = run(v3);
-      
-      p1.insert(v2, v3);
+      run(v1).insert(run(v2), run(v3));
       
       return none;
     }
     
     nvar Clear(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      p1.clear();
+      run(v1).clear();
       
       return none;
     }
     
     nvar Empty(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      return p1.empty();
+      return run(v1).empty();
     }
     
     nvar Back(const nvar& v1){
-      nvar p1 = run(v1);
-      
-      return p1.back();
+      return run(v1).back();
     }
     
     nvar Erase(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.erase(p2);
+      run(v1).erase(run(v2));
       
       return none;
     }
     
     nvar Merge(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.merge(p2);
+      run(v1).merge(run(v2));
       
       return none;
     }
     
     nvar OuterMerge(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.outerMerge(p2);
+      run(v1).outerMerge(run(v2));
       
       return none;
     }
@@ -1505,10 +1340,9 @@ namespace neu{
     }
     
     nvar Switch(const nvar& v1, const nvar& v2, const nvar& v3){
-      nvar p1 = run(v1);
       const nmap& m = v3;
       
-      auto itr = m.find(p1);
+      auto itr = m.find(run(v1));
       if(itr == m.end()){
         return run(v2);
       }
@@ -1517,46 +1351,31 @@ namespace neu{
     }
     
     nvar IsFalse(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isFalse();
+      return run(v).isFalse();
     }
     
     nvar IsTrue(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isTrue();
+      return run(v).isTrue();
     }
     
     nvar IsDefined(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isDefined();
+      return run(v).isDefined();
     }
     
     nvar IsString(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isString();
+      return run(v).isString();
     }
     
     nvar IsSymbol(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isSymbol();
+      return run(v).isSymbol();
     }
     
     nvar IsFunction(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isFunction();
+      return run(v).isFunction();
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return p1.isFunction(p2);
+      return run(v1).isFunction(run(v2));
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2, const nvar& v3){
@@ -1568,229 +1387,149 @@ namespace neu{
     }
     
     nvar IsSymbolic(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isSymbolic();
+      return run(v).isSymbolic();
     }
     
     nvar IsNumeric(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isNumeric();
+      return run(v).isNumeric();
     }
     
     nvar IsReference(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isReference();
+      return run(v).isReference();
     }
     
     nvar IsPointer(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isPointer();
+      return run(v).isPointer();
     }
     
     nvar IsInteger(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isInteger();
+      return run(v).isInteger();
     }
     
     nvar IsRational(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isRational();
+      return run(v).isRational();
     }
     
     nvar IsReal(const nvar& v){
-      nvar p = run(v);
-      
-      return p.isReal();
+      return run(v).isReal();
     }
     
     nvar GetStr(const nvar& v){
-      nvar p = run(v);
-      
-      return p.str();
+      return run(v).str();
     }
     
     nvar GetVec(const nvar& v){
-      nvar p = run(v);
-      
-      return p.vec();
+      return run(v).vec();
     }
     
     nvar GetList(const nvar& v){
-      nvar p = run(v);
-      
-      return p.list();
+      return run(v).list();
     }
     
     nvar GetAnySequence(const nvar& v){
-      nvar p = run(v);
-      
-      return p.anySequence();
+      return run(v).anySequence();
     }
     
     nvar GetMap(const nvar& v){
-      nvar p = run(v);
-      
-      return p.map();
+      return run(v).map();
     }
     
     nvar GetMultimap(const nvar& v){
-      nvar p = run(v);
-      
-      return p.multimap();
+      return run(v).multimap();
     }
     
     nvar GetAnyMap(const nvar& v){
-      nvar p = run(v);
-      
-      return p.anyMap();
+      return run(v).anyMap();
     }
     
     nvar Append(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.append(p2);
+      run(v1).append(run(v2));
       
       return none;
     }
     
     nvar Normalize(const nvar& v){
-      nvar p = run(v);
-      
-      return p.normalize();
+      return run(v).normalize();
     }
     
     nvar Head(const nvar& v){
-      nvar p = run(v);
-      
-      return p.head();
+      return run(v).head();
     }
     
     nvar SetHead(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.setHead(p2);
+      run(v1).setHead(run(v2));
       
       return none;
     }
     
     nvar ClearHead(const nvar& v){
-      nvar p = run(v);
-      p.clearHead();
+      run(v).clearHead();
       
       return none;
     }
     
     nvar NumKeys(const nvar& v){
-      nvar p = run(v);
-      
-      return p.numKeys();
+      return run(v).numKeys();
     }
     
     nvar Size(const nvar& v){
-      nvar p = run(v);
-      
-      return p.size();
+      return run(v).size();
     }
     
     nvar MapEmpty(const nvar& v){
-      nvar p = run(v);
-      
-      return p.mapEmpty();
+      return run(v).mapEmpty();
     }
     
     nvar AllEmpty(const nvar& v){
-      nvar p = run(v);
-      
-      return p.allEmpty();
+      return run(v).allEmpty();
     }
     
     nvar HasVector(const nvar& v){
-      nvar p = run(v);
-      
-      return p.hasVector();
+      return run(v).hasVector();
     }
     
     nvar HasList(const nvar& v){
-      nvar p = run(v);
-      
-      return p.hasList();
+      return run(v).hasList();
     }
     
     nvar HasMap(const nvar& v){
-      nvar p = run(v);
-      
-      return p.hasMap();
+      return run(v).hasMap();
     }
     
     nvar HasMultimap(const nvar& v){
-      nvar p = run(v);
-      
-      return p.hasMultimap();
+      return run(v).hasMultimap();
     }
     
     nvar PopFront(const nvar& v){
-      nvar p = run(v);
-      
-      return p.popFront();
+      return run(v).popFront();
     }
     
     nvar AllKeys(const nvar& v){
-      nvar p = run(v);
-      
-      return p.allKeys();
+      return run(v).allKeys();
     }
     
     nvar Open(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.open(p2);
+      run(v1).open(run(v2));
       
       return none;
     }
     
     nvar Save(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.save(p2);
+      run(v1).save(run(v2));
       
       return none;
     }
     
     nvar Unite(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.unite(p2);
-      
-      return p1;
+      return run(v1).unite(run(v2));
     }
     
     nvar Intersect(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.intersect(p2);
-      
-      return p1;
+      return run(v1).intersect(run(v2));
     }
     
     nvar Complement(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      p1.complement(p2);
-      
-      return p1;
+      return run(v1).complement(run(v2));
     }
     
     nvar Inf(){
@@ -1818,47 +1557,31 @@ namespace neu{
     }
     
     nvar Max(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return nvar::max(p1, p2);
+      return nvar::max(run(v1), run(v2));
     }
     
     nvar Min(const nvar& v1, const nvar& v2){
-      nvar p1 = run(v1);
-      nvar p2 = run(v2);
-      
-      return nvar::min(p1, p2);
+      return nvar::min(run(v1), run(v2));
     }
     
     nvar Func(const nvar& v){
-      nvar p = run(v);
-      
-      return nfunc(p);
+      return nfunc(run(v));
     }
     
     nvar Sym(const nvar& v){
-      nvar p = run(v);
-      
-      return nsym(p);
+      return nsym(run(v));
     }
     
     nvar VarRef(const nvar& v){
-      nvar p = run(v);
-      
-      return p.toRef();
+      return run(v).toRef();
     }
     
     nvar VarPtr(const nvar& v){
-      nvar p = run(v);
-      
-      return p.toPtr();
+      return run(v).toPtr();
     }
     
     nvar NML(const nvar& v){
-      nvar p = run(v);
-      
-      return nml(p);
+      return nml(run(v));
     }
     
     void foo(nvar& x){
