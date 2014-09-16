@@ -44,3 +44,4 @@ Neu 1.4.0 - 9/15/14
 
  -Added test/regress/database
 
+ -In parsing and printing: [flag:true] is now shortened to: [flag:]
