@@ -146,11 +146,6 @@ namespace{
   
   Class _class;
   
-  NFunc _ret0Func;
-  NFunc _ret1Func;
-  NFunc _breakFunc;
-  NFunc _continueFunc;
-  
 } // end namespace
 
 const uint32_t NObject::classId = NObjectBase::getClassId();
@@ -443,14 +438,14 @@ namespace neu{
               nvar r = run(b);
               context->popScope();
 
-              if(r.isFunction()){
-                NFunc f = (*r).func();
-                if(f == _ret0Func){
+              switch(r.fullType()){
+                case nvar::Return:
                   return none;
-                }
-                else if(f == _ret1Func){
-                  return r[0];
-                }
+                case nvar::ReturnVal:
+                  nvar* vp = r.varPtr();
+                  nvar ret = nvar(move(*vp));
+                  delete vp;
+                  return ret;
               }
               
               return r;
@@ -1094,12 +1089,9 @@ namespace neu{
     }
 
     nvar Ret(const nvar& v){
-      nvar p = run(v);
-      
-      nvar r = nfunc("Ret") << move(p);
-      (*r).setFunc(_ret1Func);
-      
-      return r;
+      nvar::Head h;
+      h.vp = new nvar(*run(v));
+      return nvar(nvar::ReturnVal, h);
     }
     
     nvar Block_n(nvec& v){
@@ -1108,14 +1100,13 @@ namespace neu{
 
       for(size_t i = 0; i < size; ++i){
         r = run(v[i]);
-        if(r.isFunction()){
-          NFunc f = (*r).func();
-          if(f == _ret0Func ||
-             f == _ret1Func ||
-             f == _breakFunc ||
-             f == _continueFunc){
+
+        switch(r.fullType()){
+          case nvar::Return:
+          case nvar::ReturnVal:
+          case nvar::Break:
+          case nvar::Continue:
             return r;
-          }
         }
       }
       
@@ -1140,15 +1131,13 @@ namespace neu{
           throw e;
         }
         
-        if(r.isFunction()){
-          NFunc f = (*r).func();
-          if(f == _ret0Func ||
-             f == _ret1Func ||
-             f == _breakFunc ||
-             f == _continueFunc){
+        switch(r.fullType()){
+          case nvar::Return:
+          case nvar::ReturnVal:
+          case nvar::Break:
+          case nvar::Continue:
             context->popScope();
             return r;
-          }
         }
       }
       
@@ -1388,14 +1377,12 @@ namespace neu{
 
         nvar r = run(v4);
 
-        if(r.isFunction()){
-          NFunc f = (*r).func();
-          if(f == _ret0Func || f == _ret1Func){
+        switch(r.fullType()){
+          case nvar::Return:
+          case nvar::ReturnVal:
             return r;
-          }
-          else if(f == _breakFunc){
+          case nvar::Break:
             return none;
-          }
         }
         
         run(v3);
@@ -1421,14 +1408,12 @@ namespace neu{
           
           nvar r = run(v3);
           
-          if(r.isFunction()){
-            NFunc f = (*r).func();
-            if(f == _ret0Func || f == _ret1Func){
+          switch(r.fullType()){
+            case nvar::Return:
+            case nvar::ReturnVal:
               return r;
-            }
-            else if(f == _breakFunc){
+            case nvar::Break:
               return none;
-            }
           }
         }
       }
@@ -1440,14 +1425,12 @@ namespace neu{
           
           nvar r = run(v3);
           
-          if(r.isFunction()){
-            NFunc f = (*r).func();
-            if(f == _ret0Func || f == _ret1Func){
+          switch(r.fullType()){
+            case nvar::Return:
+            case nvar::ReturnVal:
               return r;
-            }
-            else if(f == _breakFunc){
+            case nvar::Break:
               return none;
-            }
           }
         }
       }
@@ -1464,14 +1447,12 @@ namespace neu{
         
         nvar r = run(v2);
         
-        if(r.isFunction()){
-          NFunc f = (*r).func();
-          if(f == _ret0Func || f == _ret1Func){
+        switch(r.fullType()){
+          case nvar::Return:
+          case nvar::ReturnVal:
             return r;
-          }
-          else if(f == _breakFunc){
+          case nvar::Break:
             return none;
-          }
         }
       }
     }
@@ -2238,34 +2219,24 @@ FuncMap::FuncMap(){
         return NObject_::obj(o)->Print_n(v);
       });
   
-  _ret0Func =
   add("Ret", 0,
       [](void* o, nvec& v) -> nvar{
-        nvar f = nfunc("Ret");
-        (*f).setFunc(_ret0Func);
-        return f;
+        return nvar(nvar::Return, nvar::Head());
       });
   
-  _ret1Func =
   add("Ret", 1,
       [](void* o, nvec& v) -> nvar{
         return NObject_::obj(o)->Ret(v[0]);
       });
   
-  _breakFunc =
   add("Break", 0,
       [](void* o, nvec& v) -> nvar{
-        nvar f = nfunc("Break");
-        (*f).setFunc(_breakFunc);
-        return f;
+        return nvar(nvar::Break, nvar::Head());
       });
   
-  _continueFunc =
   add("Continue", 0,
       [](void* o, nvec& v) -> nvar{
-        nvar f = nfunc("Continue");
-        (*f).setFunc(_continueFunc);
-        return f;
+        return nvar(nvar::Continue, nvar::Head());
       });
   
   add("PushScope", 1,

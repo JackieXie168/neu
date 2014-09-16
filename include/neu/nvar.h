@@ -172,6 +172,11 @@ namespace neu{
     static const Type Pointer =                 34;
     static const Type Reference =               35;
     
+    static const Type Return =                  70;
+    static const Type ReturnVal =               71;
+    static const Type Break =                   72;
+    static const Type Continue =                73;
+    
     class CFunction{
     public:
       CFunction(const char* f)
@@ -4789,6 +4794,12 @@ namespace neu{
       assert(t_ == Function);
       
       return h_.f->v;
+    }
+    
+    nvar* varPtr() const{
+      assert(t_ == Pointer || t_ == ReturnVal);
+      
+      return h_.vp;
     }
     
     void sqrt(NObject* o=0);
