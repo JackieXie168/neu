@@ -1,7 +1,7 @@
 /*
   Both styles of C++ comments are supported.  This is a multiline
   comment. This is an NML file to be parsed with NMLParser and
-  interpreted by calling the process() on an NObject subclass.
+  interpreted by calling run() on an NObject subclass.
  */
 
 // import NLib functions into the main scope, so that they are

@@ -1367,73 +1367,103 @@ namespace neu{
     }
     
     nvar For(const nvar& v1, const nvar& v2, const nvar& v3, const nvar& v4){
-      run(v1);
+      ThreadContext* context = getContext();
       
-      for(;;){
-        nvar c = run(v2);
-        if(!c){
-          return none;
-        }
-
-        nvar r = run(v4);
-
-        switch(r.fullType()){
-          case nvar::Return:
-          case nvar::ReturnVal:
-            return r;
-          case nvar::Break:
-            return none;
-        }
+      NScope scope;
+      context->pushScope(&scope);
+      
+      try{
+        run(v1);
         
-        run(v3);
+        for(;;){
+          nvar c = run(v2);
+          if(!c){
+            context->popScope();
+            return none;
+          }
+          
+          nvar r = run(v4);
+          
+          switch(r.fullType()){
+            case nvar::Return:
+            case nvar::ReturnVal:
+              context->popScope();
+              return r;
+            case nvar::Break:
+              context->popScope();
+              return none;
+          }
+          
+          run(v3);
+        }
       }
+      catch(NError& e){
+        context->popScope();
+        throw e;
+      }
+      
+      context->popScope();
       
       return none;
     }
     
     nvar ForEach(const nvar& v1, const nvar& v2, const nvar& v3){
       ThreadContext* context = getContext();
-      NScope* scope = context->topScope();
       
-      nvar p2 = run(v2);
-      
-      if(p2.hasAnyMap()){
-        nvec es;
-        p2.enumerate(es);
+      NScope scope;
+      context->pushScope(&scope);
+
+      try{
+        nvar p2 = run(v2);
         
-        size_t size = es.size();
-        
-        for(size_t i = 0; i < size; ++i){
-          scope->setSymbol(v1, es[i]);
+        if(p2.hasAnyMap()){
+          nvec es;
+          p2.enumerate(es);
           
-          nvar r = run(v3);
+          size_t size = es.size();
           
-          switch(r.fullType()){
-            case nvar::Return:
-            case nvar::ReturnVal:
-              return r;
-            case nvar::Break:
-              return none;
+          for(size_t i = 0; i < size; ++i){
+            scope.setSymbol(v1, es[i]);
+            
+            nvar r = run(v3);
+            
+            switch(r.fullType()){
+              case nvar::Return:
+              case nvar::ReturnVal:
+                context->popScope();
+                return r;
+              case nvar::Break:
+                context->popScope();
+                return none;
+            }
+          }
+        }
+        else{
+          size_t size = p2.size();
+          
+          for(size_t i = 0; i < size; ++i){
+            scope.setSymbol(v1, p2[i]);
+            
+            nvar r = run(v3);
+            
+            switch(r.fullType()){
+              case nvar::Return:
+              case nvar::ReturnVal:
+                context->popScope();
+                return r;
+              case nvar::Break:
+                context->popScope();
+                return none;
+            }
           }
         }
       }
-      else{
-        size_t size = p2.size();
-        
-        for(size_t i = 0; i < size; ++i){
-          scope->setSymbol(v1, p2[i]);
-          
-          nvar r = run(v3);
-          
-          switch(r.fullType()){
-            case nvar::Return:
-            case nvar::ReturnVal:
-              return r;
-            case nvar::Break:
-              return none;
-          }
-        }
+      catch(NError& e){
+        context->popScope();
+        throw e;
       }
+      
+      context->popScope();
       
       return none;
     }
