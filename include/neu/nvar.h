@@ -1114,6 +1114,12 @@ namespace neu{
     
     bool toBool() const;
     
+    bool getBool() const{
+      assert(t_ == False || t_ == True);
+      
+      return t_ != False;
+    }
+    
     typedef void (nvar::*BoolType_)() const;
     
     void boolStub_() const{}
@@ -1161,6 +1167,12 @@ namespace neu{
     }
     
     int64_t toLong() const;
+    
+    int64_t getLong() const{
+      assert(t_ == Integer);
+      
+      return h_.i;
+    }
     
     static size_t intBytes(int64_t i){
       if(i < 0){
@@ -1230,6 +1242,12 @@ namespace neu{
     
     double toDouble() const;
     
+    double getDouble() const{
+      assert(t_ == Float);
+      
+      return h_.d;
+    }
+    
     const nrat& rat() const{
       switch(t_){
         case Rational:
@@ -1293,6 +1311,12 @@ namespace neu{
       }
     }
     
+    const nrat& getRat() const{
+      assert(t_ == Rational);
+      
+      return *h_.r;
+    }
+    
     const nreal& real() const{
       switch(t_){
         case Real:
@@ -1354,6 +1378,12 @@ namespace neu{
         default:
           NERROR("invalid operand");
       }
+    }
+    
+    const nreal& getReal() const{
+      assert(t_ == Real);
+      
+      return *h_.x;
     }
     
     const char* c_str() const{
@@ -1439,6 +1469,24 @@ namespace neu{
       }
     }
     
+    const nstr& getString() const{
+      assert(t_ == String ||
+             t_ == Symbol ||
+             t_ == StringPointer ||
+             t_ == Binary);
+      
+      return *h_.s;
+    }
+    
+    nstr& getString(){
+      assert(t_ == String ||
+             t_ == Symbol ||
+             t_ == StringPointer ||
+             t_ == Binary);
+      
+      return *h_.s;
+    }
+    
     nvar sym() const{
       switch(t_){
         case Symbol:
@@ -1481,6 +1529,14 @@ namespace neu{
       }
     }
     
+    NObjectBase* getObj() const{
+      assert(t_ == ObjectPointer ||
+             t_ == LocalObject ||
+             t_ == SharedObject);
+      
+      return h_.o;
+    }
+    
     template<typename T>
     T* ptr() const{
       switch(t_){
@@ -1503,6 +1559,12 @@ namespace neu{
         default:
           NERROR("var does not hold a pointer");
       }
+    }
+    
+    void* getPtr() const{
+      assert(t_ == RawPointer);
+      
+      return h_.p;
     }
     
     nvec& vec(){
@@ -1551,6 +1613,18 @@ namespace neu{
       return vec();
     }
     
+    const nvec& getVec() const{
+      assert(t_ == Vector);
+      
+      return *h_.v;
+    }
+    
+    nvec& getVec(){
+      assert(t_ == Vector);
+      
+      return *h_.v;
+    }
+    
     nlist& list(){
       switch(t_){
         case List:
@@ -1597,6 +1671,18 @@ namespace neu{
       return list();
     }
     
+    const nlist& getList() const{
+      assert(t_ == List);
+      
+      return *h_.l;
+    }
+    
+    nlist& getList(){
+      assert(t_ == List);
+      
+      return *h_.l;
+    }
+    
     nqueue& queue(){
       switch(t_){
         case Queue:
@@ -1641,6 +1727,18 @@ namespace neu{
     
     operator nqueue&(){
       return queue();
+    }
+    
+    const nqueue& getQueue() const{
+      assert(t_ == Queue);
+      
+      return *h_.q;
+    }
+    
+    nqueue& getQueue(){
+      assert(t_ == Queue);
+      
+      return *h_.q;
     }
     
     const nvar& anySequence() const{
@@ -1731,6 +1829,18 @@ namespace neu{
       return set();
     }
     
+    const nset& getSet() const{
+      assert(t_ == Set);
+      
+      return *h_.set;
+    }
+    
+    nset& getSet(){
+      assert(t_ == Set);
+      
+      return *h_.set;
+    }
+    
     nhset& hset(){
       switch(t_){
         case HashSet:
@@ -1775,6 +1885,18 @@ namespace neu{
     
     operator nhset&(){
       return hset();
+    }
+    
+    const nhset& getHashSet() const{
+      assert(t_ == HashSet);
+      
+      return *h_.hset;
+    }
+    
+    nhset& getHashSet(){
+      assert(t_ == HashSet);
+      
+      return *h_.hset;
     }
     
     nmap& map(){
@@ -1833,6 +1955,18 @@ namespace neu{
       return map();
     }
     
+    const nmap& getMap() const{
+      assert(t_ == Map);
+      
+      return *h_.m;
+    }
+    
+    nmap& getMap(){
+      assert(t_ == Map);
+      
+      return *h_.m;
+    }
+    
     nhmap& hmap(){
       switch(t_){
         case HashMap:
@@ -1879,6 +2013,18 @@ namespace neu{
       return hmap();
     }
     
+    const nhmap& getHashMap() const{
+      assert(t_ == HashMap);
+      
+      return *h_.h;
+    }
+    
+    nhmap& getHashMap(){
+      assert(t_ == HashMap);
+      
+      return *h_.h;
+    }
+    
     nmmap& multimap(){
       switch(t_){
         case Multimap:
@@ -1923,6 +2069,18 @@ namespace neu{
     
     operator nmmap&(){
       return multimap();
+    }
+    
+    const nmmap& getMultimap() const{
+      assert(t_ == Multimap);
+      
+      return *h_.mm;
+    }
+    
+    nmmap& getMultimap(){
+      assert(t_ == Multimap);
+      
+      return *h_.mm;
     }
     
     const nvar& anyMap() const{
