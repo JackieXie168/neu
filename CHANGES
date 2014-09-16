@@ -10,7 +10,7 @@ Neu 1.4.0 - 9/15/14
 
  -Several important fixes to nvar.
 
- -Renamed nva::hasKey() to has().
+ -Renamed nvar::hasKey() to has().
 
  -Renamed nvar::addKey() to add().
 
