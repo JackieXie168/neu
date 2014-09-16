@@ -41,3 +41,6 @@ Neu 1.4.0 - 9/15/14
 
  -NSet and NHashSet now have operator<<() for insert and
   nvar::operator<< now works with both set types.
+
+ -Added test/regress/database
+
