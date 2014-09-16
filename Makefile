@@ -1,7 +1,7 @@
 include Makefile.defs
 
 export MAJOR = 1
-export MINOR = 3
+export MINOR = 4
 export RELEASE = 0
 
 export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
