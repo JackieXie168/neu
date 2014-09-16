@@ -1,0 +1,43 @@
+Neu 1.4.0 - 9/15/14 
+
+ -Performance improvements to the interpreter, including changes to
+  NObject and nvar. Changed NFunc to pass its args via an nvec instead
+  of nvar. Renamed NObject::process() to run() and instead of creating
+  several temporaries whose value is not returned, NObject has been
+  changed to inline these with calls to run(). Through these and other
+  changes, the interpreter runs roughly %20 faster in several test
+  cases.
+
+ -Several important fixes to nvar.
+
+ -Renamed nva::hasKey() to has().
+
+ -Renamed nvar::addKey() to add().
+
+ -Added nvar::enumerate and ForEach(), which in NML borrows from C++
+  syntax:
+
+  for(vi : v){
+    // vi is the i-th item in sequence v or...
+  }
+
+  ... if v is a map, the the key/value pair is enumerated in vi's
+  2-vector, with the value provided as an nvar*
+
+ -libneu_core can be compiled without GMP and MPFR by setting
+  NO_PRECISE in Makefile.defs. In this case, the underlying nreal is a
+  double.
+
+ -In parsing NML and NPL as well as printing, a list now looks like:
+
+  `[1,2,3]
+
+  Instead of: (1,2,3)
+
+ -Completed nstr methods to spec. with C++ 11 string.
+
+ -Updated neu-meta to recognize nqueue, nset, nhset, nmap, nhmap, and
+  nmmap as N-compatible types.
+
+ -NSet and NHashSet now have operator<<() for insert and
+  nvar::operator<< now works with both set types.
