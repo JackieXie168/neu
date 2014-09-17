@@ -6,9 +6,10 @@ Neu 1.4.0 - 9/15/14
   NObject and nvar. Changed NFunc to pass its args via an nvec instead
   of nvar. Renamed NObject::process() to run() and instead of creating
   several temporaries whose value is not returned, NObject has been
-  changed to inline these with calls to run(). Through these and other
-  changes, the interpreter runs roughly %20 faster in several test
-  cases.
+  changed to inline these with calls to run(). Added a more efficient
+  return/break/continue control flow mechanism. Through these and
+  other changes, the interpreter runs roughly %20 faster in several
+  test cases.
 
  -Several important fixes to nvar.
 
@@ -26,7 +27,7 @@ Neu 1.4.0 - 9/15/14
   ... if v is a map, the the key/value pair is enumerated in vi's
   2-vector, with the value provided as an nvar*
 
- -libneu_core can be compiled without GMP and MPFR by setting
+ -libneu_core can now be compiled without GMP and MPFR by setting
   NO_PRECISE in Makefile.defs. In this case, the underlying nreal is a
   double.
 
