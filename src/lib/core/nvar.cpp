@@ -437,7 +437,7 @@ void nvar::streamOutput_(ostream& ostr) const{
       
       stringstream sstr;
       
-      bool first = false;
+      bool first = true;
       
       switch(h_.hm->m->t_){
         case Set:
