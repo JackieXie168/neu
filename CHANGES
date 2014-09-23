@@ -1,5 +1,13 @@
 
 
+Neu 1.4.1 - 9/22/14 
+
+ -Updates related to neu-meta and its config files to enable it to
+  work with the latest release of Xcode on the Mac (6.0.1).
+
+ -When compiling LLVM/Clang for use with Neu, it is no longer
+  necessary to compile LLVM/Clang with libcxx.
+
 Neu 1.4.0 - 9/15/14 
 
  -Performance improvements to the interpreter, including changes to

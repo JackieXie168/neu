@@ -389,11 +389,13 @@ namespace neu{
       // no age bias for right now
       return 1;
       
-      if(v["age"] > 100){
+      double age = v["age"];
+      
+      if(age > 100){
         return -1;
       }
       
-      double m = pow((100.0 - v["age"])/50.0, 2.0);
+      double m = pow((100.0 - age)/50.0, 2.0);
       
       //cout << "m is: " << m << endl;
       
