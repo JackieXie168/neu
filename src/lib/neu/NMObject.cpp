@@ -208,7 +208,7 @@ namespace neu{
       return NMGenerator::Supported;
     }
     
-    nvar run_(const char* fs, const nvec& v){
+    nvar run_(const nstr& fs, const nvec& v){
       nvar f = nvar(fs, nvar::Func);
       f.append(v);
       
@@ -248,7 +248,7 @@ namespace neu{
 } // end namespace neu
 
 FuncMap::FuncMap(){
-  _runFunc = [](void* o, const char* f, nvec& v) -> nvar{
+  _runFunc = [](void* o, const nstr& f, nvec& v) -> nvar{
     return NMObject_::obj(o)->run_(f, v);
   };
 }

@@ -132,7 +132,7 @@ namespace neu{
   typedef NHashSet<nvar, nvarHash<nvar>> nhset;
   typedef NQueue<nvar> nqueue;
   
-  typedef nvar (*NFunc)(void*, const char* f, nvec& v);
+  typedef nvar (*NFunc)(void*, const nstr& f, nvec& v);
   
   extern const nvec _emptyVec;
   

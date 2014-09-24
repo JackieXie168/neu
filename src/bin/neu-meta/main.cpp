@@ -756,7 +756,7 @@ public:
         ostr << "    add(\"" << md->getNameAsString() << "\", " << j <<
           ", " << endl;
         
-        ostr << "      [](void* o, const char* f, neu::nvec& v) -> " <<
+        ostr << "      [](void* o, const nstr& f, neu::nvec& v) -> " <<
         "neu::nvar{" << endl;
         
         ostr << "        ";

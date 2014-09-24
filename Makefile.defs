@@ -32,7 +32,7 @@ ifeq ($(PLATFORM), Darwin)
 endif
 
 # beginning of C++ compile command
-export COMPILE = $(CXX) -std=c++11 $(STD_LIB) -I$(NEU_HOME)/include $(INCLUDE_DIRS) -fPIC
+export COMPILE = $(CXX) -std=c++11 $(STD_LIB) -I$(NEU_HOME)/include $(INCLUDE_DIRS) -fPIC -Wno-deprecated-register
 
 # beginning of C compile command
 export COMPILE_C = $(CC) -fPIC -I$(NEU_HOME)/include
