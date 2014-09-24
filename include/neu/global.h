@@ -83,6 +83,8 @@ namespace neu{
   
   extern bool _abort;
   
+  extern nstr _mathKernelPath;
+  
 } // end namespace neu
 
 #endif // NEU_GLOBAL_H

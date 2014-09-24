@@ -164,7 +164,8 @@ namespace{
     BKEY_timeout,
     BKEY_name,
     BKEY_home,
-    BKEY_abort
+    BKEY_abort,
+    BKEY_mathKernelPath
   };
   
   typedef NMap<nstr, BuiltinKey> BuiltinMap;
@@ -429,6 +430,9 @@ namespace neu{
           case BKEY_abort:
             _abort = v;
             break;
+          case BKEY_mathKernelPath:
+            _mathKernelPath = v;
+            break;
         }
       }
     }
@@ -483,6 +487,7 @@ namespace neu{
       builtinOpt(BKEY_packBlockSize, "packBlockSize", "", _packBlockSize);
       builtinOpt(BKEY_tempPath, "tempPath", "", _tempPath);
       builtinOpt(BKEY_timeout, "timeout", "", _timeout);
+      builtinOpt(BKEY_mathKernelPath, "mathKernelPath", "", _mathKernelPath);
     }
     
   private:

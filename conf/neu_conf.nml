@@ -1,4 +1,6 @@
 [
+ _mathKernelPath: "/Applications/Mathematica.app/Contents/"
+   "MacOS/MathKernel",
  math: false,
  history: 100
 ];

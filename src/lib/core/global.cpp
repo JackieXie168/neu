@@ -71,6 +71,7 @@ namespace neu{
   nstr _name;
   nstr _home;
   bool _abort = false;
+  nstr _mathKernelPath;
   
   NResourceManager* _resourceManager = new NResourceManager;
   

@@ -755,7 +755,10 @@ public:
           j <= md->param_size(); ++j){
         ostr << "    add(\"" << md->getNameAsString() << "\", " << j <<
           ", " << endl;
-        ostr << "      [](void* o, neu::nvec& v) -> neu::nvar{" << endl;
+        
+        ostr << "      [](void* o, const char* f, neu::nvec& v) -> " <<
+        "neu::nvar{" << endl;
+        
         ostr << "        ";
           
         if(!isVoid){

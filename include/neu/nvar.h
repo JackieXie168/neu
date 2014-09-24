@@ -132,7 +132,7 @@ namespace neu{
   typedef NHashSet<nvar, nvarHash<nvar>> nhset;
   typedef NQueue<nvar> nqueue;
   
-  typedef nvar (*NFunc)(void*, nvec& v);
+  typedef nvar (*NFunc)(void*, const char* f, nvec& v);
   
   extern const nvec _emptyVec;
   
@@ -4794,6 +4794,12 @@ namespace neu{
       assert(t_ == Function);
       
       return h_.f->v;
+    }
+    
+    const char* funcStr() const{
+      assert(t_ == Function);
+      
+      return h_.f->f.c_str();
     }
     
     nvar* varPtr() const{

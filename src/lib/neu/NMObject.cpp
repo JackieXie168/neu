@@ -74,8 +74,6 @@ using namespace neu;
 
 namespace{
   
-  nstr _mathKernelPath;
-  
   class CommandPool : public NPool<NCommand>{
   public:
     CommandPool()
@@ -101,7 +99,7 @@ namespace{
     NMObject_* obj(void* o);
   };
   
-  NFunc _processFunc;
+  NFunc _runFunc;
   
   FuncMap _funcMap;
   
@@ -154,13 +152,14 @@ namespace neu{
 
         NProgram::require();
         
-        nstr p = _home + "/bin/MathKernel";
+        if(_mathKernelPath.empty()){
+          NERROR("unspecified _mathKernelPath");
+        }
         
-        if(!NSys::exists(p)){
-          NERROR("MathKernel not found: " + p);
+        if(!NSys::exists(_mathKernelPath)){
+          NERROR("invalid _mathKernelPath: " + _mathKernelPath);
         }
 
-        _mathKernelPath = p;
         _initialized = true;
       }
       _mutex.unlock();
@@ -171,8 +170,8 @@ namespace neu{
       
       if(t == NMGenerator::Requested ||
          (t & NMGenerator::Supported && flags & NObject::Delegated)){
-        v.setFunc(_processFunc);
-        return _processFunc;
+        v.setFunc(_runFunc);
+        return _runFunc;
       }
       
       return o_->NObject::handle(v, flags);
@@ -209,12 +208,13 @@ namespace neu{
       return NMGenerator::Supported;
     }
     
-    nvar process_(const nvar& v){
+    nvar run_(const char* fs, const nvec& v){
+      nvar f = nvar(fs, nvar::Func);
+      f.append(v);
+      
       stringstream sstr;
-      generator_.generate(sstr, v);
-      
-      //cout << "gen: " << sstr.str() << endl;
-      
+      generator_.generate(sstr, f);
+
       NCommand* cmd = _commandPool.acquire();
       
       cmd->write(sstr.str());
@@ -225,7 +225,7 @@ namespace neu{
         delete cmd;
         _commandPool.release(0);
         
-        NERROR("failed to process: " + v);
+        NERROR("failed to run: " + v);
       }
       
       _commandPool.release(cmd);
@@ -248,8 +248,8 @@ namespace neu{
 } // end namespace neu
 
 FuncMap::FuncMap(){
-  _processFunc = [](void* o, nvec& v) -> nvar{
-    return NMObject_::obj(o)->process_(v);
+  _runFunc = [](void* o, const char* f, nvec& v) -> nvar{
+    return NMObject_::obj(o)->run_(f, v);
   };
 }
 
