@@ -274,7 +274,7 @@ void initGL(void){
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CCW);
-  glClearColor(0.5, 0.5, 0.5, 1);
+  glClearColor(0.717647, 0.717647, 0.717647, 1);
 }
 
 int main(int argc, char** argv){

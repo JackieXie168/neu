@@ -4796,10 +4796,10 @@ namespace neu{
       return h_.f->v;
     }
     
-    const char* funcStr() const{
+    const nstr& funcStr() const{
       assert(t_ == Function);
       
-      return h_.f->f.c_str();
+      return h_.f->f;
     }
     
     nvar* varPtr() const{
