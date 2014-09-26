@@ -1,5 +1,13 @@
 
 
+Neu 1.4.2 - 9/25/14
+
+ -Fixes related to NMObject. Changed NFunc signature so it passes the
+  name of the function before the arguments vector. To enable
+  NMObject, now use the builtin option / config item _mathKernelPath
+  instead of creating a symbolic link in neu/bin. As an example see:
+  conf/neu_conf.nml
+
 Neu 1.4.1 - 9/22/14 
 
  -Updates related to neu-meta and its config files to enable it to
