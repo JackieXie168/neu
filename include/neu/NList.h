@@ -167,7 +167,9 @@ namespace neu{
 
     iterator erase(size_t index){
       i_ = -1;
-      return l_.erase(index);
+      auto itr = l_.begin();
+      advance(itr, index);
+      return l_.erase(itr);
     }
     
     iterator erase(iterator position){
@@ -195,6 +197,13 @@ namespace neu{
     iterator insert(iterator position, const T& x){
       i_ = -1;
       return l_.insert(position, x);
+    }
+    
+    iterator insert(size_t index, const T& x){
+      i_ = -1;
+      auto itr = l_.begin();
+      advance(itr, index);
+      return l_.insert(itr, x);
     }
     
     void insert(iterator position, size_t n, const T& x){

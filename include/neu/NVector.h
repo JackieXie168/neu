@@ -189,6 +189,13 @@ namespace neu{
     allocator_type get_allocator() const noexcept{
       return v_.get_allocator();
     }
+
+    iterator insert(size_t index, const T& x){
+      auto itr = v_.begin();
+      advance(itr, index);
+      
+      return v_.insert(itr, x);
+    }
     
     iterator insert(iterator position, const T& x){
       return v_.insert(position, x);
