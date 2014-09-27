@@ -367,6 +367,12 @@ namespace neu{
       return q_.insert(p, il);
     }
     
+    iterator insert(size_t index, const value_type& v){
+      auto itr = q_.begin();
+      advance(itr, index);
+      return q_.insert(itr, v);
+    }
+    
     void append(const NQueue& q){
       q_.insert(q_.end(), q.begin(), q.end());
     }
@@ -376,7 +382,7 @@ namespace neu{
     }
 
     value_type popFront(){
-      T ret = std::move(*(q_.begin()));
+      T ret = std::move(q_.front());
       q_.pop_front();
       return ret;
     }
@@ -386,7 +392,7 @@ namespace neu{
     }
     
     value_type popBack(){
-      T ret = std::move(*(--q_.end()));
+      T ret = std::move(q_.back());
       q_.pop_back();
       return ret;
     }
@@ -397,6 +403,12 @@ namespace neu{
     
     iterator erase(const_iterator f, const_iterator l){
       return q_.erase(f, l);
+    }
+    
+    iterator erase(size_t index){
+      auto itr = q_.begin();
+      advance(itr, index);
+      return q_.erase(itr);
     }
     
     void swap(NQueue& c){

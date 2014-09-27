@@ -263,13 +263,13 @@ namespace neu{
     }
     
     T popBack(){
-      T ret = std::move(*(--v_.end()));
+      T ret = std::move(v_.back());
       v_.pop_back();
       return ret;
     }
     
     T popFront(){
-      T ret = std::move(*v_.begin());
+      T ret = std::move(v_.front());
       v_.erase(v_.begin());
       return ret;
     }
