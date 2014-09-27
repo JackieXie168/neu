@@ -345,10 +345,9 @@ namespace neu{
     }
     
     Key keyForValue(const T& value){
-      for(iterator itr = m_.begin(), itrEnd = m_.end();
-          itr != itrEnd; ++itr){
-        if(itr->second == value){
-          return itr->first;
+      for(auto& itr : m_){
+        if(itr.second == value){
+          return itr.first;
         }
       }
       
