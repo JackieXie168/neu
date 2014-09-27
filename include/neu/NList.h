@@ -164,6 +164,13 @@ namespace neu{
     const_iterator end() const noexcept{
       return l_.end();
     }
+
+    void erase(size_t index){
+      i_ = -1;
+      auto itr = l_.begin();
+      advance(itr, index);
+      l_.erase(index);
+    }
     
     iterator erase(iterator position){
       i_ = -1;
