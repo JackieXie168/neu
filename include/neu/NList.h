@@ -196,11 +196,6 @@ namespace neu{
       i_ = -1;
       return l_.insert(position, x);
     }
-
-    iterator insert(size_t index, const T& x){
-      i_ = -1;
-      return l_.insert(index, x);
-    }
     
     void insert(iterator position, size_t n, const T& x){
       i_ = -1;
