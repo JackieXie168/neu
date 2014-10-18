@@ -68,6 +68,7 @@ namespace neu{
     
     bool compile(const nvar& code);
     
+    // e.g: func is ["SomeClass", "someMethod", <arity, e.g: 1>]
     void getFunc(const nvar& func, NPLFunc* f);
     
     void release(NPLFunc* f);
