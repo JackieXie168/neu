@@ -19,9 +19,9 @@ All rights reserved.
 neu@andrometa.net
 http://neu.andrometa.net
 
-Neu can be used freely for commercial purposes. We hope you will find
-Neu powerful, useful, and fun! If so, please consider making a
-donation via PayPal to: neu@andrometa.net
+Neu can be used freely for commercial purposes. If you find Neu
+useful, please consider helping to support our work and the evolution
+of Neu by making a PayPal donation to: neu@andrometa.net
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -129,6 +129,7 @@ namespace neu{
       }
     }
     
+    // return 0 on disconnect
     int send(char* buf, size_t len){
       if(resetSendTimeout_){
         timeval tv;
@@ -143,7 +144,8 @@ namespace neu{
       
       return ::send(fd_, buf, len, 0);
     }
-    
+
+    // return 0 on disconnect, -1 on timeout
     int send(char* buf, size_t len, double timeout){
       double sec = floor(timeout);
       double fsec = timeout - sec;
@@ -160,6 +162,7 @@ namespace neu{
       return ::send(fd_, buf, len, 0);
     }
     
+    // return 0 on disconnect
     int receive(char* buf, size_t len){
       if(resetReceiveTimeout_){
         timeval tv;
@@ -174,6 +177,7 @@ namespace neu{
       return ::recv(fd_, buf, len, 0);
     }
     
+    // return 0 on disconnect, -1 on timeout
     int receive(char* buf, size_t len, double timeout){
       double sec = floor(timeout);
       double fsec = timeout - sec;
