@@ -87,12 +87,13 @@ namespace neu{
       pthread_mutex_destroy(&mutex_);
     }
 
-    bool acquire(double timeout){
+    // dt is timeout in (fractional) seconds
+    bool acquire(double dt){
       timeval tv;
       gettimeofday(&tv, 0);
       
       double t = tv.tv_sec + tv.tv_usec/1e6;
-      t += timeout;
+      t += dt;
       
       pthread_mutex_lock(&mutex_);
       

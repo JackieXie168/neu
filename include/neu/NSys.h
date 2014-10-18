@@ -65,8 +65,10 @@ namespace neu{
     
     static nstr hostname();
     
+    // e.g: /foo/bar/baz => baz
     static nstr basename(const nstr& path);
     
+    // e.g: /foo/bar/baz => /foo/bar
     static nstr parentDirectory(const nstr& path);
     
     static bool makeDir(const nstr& path);
@@ -89,22 +91,30 @@ namespace neu{
     
     static bool rename(const nstr& sourcePath, const nstr& destPath);
     
+    // e.g: /foo/bar/file.txt => txt
     static nstr fileExtension(const nstr& filePath);
 
+    // e.g: /foo/bar/file.txt => file
     static nstr fileName(const nstr& filePath);
 
+    // e.g: /foo/bar/some file.txt => /foo/bar/some\ file.txt
     static nstr normalizePath(const nstr& path);
     
-    static nstr stripPath(const nstr& path);
+    // e.g: /foo/bar/file.txt => /foo/bar
+    // e.g: /foo/bar => /foo
+    static nstr popPath(const nstr& path);
     
     static bool dirFiles(const nstr& dirPath, nvec& files);
     
     static nstr fileToStr(const nstr& path);
     
+    // current time in fractional seconds since the UNIX epoch
     static double now();
     
+    // sleep for a number of (fractional) seconds
     static void sleep(double dt);
-    
+   
+    // e.g: some text with $(VAR) => some text with <the contents of env var>
     static void replaceEnvs(nstr& s);
 
   };

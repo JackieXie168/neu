@@ -73,6 +73,7 @@ namespace neu{
     
     virtual T* init() = 0;
     
+    // dt is timeout in (fractional) seconds
     T* acquire(double dt){
       
       if(!sem_.acquire(dt)){

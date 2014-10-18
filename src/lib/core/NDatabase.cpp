@@ -128,7 +128,7 @@ namespace{
   
   nstr oldPath(const nstr& path){
     nstr f = NSys::basename(path);
-    return NSys::stripPath(path) + "/old/" + f;
+    return NSys::popPath(path) + "/old/" + f;
   }
   
 } // end namespace

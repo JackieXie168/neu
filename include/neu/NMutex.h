@@ -70,6 +70,7 @@ namespace neu{
       mutex_.lock();
     }
     
+    // dt is timeout in (fractional) seconds
     bool lock(double dt){
       return mutex_.try_lock_for(std::chrono::nanoseconds(uint64_t(dt*1e9)));
     }

@@ -344,7 +344,7 @@ nstr NSys::normalizePath(const nstr& path){
   return ret;
 }
 
-nstr NSys::stripPath(const nstr& path){
+nstr NSys::popPath(const nstr& path){
   size_t offset = 0;
   
   for(size_t i = path.length() - 1; i > 0; --i){

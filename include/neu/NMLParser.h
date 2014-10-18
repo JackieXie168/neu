@@ -69,6 +69,7 @@ namespace neu{
       return false;
     }
     
+    // interactive parsing
     nvar parse(nvar* tags=0);
     
     nvar parse(const nstr& code, nvar* tags=0);

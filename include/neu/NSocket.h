@@ -146,9 +146,10 @@ namespace neu{
     }
 
     // return 0 on disconnect, -1 on timeout
-    int send(char* buf, size_t len, double timeout){
-      double sec = floor(timeout);
-      double fsec = timeout - sec;
+    // dt is timeout in (fractional) seconds
+    int send(char* buf, size_t len, double dt){
+      double sec = floor(dt);
+      double fsec = dt - sec;
       
       timeval tv;
       tv.tv_sec = sec;
@@ -178,9 +179,10 @@ namespace neu{
     }
     
     // return 0 on disconnect, -1 on timeout
-    int receive(char* buf, size_t len, double timeout){
-      double sec = floor(timeout);
-      double fsec = timeout - sec;
+    // dt is timeout in (fractional) seconds
+    int receive(char* buf, size_t len, double dt){
+      double sec = floor(dt);
+      double fsec = dt - sec;
       
       timeval tv;
       tv.tv_sec = sec;
