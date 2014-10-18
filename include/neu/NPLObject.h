@@ -63,7 +63,10 @@ namespace neu{
   
   class NPLFunc : public NPFunc{
   public:
+    // the NPLObject whose method we will be executing, i.e: "this"
     NPLObject* o;
+    
+    // subclass NPLFunc and add return value followed by params
   };
   
 } // end namespace neu
