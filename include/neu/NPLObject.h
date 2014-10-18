@@ -66,7 +66,7 @@ namespace neu{
     // the NPLObject whose method we will be executing, i.e: "this"
     NPLObject* o;
     
-    // subclass NPLFunc and add return value followed by params
+    // subclass NPLFunc and add (optional) return value followed by params
   };
   
 } // end namespace neu
