@@ -17,9 +17,7 @@ class CPPObject : public NObject{
 public:
 
   CPPObject()
-    : multiplier_(1){
-    
-  }
+    : multiplier_(1){}
 
   nvar product(const nvar& v){
     nvar ret = multiplier_;

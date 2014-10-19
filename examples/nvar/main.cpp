@@ -25,10 +25,6 @@ int main(int argc, char** argv){
 
   cout << "planets is: " << planets << endl;
 
-
-
-
-
   // we could have constructed this programmatically in C++ with
   // something like this:
   nvar planets2;
@@ -53,11 +49,6 @@ int main(int argc, char** argv){
   // be strings, actually any arbitrary kind of nvar 
   nvar& unknown = planets2("Unknown Planet");
   unknown = nml("[mass:1.4336e+23, radius:4211, volume:2.3522e+09]");
-
-
-
-
-
 
   // note that in manipulating an nvar with nested data, it can be
   // convenient to obtain references to the nested components in turn
@@ -85,13 +76,12 @@ int main(int argc, char** argv){
 
   cout << "planets3 is: " << planets3 << endl;
 
-
-
   // let's print out the mass of each planet (using first the slower way)
   nvec keys;
   planets3.keys(keys);
   for(const nstr& key : keys){
-    cout << "The mass of " << key << " is: " << planets3[key]["mass"] << endl;
+    cout << "The mass of " << key << " is: " << 
+      planets3[key]["mass"] << endl;
   }
 
   // in some cases where we need higher performance, since we know our

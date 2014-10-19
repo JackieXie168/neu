@@ -24,9 +24,7 @@ using namespace neu;
 class Program : public NProgram{
 public:
   Program(int argc, char** argv)
-  : NProgram(argc, argv){
-    
-  }
+  : NProgram(argc, argv){}
   
   void handleSignal(int signal, bool fatal){
     if(fatal){
@@ -331,7 +329,6 @@ public:
 };
 
 int main(int argc, char** argv){
-
   Program::opt("help", "h", false, "Display usage");
 
   Program::opt("show", "s", false, "Show N input/output");  

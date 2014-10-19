@@ -101,9 +101,7 @@ class Cell : public NPLObject{
 public:
   Cell()
     : h(0),
-      s(0){
-    
-  }
+      s(0){}
 
   // the C++ side object's data layout should match the NPL-side
   // defined in kernel.npl

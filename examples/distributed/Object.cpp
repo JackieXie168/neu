@@ -10,9 +10,7 @@ class Object_{
 public:
   Object_(Object* o)
   : o_(o),
-    count_(0){
-
-  }
+    count_(0){}
 
   ndist bar(){
     // if we wanted to compile two separate versions, a client-side
