@@ -1,3 +1,6 @@
+// The visualization of this example is not especially optimized and
+// currently runs much slower than the compute part.
+
 #include <iostream>
 
 #ifdef __APPLE__
@@ -33,10 +36,10 @@ static const float ROWS = 256;
 static const float COLUMNS = 256;
 static const float HEIGHT_MULTIPLIER = 2;
 
-// the run queue will execute Cell::run() 
+// this queue will execute Cell::run() 
 static NPQueue runQueue(8);
 
-// the run queue will execute Cell::interact() 
+// this queue will execute Cell::interact() 
 static NPQueue interactQueue(8);
 
 inline void glVertex(const float3& u){

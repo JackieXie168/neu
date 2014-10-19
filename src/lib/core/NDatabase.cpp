@@ -72,14 +72,19 @@ namespace{
   
   static const uint8_t DataIndexType = 255;
   
+  // these can be tuned to optimize read vs. write performance
   static const size_t MAX_CHUNK_SIZE = 2048;
   static const size_t MAX_CHUNKS = 512;
+  
   static const size_t MAX_DATA_SIZE = 16777216;
   static const size_t DEFAULT_MEMORY_LIMIT = 1024;
   
   static const size_t SPLIT_CHUNK_SIZE = MAX_CHUNK_SIZE - 2;
   static const size_t OVER_ALLOC = MAX_DATA_SIZE/16;
   
+  // don't waste time compressing payload data smaller than this size
+  // as often the resulting compressed size is not changed much or can
+  // be even larger than the input size
   static const size_t MIN_COMPRESS_SIZE = 1024;
   
   template<typename T>
@@ -654,6 +659,7 @@ namespace neu{
         
         firstChunk_ = 0;
         memoryUsage_ = 0;
+        Chunk* chunk;
         
         for(size_t i = 0; i < numChunks; ++i){
           n = fread(&chunkSize, 1, 4, file);
@@ -669,7 +675,7 @@ namespace neu{
             NERROR("failed to read page file [3]: " + path_);
           }
           
-          Chunk* chunk = new Chunk(index_->unique(), buf, chunkSize);
+          chunk = new Chunk(index_->unique(), buf, chunkSize);
           if(!firstChunk_){
             firstChunk_ = chunk;
           }
@@ -743,7 +749,7 @@ namespace neu{
         Chunk* chunk = itr->second;
         
         Action action = chunk->push(record);
-        memoryUsage_ = sizeof(R);
+        memoryUsage_ += sizeof(R);
         
         if(action & Split){
           if(chunkMap_.size() >= MAX_CHUNKS){
@@ -1043,7 +1049,7 @@ namespace neu{
         
         nvec oldFiles;
         if(!NSys::dirFiles(oldPath, oldFiles)){
-          NERROR("index failed to rollback[1]");
+          NERROR("index failed to rollback [1]");
         }
         
         for(const nstr& p : oldFiles){
@@ -1059,7 +1065,7 @@ namespace neu{
         
         nvec newFiles;
         if(!NSys::dirFiles(path_, newFiles)){
-          NERROR("index failed to rollback[2]");
+          NERROR("index failed to rollback [2]");
         }
         
         NRegex r("\\d+");
@@ -2353,9 +2359,8 @@ namespace neu{
         data = 0;
         
         for(auto& itr : newDataMap_){
-          Data* d = itr.second;
-          if(d->size() + size <= MAX_DATA_SIZE){
-            data = d;
+          if(itr.second->size() + size <= MAX_DATA_SIZE){
+            data = itr.second;
           }
         }
         
@@ -2553,8 +2558,9 @@ namespace neu{
       m += dataIndex_->memoryUsage(pm);
       
       size_t mi;
+      Data* data;
       for(auto& itr : dataMap_){
-        Data* data = itr.second;
+        data = itr.second;
         
         mi = data->memoryUsage();
         if(mi > 0){
@@ -2573,16 +2579,13 @@ namespace neu{
       }
       
       for(auto& itr : new_->dataMap_){
-        Data* data = itr.second;
-        data->appendToTable(this);
+        itr.second->appendToTable(this);
       }
       
       for(auto& itr : indexMap_){
-        IndexBase* index = itr.second;
         auto itr2 = new_->indexMap_.find(itr.first);
         assert(itr2 != new_->indexMap_.end());
-        IndexBase* index2 = itr2->second;
-        index->append(index2);
+        itr.second->append(itr2->second);
       }
       
       new_->clear();
