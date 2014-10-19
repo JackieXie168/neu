@@ -174,8 +174,8 @@ namespace neu{
       return tick_++;
     }
 
-    void setMemoryLimit(size_t limit){
-      size_t l = 1048576*limit;
+    void setMemoryLimit(size_t megabytes){
+      size_t l = 1048576*megabytes;
       
       if(l <= MAX_DATA_SIZE){
         NERROR("memory limit too low");
@@ -1854,12 +1854,12 @@ namespace neu{
         locked_ = true;
         size_t offset = 0;
 
+        RowId rowId;
+        uint32_t size;
         while(offset < size_){
-          RowId rowId;
           memcpy(&rowId, data_ + offset, 8);
           offset += 8;
           
-          uint32_t size;
           memcpy(&size, data_ + offset, 4);
           offset += 4;
           
@@ -2617,10 +2617,8 @@ namespace neu{
       
       nvar dm = nhmap();
       
-      Data* data;
       for(auto& itr : dataMap_){
-        data = itr.second;
-        dm(itr.first) = data->size();
+        dm(itr.first) = itr.second->size();
       }
       
       dm.save(dataMetaPath_);
