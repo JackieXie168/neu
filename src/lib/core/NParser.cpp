@@ -1998,10 +1998,11 @@ namespace neu{
                bool metadata,
                double timeout,
                ostream* errorLog,
-               ostream* parseLog){
+               ostream* parseLog,
+               size_t threads){
       init_();
 
-      Task task(1);
+      Task task(threads);
       
       Global global;
       global.task = &task;
@@ -2559,8 +2560,10 @@ nvar NParser::parse(const nstr& str,
                     const nstr& sourceName,
                     double timeout,
                     ostream* errorLog,
-                    ostream* parseLog){
-  return x_->parse(str, sourceName, metadata, timeout, errorLog, parseLog);
+                    ostream* parseLog,
+                    size_t threads){
+  return x_->parse(str, sourceName, metadata,
+                   timeout, errorLog, parseLog, threads);
 }
 
 void NParser::addTerm(const nstr& marker, size_t prec, bool left){

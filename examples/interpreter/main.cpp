@@ -342,6 +342,8 @@ int main(int argc, char** argv){
 
   Program::opt("history", "", 100, "Number of lines to keep in history"); 
 
+  Program::opt("threads", "t", 1, "Number of threads to use in parser");
+
   Program program(argc, argv);
 
   nvar args = program.args();
@@ -354,6 +356,7 @@ int main(int argc, char** argv){
   bool show = args["show"];
   bool runLog = args["runLog"];
   bool initLog = args["initLog"];
+  size_t threads = args["threads"];
 
   // use a plain NObject to interpret our parsed results
   NObject o;
@@ -414,7 +417,8 @@ int main(int argc, char** argv){
       code += ";";
 
       nvar n = 
-        parser.parse(code, true, "", 5.0, &cerr, runLog ? &cout : 0);
+        parser.parse(code, true, "", 5.0, &cerr,
+                     runLog ? &cout : 0, threads);
 
       if(n == none){
         continue;
@@ -450,7 +454,8 @@ int main(int argc, char** argv){
     nstr str = NSys::fileToStr(path);
 
     nvar n = 
-      parser.parse(str, true, file, 5.0, &cerr, runLog ? &cout : 0);
+      parser.parse(str, true, file, 5.0, &cerr,
+                   runLog ? &cout : 0, threads);
 
     if(n == none){
       NProgram::exit(1);

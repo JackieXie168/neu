@@ -88,7 +88,8 @@ public:
              const nstr& sourceName="",
              double timeout=5.0,
              std::ostream* errorLog=0,
-             std::ostream* parseLog=0);
+             std::ostream* parseLog=0,
+             size_t threads=1);
   
   void discardWhitespace(){
     addDiscard("\\s+");
