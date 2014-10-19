@@ -58,7 +58,7 @@ int main(int argc, char** argv){
     // add some rows to the table
     size_t i;
     nvar row;
-    for(size_t i = 1; i < NUM_ROWS; ++i){
+    for(i = 1; i < NUM_ROWS; ++i){
       row("rank") = rng.uniform(0, 100);
       row("name") = "neu" + nvar(i);
       row("norm") = rng.uniform(0, 100);
