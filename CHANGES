@@ -1,5 +1,24 @@
 
 
+Neu 1.4.3 - 10/19/14
+
+ -Added threads param to NParser::parse().
+
+ -Minor fixes and improvements to NDatabase.
+
+ -Added various comments to neu/include headers to clarify the usage
+  of some methods.
+
+ -Improved RNG in NPL using drand48().
+
+ -Renamed NSys::stripPath() to NSys::popPath().
+
+ -NBroker::authenticate() now gets passed the communicator which it
+  can use for authentication, e.g: connected client's hostname and IP
+  address.
+
+ -Minor adjustments to NPQueue and type containers.
+
 Neu 1.4.2 - 9/25/14
 
  -Fixes related to NMObject. Changed NFunc signature so it passes the
