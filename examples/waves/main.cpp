@@ -280,6 +280,8 @@ void initGL(void){
 int main(int argc, char** argv){
   NProgram program(argc, argv);
 
+  srand48(818);
+
   glutInit(&argc, argv);
 
   NPLParser parser;

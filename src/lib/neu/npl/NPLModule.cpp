@@ -76,13 +76,6 @@ using namespace std;
 using namespace llvm;
 using namespace neu;
 
-static const double _RAND_MAX = RAND_MAX;
-
-extern "C"
-double __n_uniform(){
-  return rand()/_RAND_MAX;
-}
-
 namespace{
 
   typedef NVector<Type*> TypeVec;
@@ -4597,7 +4590,7 @@ namespace{
           return call("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
         }
         case FKEY_Uniform_0:{
-          return call("double __n_uniform()");
+          return call("double drand48()");
         }
         case FKEY_Uniform_2:{
           nvar f = nfunc("Add") << n[0] <<
@@ -5051,9 +5044,9 @@ namespace neu{
       createFunction("double round(double)",
                      "llvm.round.f64");
       
-      createFunction("double __n_uniform()",
-                     "__n_uniform");
-      
+      createFunction("double drand48()",
+                     "drand48");
+            
       createFunction("void nvar::nvar(nvar*, nvar*)",
                      "_ZN3neu4nvarC1ERKS0_");
       
