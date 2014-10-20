@@ -1,5 +1,5 @@
-// The visualization of this example is not especially optimized and
-// currently runs much slower than the compute part.
+// Note: the visualization of this example is not especially optimized
+// and currently runs much slower than the compute part.
 
 #include <iostream>
 
@@ -154,13 +154,13 @@ public:
 void addNeighbor(Cell* c1, Cell* c2){
   if(c1 && c2){
     InteractFunc* f = new InteractFunc;
-    // get the interact method we required
+    // get the interact method we compiled
     module.getFunc({"Cell", "interact", 1 /* number of args */}, f);
 
-    // we need to set the object (the this pointer)
+    // we need to set the object (the "this" pointer)
     f->o = c1;
 
-    // set the first and only argumet to the method
+    // set the first and only argument to the method
     f->c = c2;
 
     interactQueue.add(f);
@@ -285,11 +285,14 @@ int main(int argc, char** argv){
 
   glutInit(&argc, argv);
 
+  // parse our NPL compute "kernel"
   NPLParser parser;
   nvar code = parser.parseFile("kernel.npl");
 
   cout << "code is: " << code << endl;
   
+  // compile the N code representation of the kernel - using LLVM JIT
+  // within NPLModule
   if(!module.compile(code)){
     cerr << "failed to compile" << endl;
     return 1;
