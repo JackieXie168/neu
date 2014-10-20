@@ -12,8 +12,8 @@ public:
   // this will be the server-side constructor
   Object();
 
-  // this constructor is required for distributed objects - it the
-  // constructor called when the object is obtained on the client-side
+  // this constructor is required for distributed objects - it will
+  // be called when the object is obtained on the client-side
   Object(NBroker* broker);
 
   // methods which can be called remotely always return type ndist - a
@@ -21,10 +21,11 @@ public:
   ndist bar();
   
   // parameters need not be nvar, but must be N-compatible, i.e: it is
-  // possible to construct and nvar with them
+  // possible to construct an nvar with them
   ndist baz(int x);
 
-  // for non-const references which produce outputs, we must use this:
+  // for non-const references, where the changes of the arg need to be
+  // passed back to the client, we currently must use an nvar&
   ndist getCount(nvar& count);
 
   // this prototype is required, the neu-meta command will generate
