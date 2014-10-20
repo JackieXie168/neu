@@ -30,7 +30,7 @@ int main(int argc, char** argv){
   NNet::Layer* outputLayer = network.backLayer(0);
 
   // normally we would train the network before executing it, for the
-  // sake of demonstration this step is omitted. See examples/nnet_train.
+  // sake of demonstration, this step is omitted. See examples/nnet_train.
 
   // test the performance by executing it on the C++ side
   double t1 = NSys::now();
@@ -45,14 +45,16 @@ int main(int argc, char** argv){
   // an NNModule holds compiled neural networks
   NNModule module;
   t1 = NSys::now();
+
   // compile the neural network to run with 8 threads, giving it the
   // name "test"
   module.compile("test", network, 8);
   dt = NSys::now() - t1;
   cout << "compile time is: " << dt << endl;
 
-  // the input and ouput layers must be a NPLVector of double and of
-  // the length with matches the C++ side network as constructed above
+  // the input and output layers must be a NPLVector of double's and
+  // of the length which matches the C++ side network as constructed
+  // above
   typedef NPLVector<double, 2> Vec2;
 
   Vec2 inputs;
@@ -67,7 +69,7 @@ int main(int argc, char** argv){
   dt = NSys::now() - t1;
   cout << "run time is: " << dt << endl;
 
-  // verify the outputs
+  // verify that these outputs match our first outputs
   cout << "outputs: " << outputs << endl;
 
   // delete the resources used by the compiled neural network named "test"
