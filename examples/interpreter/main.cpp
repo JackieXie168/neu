@@ -3,7 +3,9 @@
 This example demonstrates the use of NParser to define a simple
 language, parser, and interpreter that is capable of performing
 arithmetical and logical operations on scalars and vectors and enables
-control flow with: if/else/for/while.
+control flow with: if/else/for/while. The interpreter can be run in
+interactive mode or input source files can be passed to it, e.g:
+test.vl
 
 */
 
@@ -39,6 +41,7 @@ public:
   Parser() : NParser("Parser"){}
 
   void init(){
+    // ignore spaces and newlines
     discardWhitespace();
     discardNewLine();
 
@@ -59,9 +62,9 @@ public:
     addKeyword("while");
     addKeyword("for");
 
-    // add precedence punctuators, lower values mean lower precedence.
-    // by default, they are left-associative unless false is passed
-    // as the third parameter
+    // add precedence-based punctuators, lower values as the 2nd arg
+    // mean lower precedence.  by default, punctuators are
+    // left-associative unless false is passed as the third parameter
     addPunc(",", 1);
     addPunc("=", 1, false);
     addPunc("+=", 1, false);
@@ -97,8 +100,9 @@ public:
     addPunc("++", 10);
     addPunc("--", 10);
 
-    // the following are convenience methods for common literals such
-    // as: strings, symbols, numerics, etc.
+    // the following are convenience methods for including common
+    // literals in the language such as: strings, symbols, numerics,
+    // etc.
     useString("str");
     useSymbol("sym");
     useReal("real");    
@@ -125,8 +129,11 @@ public:
     // first element). if a position is not specified, it defaults to 0
     addRule("E", "( E )", 1);
 
-    // instead of using position, the following rules for expression
-    // use a reduction function/lambda
+    // most of the time you will not use reduction by position; the
+    // following rules for expression use a reduction function/lambda
+
+    // note that these make use of functions which are built into
+    // NObject such as VarSet(), AddBy(), etc.
     addRule("E", "E = E", [&](nvec& v){
         return nfunc("VarSet") << move(v[0]) << move(v[2]);
       });
@@ -339,6 +346,9 @@ int main(int argc, char** argv){
 
   Program::opt("history", "", 100, "Number of lines to keep in history"); 
 
+  // the parser can be run concurrently but the parser subclass must
+  // then ensure proper data protection and mutual exclusion for data
+  // it defines
   Program::opt("threads", "t", 1, "Number of threads to use in parser");
 
   Program program(argc, argv);
