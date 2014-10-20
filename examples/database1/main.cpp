@@ -39,7 +39,7 @@ int main(int argc, char** argv){
     // with how other locks are obtained by others clients of the
     // database to help prevent deadlocking, i.e: table locks will
     // always be acquired in the same relative order. the lock
-    // autoreleaes its underyling locks on the tables when the
+    // autoreleases its underyling locks on the tables when the
     // NTable::Lock is destroyed
     NTable::Lock lock(table, true);
 
@@ -77,8 +77,10 @@ int main(int argc, char** argv){
 
       table->insert(row);
       
-      // the databaes does not autocommit our changes, if we crash we
+      // the database does not autocommit our changes, if we crash we
       // can rollback
+
+      // here, commit on a regular interval
       if(i % COMMIT_INTERVAL == COMMIT_INTERVAL - 1){
         table->commit();
         cout << "committing..." << endl;
@@ -87,7 +89,8 @@ int main(int argc, char** argv){
 
     double dt = NSys::now() - t1;
 
-    cout << "inserted " << NUM_ROWS << " rows in: " << dt << endl;
+    cout << "inserted " << NUM_ROWS << " rows in: " << 
+      dt << " secs." << endl;
 
     // add some more rows
     while(i < NUM_ROWS + 10000){
@@ -147,7 +150,7 @@ int main(int argc, char** argv){
 
   // a query func is a lambda which receives a const nvar& r for the
   // row - it returns 0 to stop querying, 1 to move forward, -1 to
-  // return backwards
+  // move backwards
   NTable::QueryFunc q1 =
     [&](const nvar& r){
     if(r["norm"] < 50){
@@ -164,7 +167,7 @@ int main(int argc, char** argv){
   // get the user whose name is neu9999
   table->get("name", "neu9999", u1);
 
-  // do "set" queries - we will fetch row id's not the actual row
+  // do "set" queries - we will fetch row id's not the actual row data
 
   NTable::RowSet r1;
   // row ids of users whose: 0 <= rank <= 0.01
@@ -175,7 +178,7 @@ int main(int argc, char** argv){
   table->setQuery("rank", 50, 50.01, r2);
   
   // we can do set operations: unite() for union, intersect() for
-  // interesect, complement() for set difference
+  // interesection, complement() for set difference
   r1.unite(r2);
 
   nvec rows2;
@@ -213,7 +216,7 @@ int main(int argc, char** argv){
 
   cout << "u1 is: " << u1 << endl;
 
-  cout << "queries took: " << dt << endl;
+  cout << "queries took: " << dt << " secs." << endl;
 
   return 0;
 }
