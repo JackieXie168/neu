@@ -54,9 +54,9 @@ class NMLObject{
 
   // the switch/case stmt resembles the syntax of C++, however the
   // cases do not have to be integral, they can be any nvar. also, it
-  // is not necesary to end each case with a break/return stmt -
+  // is not necessary to end each case with a break/return stmt -
   // simply start the next case - so the only type of fall-through
-  // supported is as, e.g: the case 9:case 10: as seen below
+  // supported is as, e.g: case 9:case 10: as seen below
   testSwitch(c){
     switch(c){
     case 9:
