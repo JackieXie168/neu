@@ -829,7 +829,7 @@ nstr NProgram::signalName(int signal){
   }
 }
 
-void NProgram::require(){
+void NProgram::use(){
   if(!_program){
     NERROR("NProgram has not been initialized");
   }

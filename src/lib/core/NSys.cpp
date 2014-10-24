@@ -232,7 +232,7 @@ nstr NSys::tempPath(){
 }
 
 nstr NSys::tempFilePath(const nstr& extension){
-  NProgram::require();
+  NProgram::use();
   
   nstr p = _tempPath;
   

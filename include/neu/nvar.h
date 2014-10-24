@@ -2551,6 +2551,42 @@ namespace neu{
       return t_;
     }
     
+    Type sequenceType() const{
+      switch(t_){
+        case Vector:
+        case List:
+        case Queue:
+          return t_;
+        case HeadSequence:
+          return h_.hs->s->type();
+        case SequenceMap:
+          return h_.sm->s->type();
+        case HeadSequenceMap:
+          return h_.hsm->s->type();
+        default:
+          return None;
+      }
+    }
+    
+    Type mapType() const{
+      switch(t_){
+        case Set:
+        case HashSet:
+        case Map:
+        case HashMap:
+        case Multimap:
+          return t_;
+        case HeadMap:
+          return h_.hm->m->type();
+        case SequenceMap:
+          return h_.sm->m->type();
+        case HeadSequenceMap:
+          return h_.hsm->m->type();
+        default:
+          return None;
+      }
+    }
+    
     Type type() const{
       switch(t_){
         case HeadSequence:

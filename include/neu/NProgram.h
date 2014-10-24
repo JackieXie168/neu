@@ -72,7 +72,7 @@ namespace neu{
     
     virtual ~NProgram();
 
-    static void require();
+    static void use();
     
     void init(int& argc, char** argv, const nvar& args=undef);
     
