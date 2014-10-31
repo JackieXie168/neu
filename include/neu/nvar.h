@@ -1207,6 +1207,26 @@ namespace neu{
       return 8;
     }
     
+    static size_t precision(const nstr& s){
+      size_t count = 0;
+      bool past = false;
+      size_t len = s.length();
+      
+      for(size_t i = 0; i < len; ++i){
+        if(s[i] == '0'){
+          if(past){
+            ++count;
+          }
+        }
+        else if(nstr::isDigit(s[i])){
+          ++count;
+          past = true;
+        }
+      }
+      
+      return count;
+    }
+    
     const double& asDouble() const{
       switch(t_){
         case Float:

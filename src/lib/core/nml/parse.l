@@ -81,25 +81,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   using namespace std;
   using namespace neu;
   
-  static size_t precision(const nstr& s){
-    size_t count = 0;
-    bool past = false;
-    
-    for(size_t i = 0; i < s.size(); ++i){
-      if(s[i] == '0'){
-        if(past){
-          ++count;
-        }
-      }
-      else if(nstr::isDigit(s[i])){
-        ++count;
-        past = true;
-      }
-    }
-    
-    return count;
-  }
-	
 %}
 
 %option reentrant bison-bridge
@@ -334,7 +315,7 @@ KW_IMPORT import
   nstr s = yytext;
   PS->advance(yytext, "numeric");
   
-  if(precision(s) > 17){
+  if(nvar::precision(s) > 16){
     yylval->v = nreal(s.c_str());
     return REAL;
   }

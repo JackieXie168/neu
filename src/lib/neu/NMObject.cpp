@@ -150,7 +150,7 @@ namespace neu{
       _mutex.lock();
       if(!_initialized){
 
-        NProgram::require();
+        NProgram::use();
         
         if(_mathKernelPath.empty()){
           NERROR("unspecified _mathKernelPath");

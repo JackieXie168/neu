@@ -191,7 +191,7 @@ public:
   enableMetadata_(true),
   enableOuter_(true){
     
-    NProgram::require();
+    NProgram::use();
     
     includes_.push_back(_home + "/include");
     
