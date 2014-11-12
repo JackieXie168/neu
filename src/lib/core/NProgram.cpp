@@ -298,7 +298,7 @@ namespace neu{
       parser.setErrorStream(estr);
       config = parser.parseFile(path);
       
-      if(config == none){
+      if(config.none()){
         nstr err = estr.str();
         NERROR("error parsing config file: " + path + ": " + err);
       }

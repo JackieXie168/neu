@@ -153,7 +153,7 @@ namespace{
     bool handleBuiltin(nvar& f){
       nvar b = builtinMap_.get({f.str(), f.size()}, none);
 
-      if(b == none){
+      if(b.none()){
         return false;
       }
 
@@ -164,7 +164,7 @@ namespace{
     bool handleVarBuiltin(nvar& f){
       nvar b = varBuiltinMap_.get({f.str(), f.size()}, none);
       
-      if(b == none){
+      if(b.none()){
         return false;
       }
       
@@ -239,7 +239,7 @@ nvar NPLParser::parseType(const nstr& t){
   
   nvar ti = _global.getType(tn);
   
-  if(ti == none){
+  if(ti.none()){
     NERROR("invalid type: " + t);
   }
   

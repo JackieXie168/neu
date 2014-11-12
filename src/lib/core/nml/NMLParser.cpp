@@ -153,7 +153,7 @@ namespace{
     bool handleVarBuiltin(nvar& f){
       nvar b = varBuiltinMap_.get({f.str(), f.size()}, none);
       
-      if(b == none){
+      if(b.none()){
         return false;
       }
       
