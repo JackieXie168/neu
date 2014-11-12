@@ -113,6 +113,8 @@ namespace neu{
     
     nvar Reset();
     
+    nvar Eval(const nvar& v);
+    
     nvar Throw(const nvar& v1, const nvar& v2);
     
     nvar Add(const nvar& v1, const nvar& v2);

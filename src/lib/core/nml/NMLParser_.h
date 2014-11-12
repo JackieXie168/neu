@@ -470,6 +470,7 @@ namespace neu{
 
       bool noSeq = true;
       bool noMap = true;
+      bool shouldEval = false;
       
       size_t size = items.size();
       for(size_t i = 0; i < size; ++i){
@@ -492,8 +493,14 @@ namespace neu{
             }
             noSeq = false;
           }
+
+          nvar& item = ii[0];
           
-          v << move(ii[0]);
+          if(item.isSymbolic()){
+            shouldEval = true;
+          }
+          
+          v << move(item);
         }
         else if(ii.isFunction("KV_")){
           if(noMap){
@@ -513,7 +520,13 @@ namespace neu{
             noMap = false;
           }
           
-          v(ii[0]) = move(ii[1]);
+          nvar& item = ii[1];
+          
+          if(item.isSymbolic()){
+            shouldEval = true;
+          }
+          
+          v(ii[0]) = move(item);
         }
         else if(ii.isFunction("K_")){
           if(noMap){
@@ -544,6 +557,10 @@ namespace neu{
         else{
           assert(false);
         }
+      }
+      
+      if(shouldEval){
+        v = nfunc("Eval") << move(v);
       }
     }
     

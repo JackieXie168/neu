@@ -551,6 +551,100 @@ namespace neu{
       return none;
     }
     
+    nvar Eval(const nvar& v){
+      switch(v.fullType()){
+        case nvar::Vector:{
+          const nvec& vv = v;
+          size_t size = vv.size();
+          nvec r;
+          r.reserve(size);
+          for(size_t i = 0; i < size; ++i){
+            r.emplace_back(move(run(vv[i])));
+          }
+          return nvar(move(r));
+        }
+        case nvar::List:{
+          const nlist& l = v;
+          size_t size = l.size();
+          nlist r;
+          for(size_t i = 0; i < size; ++i){
+            r.emplace_back(move(run(l[i])));
+          }
+          return nvar(move(r));
+        }
+        case nvar::Queue:{
+          const nqueue& q = v;
+          size_t size = q.size();
+          nqueue r;
+          for(size_t i = 0; i < size; ++i){
+            r.emplace_back(move(run(q[i])));
+          }
+          return nvar(move(r));
+        }
+        case nvar::HeadSequence:{
+          nvar h = v.head();
+          nvar s = Eval(v.anySequence());
+          
+          return nvar(move(h), move(s), nvar::HeadSequenceType);
+        }
+        case nvar::Map:{
+          const nmap& m = v;
+
+          nmap r;
+          for(auto& itr : m){
+            r.emplace(itr.first, move(run(itr.second)));
+          }
+
+          return nvar(move(r));
+        }
+        case nvar::HashMap:{
+          const nhmap& m = v;
+          
+          nhmap r;
+          for(auto& itr : m){
+            r.emplace(itr.first, move(run(itr.second)));
+          }
+          
+          return nvar(move(r));
+        }
+        case nvar::Multimap:{
+          const nmmap& m = v;
+          
+          nmmap r;
+          for(auto& itr : m){
+            r.emplace(itr.first, move(run(itr.second)));
+          }
+          
+          return nvar(move(r));
+        }
+        case nvar::HeadMap:{
+          nvar h = v.head();
+          nvar m = Eval(v.anyMap());
+          
+          return nvar(move(h), move(m), nvar::HeadMapType);
+        }
+        case nvar::SequenceMap:{
+          nvar s = Eval(v.anySequence());
+          nvar m = Eval(v.anyMap());
+          
+          return nvar(move(s), move(m), nvar::SequenceMapType);
+        }
+        case nvar::HeadSequenceMap:{
+          nvar h = v.head();
+          nvar s = Eval(v.anySequence());
+          nvar m = Eval(v.anyMap());
+          
+          return nvar(move(h), move(s), move(m), nvar::HeadSequenceMapType);
+        }
+        case nvar::Reference:
+          return Eval(v.fromRef());
+        case nvar::Pointer:
+          return Eval(v.fromPtr());
+        default:
+          return v;
+      }
+    }
+    
     nvar Add(const nvar& v1, const nvar& v2){
       return run(v1) + run(v2);
     }
@@ -1664,6 +1758,11 @@ FuncMap::FuncMap(){
         return NObject_::obj(o)->Reset();
       });
   
+  add("Eval", 1,
+      [](void* o, const nstr&, nvec& v) -> nvar{
+        return NObject_::obj(o)->Eval(v[0]);
+      });
+  
   add("Add", 2,
       [](void* o, const nstr&, nvec& v) -> nvar{
         return NObject_::obj(o)->Add(v[0], v[1]);
@@ -2501,6 +2600,10 @@ bool NObject::isRemote(){
 
 nvar NObject::Reset(){
   return x_->Reset();
+}
+
+nvar NObject::Eval(const nvar& v){
+  return x_->Eval(v);
 }
 
 nvar NObject::Throw(const nvar& v1, const nvar& v2){

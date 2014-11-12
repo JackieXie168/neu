@@ -1440,6 +1440,11 @@ namespace neu{
       }
     }
     
+    nvar& fromPtr() const{
+      assert(t_ == Pointer);
+      return *h_.vp;
+    }
+    
     nvar toRef(){
       switch(t_){
         case Reference:
@@ -1448,6 +1453,11 @@ namespace neu{
         default:
           return new nvar(*this);
       }
+    }
+    
+    nvar& fromRef() const{
+      assert(t_ == Reference);
+      return *h_.ref->v;
     }
     
     nstr& str(){
