@@ -230,6 +230,7 @@ namespace neu{
     : o_(o),
     exact_(false),
     strict_(true),
+    handleSymbol_(false),
     sharedScope_(false),
     threadData_(0),
     broker_(0){
@@ -248,6 +249,7 @@ namespace neu{
     : o_(o),
     exact_(false),
     strict_(true),
+    handleSymbol_(false),
     sharedScope_(true),
     threadData_(0),
     broker_(0){
@@ -310,6 +312,10 @@ namespace neu{
       exact_ = flag;
     }
     
+    void setHandleSymbol(bool flag){
+      handleSymbol_ = flag;
+    }
+    
     bool isRemote(){
       return broker_;
     }
@@ -358,6 +364,11 @@ namespace neu{
         }
       }
       
+      if(handleSymbol_){
+        v = o_->handleSymbol(s);
+        return;
+      }
+      
       if(strict_){
         NERROR("symbol not in scope: " + s);
       }
@@ -376,6 +387,11 @@ namespace neu{
         if(scope->isLimiting()){
           i = sharedScope_ ? 3 : 2;
         }
+      }
+      
+      if(handleSymbol_){
+        v = o_->handleSymbol(s);
+        return;
       }
       
       v = none;
@@ -1375,7 +1391,7 @@ namespace neu{
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2){
-      return run(v1).isFunction(run(v2));
+      return run(v1).isFunction(run(v2).str());
     }
     
     nvar IsFunction(const nvar& v1, const nvar& v2, const nvar& v3){
@@ -1632,6 +1648,7 @@ namespace neu{
     bool exact_ : 1;
     bool strict_ : 1;
     bool sharedScope_ : 1;
+    bool handleSymbol_ : 1;
   };
   
 } // end namespace neu
@@ -2472,6 +2489,10 @@ void NObject::setStrict(bool flag){
 
 void NObject::setExact(bool flag){
   x_->setExact(flag);
+}
+
+void NObject::setHandleSymbol(bool flag){
+  x_->setHandleSymbol(flag);
 }
 
 bool NObject::isRemote(){

@@ -74,6 +74,7 @@ namespace neu{
     NMLGenerator& operator=(const NMLGenerator&) = delete;
     
     NMLGenerator(const NMLGenerator&) = delete;
+
   private:
     class NMLGenerator_* x_;
   };

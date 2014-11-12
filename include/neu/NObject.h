@@ -83,6 +83,10 @@ namespace neu{
     
     virtual NFunc handle(const nvar& v, uint32_t flags=0);
     
+    virtual nvar handleSymbol(const nstr& s){
+      return none;
+    }
+    
     virtual bool instanceOf(uint32_t classId) const{
       return classId == NObject::classId;
     }
@@ -92,6 +96,8 @@ namespace neu{
     void setStrict(bool flag);
     
     void setExact(bool flag);
+    
+    void setHandleSymbol(bool flag);
     
     bool isRemote();
     

@@ -68,7 +68,7 @@ namespace neu{
     
     NMObject(NScope* sharedScope);
     
-    ~NMObject();
+    virtual ~NMObject();
     
     virtual NFunc handle(const nvar& v, uint32_t flags=0);
     
@@ -82,4 +82,4 @@ namespace neu{
   
 } // end namespace neu
 
-#endif // N_NM_OBJECT_H
+#endif // NEU_NM_OBJECT_H

@@ -54,10 +54,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NMLGenerator.h>
 
+#include <neu/NObject.h>
+
 using namespace std;
 using namespace neu;
-
-#include <neu/NObject.h>
 
 namespace{
   

@@ -1117,6 +1117,10 @@ namespace neu{
       return t_ != None;
     }
     
+    bool none() const{
+      return t_ == None;
+    }
+    
     bool toBool() const;
     
     bool getBool() const{
@@ -2921,6 +2925,19 @@ namespace neu{
       }
     }
 
+    bool isFunction(size_t arity) const{
+      switch(t_){
+        case Function:
+          return h_.f->v.size() == arity;
+        case Reference:
+          return h_.ref->v->isFunction(arity);
+        case Pointer:
+          return h_.vp->isFunction(arity);
+        default:
+          return false;
+      }
+    }
+    
     bool isFunction(size_t minArity, size_t maxArity) const{
       switch(t_){
         case Function:{
