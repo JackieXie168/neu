@@ -69,17 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   #include "parse.h"
   
   #define PS yyget_extra(yyscanner)
-  
-  #if defined (__i386__) || defined (__APPLE__)
-  
-  #define M_INTEGER_MAX 9223372036854775807LL
-  
-  #else
-  
-  #define M_INTEGER_MAX 9223372036854775807L
-  
-  #endif
-  
+    
   using namespace std;
   using namespace neu;
   
