@@ -87,6 +87,8 @@ namespace neu{
     
     static void parseArgs(int argc, char** argv, nvar& args);
     
+    static char** toArgv(const nvec& argVec);
+    
     static const nvar& args();
     
     static nstr usage(const nstr& msg);

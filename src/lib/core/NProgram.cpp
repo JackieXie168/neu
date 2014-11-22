@@ -835,5 +835,16 @@ void NProgram::use(){
   }
 }
 
+char** NProgram::toArgv(const nvec& argVec){
+  char** argv = (char**)malloc(sizeof(char*) * argVec.size());
+  
+  size_t size = argVec.size();
+  for(size_t i = 0; i < size; ++i){
+    argv[i] = strdup(argVec[i].c_str());
+  }
+  
+  return argv;
+}
+
 int NProgram::argc = 0;
 char** NProgram::argv = 0;
