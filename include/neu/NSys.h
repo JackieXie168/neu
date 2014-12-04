@@ -69,7 +69,7 @@ namespace neu{
     static nstr basename(const nstr& path);
     
     // e.g: /foo/bar/baz => /foo/bar
-    static nstr parentDirectory(const nstr& path);
+    static nstr parentDir(const nstr& path);
     
     static bool makeDir(const nstr& path);
     

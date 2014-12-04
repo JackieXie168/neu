@@ -64,7 +64,7 @@ namespace neu{
   
   class NProgram{
   public:
-    NProgram(int& argc, char** argv, const nvar& args=undef);
+    NProgram(int argc, char** argv, const nvar& args=undef);
     
     NProgram(const nvar& args);
     
@@ -74,7 +74,7 @@ namespace neu{
 
     static void use();
     
-    void init(int& argc, char** argv, const nvar& args=undef);
+    void init(int argc, char** argv, const nvar& args=undef);
     
     void init(const nvar& args);
     

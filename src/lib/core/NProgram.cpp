@@ -200,7 +200,7 @@ namespace neu{
       init(args);
     }
     
-    NProgram_(NProgram* o, int& argc, char** argv, const nvar& args)
+    NProgram_(NProgram* o, int argc, char** argv, const nvar& args)
     : o_(o){
       init(argc, argv, args);
     }
@@ -210,7 +210,7 @@ namespace neu{
     
     ~NProgram_(){}
     
-    void init(int& argc, char** argv, const nvar& args){
+    void init(int argc, char** argv, const nvar& args){
       NProgram::argc = argc;
       NProgram::argv = argv;
       
@@ -496,7 +496,7 @@ namespace neu{
   
 } // end namespace neu
 
-NProgram::NProgram(int& argc, char** argv, const nvar& args){
+NProgram::NProgram(int argc, char** argv, const nvar& args){
   x_ = new NProgram_(this, argc, argv, args);
 }
 
@@ -512,7 +512,7 @@ NProgram::~NProgram(){
   delete x_;
 }
 
-void NProgram::init(int& argc, char** argv, const nvar& args){
+void NProgram::init(int argc, char** argv, const nvar& args){
   x_->init(argc, argv, args);
 }
 

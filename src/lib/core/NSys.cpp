@@ -200,7 +200,7 @@ nstr NSys::basename(const nstr& path){
   return ret;
 }
 
-nstr NSys::parentDirectory(const nstr& path){
+nstr NSys::parentDir(const nstr& path){
   size_t len = path.length();
   
   if(len == 0){
@@ -393,7 +393,7 @@ nstr NSys::fileToStr(const nstr& path){
   rewind(file);
   
   char* buf = (char*)malloc(sizeof(char)*size);
-  int r = fread(buf, 1, size, file);
+  fread(buf, 1, size, file);
   
   fclose(file);
   
