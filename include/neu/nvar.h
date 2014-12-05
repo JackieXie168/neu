@@ -78,11 +78,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NObjectBase.h>
 #include <neu/NError.h>
 
-#define ndump(X) cout << __FILE__ << ":" << __LINE__ << ": " << \
-__PRETTY_FUNCTION__ << ": " << #X << " = " << X << endl
+#define ndump(X) std::cout << __FILE__ << ":" << __LINE__ << ": " << \
+__PRETTY_FUNCTION__ << ": " << #X << " = " << X << std::endl
 
-#define nlog(X) cout << __FILE__ << ":" << __LINE__ << ": " << \
-__PRETTY_FUNCTION__ << ": " << X << endl
+#define nlog(X) std::cout << __FILE__ << ":" << __LINE__ << ": " << \
+__PRETTY_FUNCTION__ << ": " << X << std::endl
 
 #define nget(X,Y) X[#Y].as(Y)
 #define nput(X,Y) X(#Y) = Y
