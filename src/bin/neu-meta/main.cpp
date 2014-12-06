@@ -1333,6 +1333,9 @@ int main(int argc, char** argv){
   NProgram::opt("help", "h", false,
                 "Display usage.");
   
+  NProgram::opt("outputPath", "o", "",
+                "Path to generate output files in.");
+  
   NProgram::opt("class", "", "",
                 "Class name to generate metadata for. "
                 "Defaults to the name of the source file.");
@@ -1376,15 +1379,6 @@ int main(int argc, char** argv){
     className = NSys::fileName(filePath);
   }
 
-  nstr metaPath = className + "_meta.h";
-
-  ofstream out(metaPath.c_str());
-  if(out.fail()){
-    cerr << "failed to open output file: " << metaPath << endl;
-    program.exit(1);
-  }
-  out.close();
-
   stringstream ostr;
   MetaGenerator gen;
   
@@ -1404,13 +1398,21 @@ int main(int argc, char** argv){
     return 1;
   }
 
-  ofstream finalOut(metaPath.c_str());
-  if(finalOut.fail()){
-    cerr << "failed to open output file: " << metaPath << endl;
+  nstr outputPath = args["outputPath"];
+  
+  if(outputPath.empty()){
+    outputPath = NSys::currentDir();
+  }
+  
+  outputPath += "/" + className + "_meta.h";
+  
+  ofstream out(outputPath.c_str());
+  if(out.fail()){
+    cerr << "failed to open output file: " << outputPath << endl;
     program.exit(1);
   }
-  finalOut << ostr.str();
-  finalOut.close();
+  out << ostr.str();
+  out.close();
   
   return 0;
 }
