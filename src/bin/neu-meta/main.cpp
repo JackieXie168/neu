@@ -1358,6 +1358,9 @@ int main(int argc, char** argv){
   NProgram::opt("resourceDir", "", "",
                 "Clang resource directory.", true);
   
+  NProgram::opt("sdk", "", "",
+                "Apple SDK path.");
+  
   NProgram program(argc, argv);
 
   const nvar& args = program.args();
@@ -1379,6 +1382,13 @@ int main(int argc, char** argv){
     className = NSys::fileName(filePath);
   }
 
+#ifdef __APPLE__
+  const nstr& sdk = args["sdk"];
+  
+  NSys::setEnv("SDKROOT", sdk);
+  NSys::setEnv("SDK_DIR", sdk);
+#endif
+  
   stringstream ostr;
   MetaGenerator gen;
   
