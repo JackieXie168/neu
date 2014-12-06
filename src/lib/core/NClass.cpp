@@ -110,6 +110,16 @@ namespace{
       return itr->second->construct(f);
     }
     
+    NObjectBase* recreate(const nvar& v){
+      auto itr = classMap_.find(v["type"]);
+      
+      if(itr == classMap_.end()){
+        return 0;
+      }
+      
+      return itr->second->reconstruct(v);
+    }
+    
     NObject* createRemote(const nstr& className, NBroker* broker){
       auto itr = classMap_.find(className);
       
@@ -199,6 +209,12 @@ NObjectBase* NClass::create(const nvar& f){
   NReadGuard guard(_mutex);
   
   return _global->create(f);
+}
+
+NObjectBase* NClass::recreate(const nvar& v){
+  NReadGuard guard(_mutex);
+  
+  return _global->recreate(v);
 }
 
 NObject* NClass::createRemote(const nstr& className, NBroker* broker){

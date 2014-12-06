@@ -66,6 +66,10 @@ namespace neu{
   
   class NObjectBase{
   public:
+    struct RestoreFlag{};
+    
+    static RestoreFlag Restore;
+    
     NObjectBase()
     : refCount_(1){}
     
@@ -88,6 +92,8 @@ namespace neu{
     virtual bool instanceOf(uint32_t classId) const{
       return false;
     }
+    
+    virtual void store(nvar& v) const{}
     
   private:
     std::atomic<uint32_t> refCount_;

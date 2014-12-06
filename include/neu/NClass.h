@@ -77,9 +77,15 @@ namespace neu{
     
     static NObjectBase* create(const nvar& f);
     
+    static NObjectBase* recreate(const nvar& v);
+    
     static NObject* createRemote(const nstr& className, NBroker* broker);
     
     virtual NObjectBase* construct(const nvar& f){
+      return 0;
+    }
+    
+    virtual NObjectBase* reconstruct(const nvar& f){
       return 0;
     }
     

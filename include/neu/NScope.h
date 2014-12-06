@@ -69,7 +69,63 @@ namespace neu{
     : limiting_(limiting),
     shared_(shared ? new Shared_ : 0){}
     
+    NScope(const nvar& v, RestoreFlag){
+      const nvar& sv = v["NScope"];
+      
+      limiting_ = sv["limiting_"];
+      shared_ = sv["shared"] ? new Shared_ : 0;
+
+      const nmap& sm  = sv["symbolMap"];
+      
+      for(auto& itr : sm){
+        const nstr& s = itr.first;
+        const nvar& v = itr.second;
+        symbolMap_.insert({s, v});
+      }
+      
+      const nmap& fm  = sv["functionMap"];
+      
+      for(auto& itr : fm){
+        const nvar& k = itr.first;
+        const nstr& fs = k[0];
+        int16_t arity = k[1];
+        
+        const nvar& v = itr.second;
+        
+        functionMap_.insert({{fs, arity}, {v[0], v[1]}});
+      }
+    }
+    
     ~NScope(){}
+    
+    void store(nvar& v) const{
+      if(!v.has("type")){
+        v("type") = "NScope";
+      }
+
+      nvar& sv = v["NScope"];
+      
+      nput(sv, limiting_);
+      sv("shared") = shared_ ? true : false;
+      
+      nmap& sm = sv("symbolMap") = nmap();
+      
+      for(auto& itr : symbolMap_){
+        const nstr& s = itr.first;
+        const nvar& v = itr.second;
+        
+        sm[s] = v;
+      }
+      
+      nmap& fm = sv("functionMap") = nmap();
+      
+      for(auto& itr : functionMap_){
+        nvar k = {itr.first.first, itr.first.second};
+        nvar v = {itr.second.first, itr.second.second};
+        
+        fm.emplace(std::move(k), std::move(v));
+      }
+    }
     
     virtual bool instanceOf(uint32_t classId) const{
       return classId == NScope::classId;

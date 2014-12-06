@@ -524,9 +524,9 @@ namespace neu{
     
     struct CopyFlag{};
     
-    static const CopyFlag* Copy;
+    static CopyFlag Copy;
     
-    nvar(const nvar& x, const CopyFlag*);
+    nvar(const nvar& x, CopyFlag);
     
     nvar copy() const{
       return nvar(*this, Copy);
@@ -534,11 +534,11 @@ namespace neu{
     
     struct SymbolFlag{};
     
-    static const SymbolFlag* Sym;
+    static SymbolFlag Sym;
     
     struct FunctionFlag{};
     
-    static const FunctionFlag* Func;
+    static FunctionFlag Func;
     
     nvar(const nstr& str)
     : t_(String){
@@ -560,32 +560,32 @@ namespace neu{
       h_.s = str;
     }
     
-    nvar(const char* str, const SymbolFlag*)
+    nvar(const char* str, SymbolFlag)
     : t_(Symbol){
       h_.s = new nstr(str);
     }
     
-    nvar(const nstr& str, const SymbolFlag*)
+    nvar(const nstr& str, SymbolFlag)
     : t_(Symbol){
       h_.s = new nstr(str);
     }
     
-    nvar(const std::string& str, const SymbolFlag*)
+    nvar(const std::string& str, SymbolFlag)
     : t_(Symbol){
       h_.s = new nstr(str);
     }
     
-    nvar(const nstr& str, const FunctionFlag*)
+    nvar(const nstr& str, FunctionFlag)
     : t_(Function){
       h_.f = new CFunction(str);
     }
     
-    nvar(const std::string& str, const FunctionFlag*)
+    nvar(const std::string& str, FunctionFlag)
     : t_(Function){
       h_.f = new CFunction(str);
     }
     
-    nvar(const char* str, const FunctionFlag*)
+    nvar(const char* str, FunctionFlag)
     : t_(Function){
       h_.f = new CFunction(str);
     }
@@ -782,9 +782,9 @@ namespace neu{
     
     struct PointerFlag{};
     
-    static const PointerFlag* Ptr;
+    static PointerFlag Ptr;
     
-    nvar(nvar* v, const PointerFlag*)
+    nvar(nvar* v, PointerFlag)
     : t_(Pointer){
       
       assert(v->t_ != Reference && v->t_ != Pointer);
@@ -794,36 +794,36 @@ namespace neu{
     
     struct HeadSequenceFlag{};
     
-    static const HeadSequenceFlag* HeadSequenceType;
+    static HeadSequenceFlag HeadSequenceType;
     
-    nvar(nvar&& h, nvar&& s, const HeadSequenceFlag*)
+    nvar(nvar&& h, nvar&& s, HeadSequenceFlag)
     : t_(HeadSequence){
       h_.hs = new CHeadSequence(new nvar(std::move(h)), new nvar(std::move(s)));
     }
     
     struct HeadMapFlag{};
     
-    static const HeadMapFlag* HeadMapType;
+    static HeadMapFlag HeadMapType;
     
-    nvar(nvar&& h, nvar&& m, const HeadMapFlag*)
+    nvar(nvar&& h, nvar&& m, HeadMapFlag)
     : t_(HeadMap){
       h_.hm = new CHeadMap(new nvar(std::move(h)), new nvar(std::move(m)));
     }
     
     struct SequenceMapFlag{};
     
-    static const SequenceMapFlag* SequenceMapType;
+    static SequenceMapFlag SequenceMapType;
     
-    nvar(nvar&& s, nvar&& m, const SequenceMapFlag*)
+    nvar(nvar&& s, nvar&& m, SequenceMapFlag)
     : t_(SequenceMap){
       h_.sm = new CSequenceMap(new nvar(std::move(s)), new nvar(std::move(m)));
     }
     
     struct HeadSequenceMapFlag{};
     
-    static const HeadSequenceMapFlag* HeadSequenceMapType;
+    static HeadSequenceMapFlag HeadSequenceMapType;
     
-    nvar(nvar&& h, nvar&& s, nvar&& m, const HeadSequenceMapFlag*)
+    nvar(nvar&& h, nvar&& s, nvar&& m, HeadSequenceMapFlag)
     : t_(HeadSequenceMap){
       h_.hsm = new CHeadSequenceMap(new nvar(std::move(h)),
                                     new nvar(std::move(s)),

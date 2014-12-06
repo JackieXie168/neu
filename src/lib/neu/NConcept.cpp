@@ -64,7 +64,7 @@ using namespace neu;
 
 namespace neu{
   
-  NConcept::PrototypeFlag* NConcept::Prototype = 0;
+  NConcept::PrototypeFlag NConcept::Prototype;
   
   class NConcept_{
   public:
@@ -414,7 +414,7 @@ NConcept::NConcept(const NConcept& c){
   x_ = new NConcept_(this, *c.x_);
 }
 
-NConcept::NConcept(PrototypeFlag*, const nvar& metadata){
+NConcept::NConcept(PrototypeFlag, const nvar& metadata){
   x_ = new NConcept_(this);
   
   NCOntology* ontology = NCOntology::get();

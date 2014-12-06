@@ -164,11 +164,11 @@ namespace neu{
         scopeStack.push_back(scope);
       }
       
-      NScope* getScope(size_t i){
+      NScope* getScope(size_t i) const{
         return scopeStack[i];
       }
       
-      NScope* topScope(){
+      NScope* topScope() const{
         return scopeStack.back();
       }
       
@@ -283,6 +283,51 @@ namespace neu{
       mainContext_.pushScope(s);
     }
     
+    NObject_(NObject* o, const nvar& v, NObject::RestoreFlag)
+    : o_(o),
+    sharedScope_(false),
+    threadData_(0),
+    broker_(0){
+      
+      const nvar& rv = v["NObject"];
+      
+      exact_ = rv["exact_"];
+      strict_ = rv["strict_"];
+      handleSymbol_ = rv["handleSymbol_"];
+      
+      NScope* gs = _global.globalScope();
+      mainContext_.pushScope(gs);
+      
+      NScope* s = new NScope(rv["scope"], NScope::Restore);
+      s->setSymbolFast("Global", gs);
+      s->setSymbolFast("Shared", gs);
+      s->setSymbolFast("This", o_);
+      mainContext_.pushScope(s);
+    }
+    
+    NObject_(NObject* o, const nvar& v, NScope* sharedScope, NObject::RestoreFlag)
+    : o_(o),
+    sharedScope_(true),
+    threadData_(0),
+    broker_(0){
+      
+      const nvar& rv = v["NObject"];
+      
+      exact_ = rv["exact_"];
+      strict_ = rv["strict_"];
+      handleSymbol_ = rv["handleSymbol_"];
+      
+      NScope* gs = _global.globalScope();
+      mainContext_.pushScope(gs);
+      mainContext_.pushScope(sharedScope);
+      
+      NScope* s = new NScope(rv["scope"], NScope::Restore);
+      s->setSymbolFast("Global", gs);
+      s->setSymbolFast("Shared", sharedScope);
+      s->setSymbolFast("This", o_);
+      mainContext_.pushScope(s);
+    }
+    
     ~NObject_(){
       if(sharedScope_){
         delete mainContext_.getScope(2);
@@ -298,6 +343,22 @@ namespace neu{
       if(broker_){
         broker_->release(o_);
       }
+    }
+    
+    void store(nvar& v) const{
+      if(!v.has("type")){
+        v("type") = "NObject";
+      }
+      
+      nvar& sv = v("NObject");
+      nput(sv, exact_);
+      nput(sv, strict_);
+      nput(sv, handleSymbol_);
+      
+      NScope* s = sharedScope_ ?
+      mainContext_.getScope(2) : mainContext_.getScope(1);
+
+      s->store(sv("scope"));
     }
     
     static NObject_* obj(void* o){
@@ -2558,6 +2619,14 @@ NObject::NObject(NBroker* broker){
   x_ = new NObject_(this, broker);
 }
 
+NObject::NObject(const nvar& v, RestoreFlag){
+  x_ = new NObject_(this, v, Restore);
+}
+
+NObject::NObject(const nvar& v, NScope* sharedScope, RestoreFlag){
+  x_ = new NObject_(this, v, sharedScope, Restore);
+}
+
 NObject::~NObject(){
   delete x_;
 }
@@ -2572,6 +2641,10 @@ nvar NObject::run(const nvar& v, uint32_t flags){
 
 nvar NObject::remoteRun(const nvar& v){
   return x_->remoteRun(v);
+}
+
+void NObject::store(nvar& v) const{
+  x_->store(v);
 }
 
 NFunc NObject::handle(const nvar& v, uint32_t flags){

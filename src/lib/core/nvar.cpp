@@ -74,14 +74,14 @@ namespace neu{
   const nvar none(nvar::None, nvar::Head());
   const nvec _emptyVec;
   
-  const nvar::CopyFlag* nvar::Copy = 0;
-  const nvar::PointerFlag* nvar::Ptr = 0;
-  const nvar::SymbolFlag* nvar::Sym = 0;
-  const nvar::FunctionFlag* nvar::Func = 0;
-  const nvar::HeadSequenceFlag* nvar::HeadSequenceType = 0;
-  const nvar::HeadMapFlag* nvar::HeadMapType = 0;
-  const nvar::SequenceMapFlag* nvar::SequenceMapType = 0;
-  const nvar::HeadSequenceMapFlag* nvar::HeadSequenceMapType = 0;
+  nvar::CopyFlag nvar::Copy;
+  nvar::PointerFlag nvar::Ptr;
+  nvar::SymbolFlag nvar::Sym;
+  nvar::FunctionFlag nvar::Func;
+  nvar::HeadSequenceFlag nvar::HeadSequenceType;
+  nvar::HeadMapFlag nvar::HeadMapType;
+  nvar::SequenceMapFlag nvar::SequenceMapType;
+  nvar::HeadSequenceMapFlag nvar::HeadSequenceMapType;
   
   static const uint8_t COMPRESS_FLAG = 0x01;
 
@@ -658,7 +658,7 @@ nvar::nvar(double* v, int32_t n)
   h_.v = new nvec(v, v + n);
 }
 
-nvar::nvar(const nvar& x, const CopyFlag*)
+nvar::nvar(const nvar& x, const CopyFlag)
 : t_(x.t_){
   switch(t_){
     case Rational:

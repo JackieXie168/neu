@@ -67,11 +67,11 @@ public:
 
   struct PrototypeFlag{};
   
-  static PrototypeFlag* Prototype;
+  static PrototypeFlag Prototype;
   
   NConcept(const NConcept& c);
 
-  NConcept(PrototypeFlag*, const nvar& metadata);
+  NConcept(PrototypeFlag, const nvar& metadata);
 
   NConcept();
 

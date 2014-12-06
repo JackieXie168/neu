@@ -88,3 +88,5 @@ uint32_t NObjectBase::getClassId(){
   
   return _global->getClassId();
 }
+
+NObjectBase::RestoreFlag NObjectBase::Restore;

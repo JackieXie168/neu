@@ -73,9 +73,15 @@ namespace neu{
     
     NObject(NBroker* broker);
     
+    NObject(const nvar& v, RestoreFlag);
+    
+    NObject(const nvar& v, NScope* sharedScope, RestoreFlag);
+    
     ~NObject();
     
     static const uint32_t Delegated = 0x00000001;
+    
+    virtual void store(nvar& v) const;
     
     nvar remoteRun(const nvar& v);
     

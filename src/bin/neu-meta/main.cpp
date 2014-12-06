@@ -189,7 +189,8 @@ public:
   : enableHandle_(true),
   enableClass_(true),
   enableMetadata_(true),
-  enableOuter_(true){
+  enableOuter_(true),
+  enableRestore_(true){
     
     NProgram::use();
     
@@ -469,7 +470,11 @@ public:
 
   void enableOuter(bool flag){
     enableOuter_ = flag;
-  }    
+  }
+  
+  void enableRestore(bool flag){
+    enableRestore_ = flag;
+  }
 
   void addInclude(const nstr& path){
     includes_.push_back(path);
@@ -857,6 +862,7 @@ public:
     stringstream ostr;
     
     bool foundDist = false;
+    bool foundRestoreCtor = false;
     
     for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
           mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
@@ -870,6 +876,19 @@ public:
         if(qt.getAsString() == "ndist" &&
            ct.getAsString() == "class neu::nvar"){
           foundDist = true;
+        }
+      }
+      
+      if(enableRestore_ && !foundRestoreCtor){
+        if(md->isUserProvided() && isa<CXXConstructorDecl>(md) &&
+           md->param_size() == 2){
+          nstr t1 = md->getParamDecl(0)->getType().getAsString();
+          nstr t2 = md->getParamDecl(1)->getType().getAsString();
+          
+          if(t1 == "const class neu::nvar &" &&
+             t2 == "struct neu::NObjectBase::RestoreFlag"){
+            foundRestoreCtor = true;
+          }
         }
       }
     }
@@ -956,6 +975,16 @@ public:
         ostr << endl;
         ostr << "  neu::NObject* constructRemote(neu::NBroker* broker){" << endl;
         ostr << "    return new " << fullName << "(broker);" << endl;
+        ostr << "  }" << endl;
+      }
+      
+      if(foundRestoreCtor){
+        ostr << endl;
+        ostr << "  neu::NObjectBase* reconstruct(const neu::nvar& v){" << endl;
+        
+        ostr << "    return new " << fullName << "(v, " << fullName <<
+        "::Restore);" << endl;
+        
         ostr << "  }" << endl;
       }
     }
@@ -1320,6 +1349,7 @@ private:
   bool enableClass_;
   bool enableMetadata_;
   bool enableOuter_;
+  bool enableRestore_;
   nstr className_;
   bool fullClassName_;
   nstr resourceDir_;
@@ -1348,6 +1378,9 @@ int main(int argc, char** argv){
   
   NProgram::opt("metadata", "", true,
                 "True to generate class metadata.");
+
+  NProgram::opt("restore", "", true,
+                "True to generate restore method.");
   
   NProgram::opt("outer", "", true,
                 "True to generate outer.");
@@ -1397,7 +1430,8 @@ int main(int argc, char** argv){
   gen.enableClass(args["factory"]);
   gen.enableMetadata(args["metadata"]);
   gen.enableOuter(args["outer"]);
-
+  gen.enableRestore(args["restore"]);
+  
   const nvar& is = args["include"];
 
   for(const nstr& i : is){
