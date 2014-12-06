@@ -103,7 +103,7 @@ namespace neu{
         v("type") = "NScope";
       }
 
-      nvar& sv = v["NScope"];
+      nvar& sv = v("NScope");
       
       nput(sv, limiting_);
       sv("shared") = shared_ ? true : false;
