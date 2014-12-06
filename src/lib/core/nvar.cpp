@@ -23337,11 +23337,11 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       break;
     }
     case RawPointer:
-      NERROR("attempt to pack pointer");
     case ObjectPointer:
     case LocalObject:
     case SharedObject:
-      NERROR("attempt to pack object");
+      buf[pos++] = Undefined;
+      break;
     case Vector:{
       const nvec& v = *h_.v;
       
