@@ -5150,13 +5150,16 @@ namespace neu{
         case SequenceMap:
           return h_.sm->s->hash() ^ h_.sm->m->hash() + t_;
         case HeadSequenceMap:
-          return h_.hsm->h->hash() ^ h_.hsm->s->hash() ^ h_.hsm->m->hash() + t_;
+          return h_.hsm->h->hash() ^ 
+            h_.hsm->s->hash() ^ 
+            h_.hsm->m->hash() + t_;
         case Pointer:
           return h_.vp->hash() + t_;
         case Reference:
           return h_.ref->v->hash() + t_;
         default:
           assert(false);
+          return 0;
       }
     }
     
