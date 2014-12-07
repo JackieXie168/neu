@@ -564,6 +564,124 @@ namespace neu{
       }
     }
     
+    nvar stringLiteral(const char* str){
+      NMLParser* parser = 0;
+      
+      size_t i = 1;
+      size_t j;
+      size_t open;
+      char ci;
+      char cj;
+      bool err = false;
+      
+      nvar rv = "";
+      nstr& rs = rv.str();
+      nvar itp;
+      
+      for(;;){
+      
+        ci = str[i];
+        
+        if(ci == '%' &&
+           str[i + 1] == '{' &&
+           str[i - 1] != '\\' &&
+           str[i + 2] != '\0'){
+          
+          open = 1;
+          j = i + 2;
+          nstr expr;
+        
+          bool done = false;
+          
+          for(;;){
+            cj = str[j];
+
+            switch(cj){
+              case '\0':
+                done = true;
+                break;
+              case '}':
+                --open;
+              
+                if(open == 0){
+                  done = true;
+                  break;
+                }
+                
+                expr += cj;
+                
+                break;
+              case '{':
+                ++open;
+                expr += cj;
+                
+                break;
+              default:
+                expr += cj;
+                break;
+            }
+            
+            ++j;
+            
+            if(done){
+              break;
+            }
+          }
+          
+          if(open > 0){
+            error("invalid string interpolate: " + nstr(str));
+            err = true;
+            break;
+          }
+          
+          if(!parser){
+            parser = new NMLParser;
+          }
+          
+          expr += ";";
+          
+          nvar e = parser->parse(expr);
+          
+          if(e.none()){
+            error("invalid expression in string interpolate: " + expr);
+            err = true;
+            break;
+          }
+          
+          if(itp == undef){
+            itp = func("Itp");
+          }
+          
+          itp << e;
+          i = j + 1;
+          rs += "%_";
+        }
+        else if(str[i + 1] == '\0'){
+          break;
+        }
+        else{
+          rs += ci;
+          ++i;
+        }
+      }
+      
+      if(parser){
+        delete parser;
+      }
+      
+      if(err){
+        return sym("Error");
+      }
+      
+      if(itp == undef){
+        return rv;
+      }
+
+      itp.pushFront(rv);
+    
+      return itp;
+    }
+
   private:
     NMLParser* o_;
     ostream* estr_;

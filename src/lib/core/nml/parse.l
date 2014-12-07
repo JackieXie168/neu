@@ -330,19 +330,13 @@ KW_IMPORT import
 }
 
 {STRING_LITERAL} {
-  yylval->v = yytext;
-  nstr& s = yylval->v;
-  s.erase(0, 1);
-  s.erase(s.length() - 1, 1);
+  yylval->v = PS->stringLiteral(yytext);
   PS->advance(yytext, "string");
   return STRING_LITERAL;
 }
 
 {STRING_LITERAL_SQ} {
-  yylval->v = yytext;
-  nstr& s = yylval->v;
-  s.erase(0, 1);
-  s.erase(s.length() - 1, 1);
+  yylval->v = PS->stringLiteral(yytext);
   PS->advance(yytext, "string");
   return STRING_LITERAL;
 }
