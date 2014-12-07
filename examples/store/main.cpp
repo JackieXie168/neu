@@ -53,7 +53,7 @@ public:
     nput(sv, a_);
     sv("b_") = b_;
 
-    // call the store on the super class
+    // call store on the super class
     NObject::store(v);
   }
 

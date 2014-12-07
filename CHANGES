@@ -9,14 +9,43 @@ Neu 1.5.0 - 12/7/14
   define a key "type" in v which gives the name of the stored object
   class, e.g: v["type"] = "MyObject"; (only if this has not already
   been set by a subclass) and then encodes its stored data in an nvar
-  keyed on the name of the class, e.g: v["MyObject"][<stored fields>]
-  and last calls store() on its superclasses. NClass now defines a
-  static method recreate() that can reconstruct an arbitrary
+  keyed on the name of the class, e.g: v["MyObject"][<stored
+  attributes>] and last calls store() on its superclasses. NClass now
+  defines a static method recreate() that can reconstruct an arbitrary
   NObjectBase object given that it adheres to the interface above and
   a proper NClass method reconstruct() has been implemented - neu-meta
   will now generate this method automatically if it finds a restore
   constructor for the class. For examples, see the restore
   constructors and store() on NScope, NObject, and examples/store.
+
+ -Added NObject::Eval(). In NML, parsing a complex nvar that has
+  nested symbolic values, will now be wrapped in Eval() to ensure that
+  nested symbolic values will be properly evaluated.
+
+ -Added nvar::none() which is equivalent to, but faster than: v ==
+  none.
+
+ -Added NObject::handleSymbol() and NObject::setHandleSymbol() to
+  allow subclasses of NObject to define a custom symbol handler.
+
+ -Added a variant of nvar::isFunction().
+
+ -Renamed NProgram::require() to use().
+
+ -Added nvar::precision() for computing the numerical precision of a
+  string. This is a helper method used in the parsers.
+
+ -Attempting to pack an nvar containing an object now packs as undef
+  instead of throwing an NError.
+
+ -Improvements and fixes to neu-meta. On the Mac, configs have been
+  updated to work with Mac OS X Yosemite and Xcode 6.1.
+
+ -Added NProgram::toArgv().
+
+ -Added nvar::sequenceType() and mapType().
+
+ -Various other minor fixes and improvements.
 
 Neu 1.4.3 - 10/19/14
 
