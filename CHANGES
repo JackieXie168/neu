@@ -1,5 +1,23 @@
 
 
+Neu 1.5.0 - 12/7/14
+
+ -Added the ability to store and restore NObject and its
+  subclasses. NObjectBase defines an interface for a "restore
+  constructor": NObjectBase(const nvar& v, RestoreFlag) and the
+  virtual method: void store(nvar& v). The top-level class should
+  define a key "type" in v which gives the name of the stored object
+  class, e.g: v["type"] = "MyObject"; (only if this has not already
+  been set by a subclass) and then encodes its stored data in an nvar
+  keyed on the name of the class, e.g: v["MyObject"][<stored fields>]
+  and last calls store() on its superclasses. NClass now defines a
+  static method recreate() that can reconstruct an arbitrary
+  NObjectBase object given that it adheres to the interface above and
+  a proper NClass method reconstruct() has been implemented - neu-meta
+  will now generate this method automatically if it finds a restore
+  constructor for the class. For examples, see the restore
+  constructors and store() on NScope, NObject, and examples/store.
+
 Neu 1.4.3 - 10/19/14
 
  -Added threads param to NParser::parse().
