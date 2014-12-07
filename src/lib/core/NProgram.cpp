@@ -55,8 +55,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NProgram.h>
 
 #include <sstream>
-
+#include <cstring>
+#include <sys/resource.h>
 #include <signal.h>
+#include <unistd.h>
+
+#ifndef NEU_NO_PRECISE
+
+#include <gmp.h>
+#include <mpfr.h>
+
+#endif
 
 #include <neu/NRegex.h>
 #include <neu/NReadGuard.h>
@@ -69,17 +78,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMutex.h>
 #include <neu/NMLParser.h>
 #include <neu/NBasicMutex.h>
-
-#include <sys/resource.h>
-#include <signal.h>
-#include <unistd.h>
-
-#ifndef NEU_NO_PRECISE
-
-#include <gmp.h>
-#include <mpfr.h>
-
-#endif
 
 using namespace std;
 using namespace neu;
