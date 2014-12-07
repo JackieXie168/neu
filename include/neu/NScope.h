@@ -114,13 +114,13 @@ namespace neu{
         const nstr& s = itr.first;
         const nvar& v = itr.second;
         
-        sm[s] = v;
+        sm[nvar(s, nvar::Sym)] = v;
       }
       
       nmap& fm = sv("functionMap") = nmap();
       
       for(auto& itr : functionMap_){
-        nvar k = {itr.first.first, itr.first.second};
+        nvar k = {nvar(itr.first.first, nvar::Sym), itr.first.second};
         nvar v = {itr.second.first, itr.second.second};
         
         fm.emplace(std::move(k), std::move(v));
