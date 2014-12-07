@@ -1225,6 +1225,29 @@ namespace neu{
       return none;
     }
     
+    nvar Itp_n(nvec& v){
+      nstr s = run(v[0]);
+      
+      size_t size = v.size();
+      size_t pos = 0;
+      
+      for(size_t i = 1; i < size; ++i){
+        size_t p = s.find("%_", pos);
+        
+        if(p == nstr::npos){
+          return Throw(v, "Itp[" + nvar(i) + "] missing token");
+        }
+        
+        nstr ri = run(v[i]).toStr();
+        
+        s.replace(p, 2, ri);
+        
+        pos = p + ri.length();
+      }
+      
+      return s;
+    }
+    
     nvar PushScope(const nvar& v){
       nvar p = run(v);
       
@@ -2142,6 +2165,11 @@ FuncMap::FuncMap(){
   add("ScopedBlock",
       [](void* o, const nstr&, nvec& v) -> nvar{
         return NObject_::obj(o)->ScopedBlock_n(v);
+      });
+
+  add("Itp",
+      [](void* o, const nstr&, nvec& v) -> nvar{
+        return NObject_::obj(o)->Itp_n(v);
       });
   
   add("Print",
