@@ -648,7 +648,7 @@ namespace neu{
           }
           
           itp << e;
-          i = j + 1;
+          i = j;
           rs += "%_";
         }
         else if(str[i + 1] == '\0'){
