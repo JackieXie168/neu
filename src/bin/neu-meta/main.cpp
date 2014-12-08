@@ -1196,10 +1196,11 @@ public:
     CXXRecordDecl* srd = getNextSubClass(rd, "neu::NObject");
       
     ostr << "  neu::nvar metadata_(){" << endl;
+    ostr << "    using namespace neu;" << endl;
+    
+    ostr << "    nvar ret;" << endl;
       
-    ostr << "    neu::nvar ret;" << endl;
-      
-    ostr << "    neu::nvar& c = ret(\"" << className << "\");" << endl;
+    ostr << "    nvar& c = ret(\"" << className << "\");" << endl;
       
     nstr cs = getDeclComment(rd);
     if(!cs.empty()){
@@ -1216,10 +1217,10 @@ public:
       en = "NObject";
     }
       
-    ostr << "    c(\"extends\") = neu::nvar(\"" << en <<
-      "\", neu::nvar::Sym);" << endl;
+    ostr << "    c(\"extends\") = nvar(\"" << en <<
+      "\", nvar::Sym);" << endl;
 
-    ostr << "    neu::nvar& m = c(\"methods\");" << endl;
+    ostr << "    nvar& m = c(\"methods\");" << endl;
       
     for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
           mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
@@ -1249,10 +1250,10 @@ public:
               
             nstr methodName = md->getNameAsString();
               
-            ostr << "      neu::nvar mk({neu::nvar(\"" << methodName <<
-              "\", neu::nvar::Sym), neu::nvar(" << k << ")});" << endl;
+            ostr << "      nvar mk({nvar(\"" << methodName <<
+              "\", nvar::Sym), nvar(" << k << ")});" << endl;
               
-            ostr << "      neu::nvar& mi = m(mk);" << endl;
+            ostr << "      nvar& mi = m(mk);" << endl;
               
             nstr cs = getDeclComment(md);
               
@@ -1274,7 +1275,7 @@ public:
             ostr << ";" << endl;
               
             if(!md->getReturnType().getTypePtr()->isVoidType()){
-              ostr << "      neu::nvar& ri = mi(\"return\");" << endl;
+              ostr << "      nvar& ri = mi(\"return\");" << endl;
                 
               nstr rawType = md->getReturnType().getAsString();
                 
@@ -1302,9 +1303,9 @@ public:
               ParmVarDecl* p = md->getParamDecl(i);
               nstr rawType = p->getType().getAsString();
                 
-              ostr << "        mi.pushBack(neu::nvar(\"" <<
-                p->getName().str() << "\", neu::nvar::Sym));" << endl;
-              ostr << "        neu::nvar& pi = mi.back();" << endl;
+              ostr << "        mi.pushBack(nvar(\"" <<
+                p->getName().str() << "\", nvar::Sym));" << endl;
+              ostr << "        nvar& pi = mi.back();" << endl;
 
               nvec m;
               if(_pointerRegex.match(rawType, m)){
