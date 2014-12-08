@@ -577,19 +577,15 @@ namespace neu{
       for(;;){
         ci = str[i];
         
-        char cj;
-        size_t open;
-        size_t j;
-        
         if(ci == '%' &&
            str[i + 1] == '{' &&
            str[i - 1] != '\\' &&
            str[i + 2] != '\0'){
-          
-          open = 1;
-          j = i + 2;
-          nstr expr;
         
+          char cj;
+          size_t open = 1;
+          size_t j = i + 2;
+          nstr expr;
           bool done = false;
           
           for(;;){
