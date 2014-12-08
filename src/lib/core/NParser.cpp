@@ -1461,7 +1461,7 @@ namespace neu{
         if(!stack.empty()){
           const Token& b = stack.back();
           
-          if(b.value.none()){
+          if(b.value.isNone()){
             stack.pop_back();
             if(pos >= stack.size()){
               --pos;
@@ -2036,7 +2036,7 @@ namespace neu{
           error(*errorLog, tokens, &global, "time out");
         }
       }
-      else if(global.code.none() && errorLog){
+      else if(global.code.isNone() && errorLog){
         error(*errorLog, tokens, &global, "parse error");
       }
 

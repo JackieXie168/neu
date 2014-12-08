@@ -1117,8 +1117,12 @@ namespace neu{
       return t_ != None;
     }
     
-    bool none() const{
+    bool isNone() const{
       return t_ == None;
+    }
+    
+    bool isUndef() const{
+      return t_ == Undefined;
     }
     
     bool toBool() const;

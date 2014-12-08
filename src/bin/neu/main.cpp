@@ -167,7 +167,7 @@ int main(int argc, char** argv){
         NProgram::exit(0);
       }
 
-      if(n.none()){
+      if(n.isNone()){
         continue;
       }
 
@@ -196,7 +196,7 @@ int main(int argc, char** argv){
   for(size_t i = 0; i < args.size(); ++i){
     nvar n = parser.parseFile(args[i]);
 
-    if(n.none()){
+    if(n.isNone()){
       NProgram::exit(1);
     }
     

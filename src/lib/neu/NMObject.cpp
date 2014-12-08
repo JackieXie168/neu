@@ -201,7 +201,7 @@ namespace neu{
           return t;
         }
         case nvar::Symbol:
-          return o_->Get(v).none() ?
+          return o_->Get(v).isNone() ?
           NMGenerator::Requested : NMGenerator::Supported;
       }
       

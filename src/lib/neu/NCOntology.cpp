@@ -826,7 +826,7 @@ public:
     }
     else if(n.isSymbol()){
       nvar g = o.Get(n);
-      if(g.none()){
+      if(g.isNone()){
         NERROR("On concept '" + concept_->name() +
                "' on method '" + name_ +
                "' on postcondition 'post' "
@@ -1634,7 +1634,7 @@ public:
 
       nvar n = parser.parse(code);
       
-      if(n.none()){
+      if(n.isNone()){
         NERROR("Parse error on comment field in: " + concept->name());
       }
 
@@ -1671,7 +1671,7 @@ public:
         
         nvar n = parser.parse(code);
         
-        if(n.none()){
+        if(n.isNone()){
           NERROR("Parse error on data field on concept: '" +
                  concept->name() + "' on method: " + k);
         }
@@ -2511,7 +2511,7 @@ public:
             NConcept* c = 
               static_cast<NConcept*>(obj_.Get(nsym(itr.first)).obj());
 
-            if(code.none()){
+            if(code.isNone()){
               code = nfunc("Block");
             }
 

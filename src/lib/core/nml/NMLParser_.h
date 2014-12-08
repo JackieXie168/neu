@@ -566,12 +566,8 @@ namespace neu{
     
     nvar stringLiteral(const char* str){
       NMLParser* parser = 0;
-      
       size_t i = 1;
-      size_t j;
-      size_t open;
       char ci;
-      char cj;
       bool err = false;
       
       nvar rv = "";
@@ -579,8 +575,11 @@ namespace neu{
       nvar itp;
       
       for(;;){
-      
         ci = str[i];
+        
+        char cj;
+        size_t open;
+        size_t j;
         
         if(ci == '%' &&
            str[i + 1] == '{' &&
@@ -642,13 +641,13 @@ namespace neu{
           
           nvar e = parser->parse(expr);
           
-          if(e.none()){
+          if(e.isNone()){
             error("invalid expression in string interpolate: " + expr);
             err = true;
             break;
           }
           
-          if(itp == undef){
+          if(itp.isUndef()){
             itp = func("Itp");
           }
           
@@ -673,7 +672,7 @@ namespace neu{
         return sym("Error");
       }
       
-      if(itp == undef){
+      if(itp.isUndef()){
         return rv;
       }
 

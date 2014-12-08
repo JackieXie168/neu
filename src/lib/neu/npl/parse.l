@@ -312,7 +312,7 @@ DEFINE "#define"
   PS->advance(yytext, "type");
   yylval->v = NPLParser::parseType(yytext);
 
-  if(yylval->v.none()){
+  if(yylval->v.isNone()){
     nstr msg = "invalid type: ";
     msg += yytext;
     npl_error(PS, yyscanner, msg.c_str());
@@ -325,7 +325,7 @@ DEFINE "#define"
   PS->advance(yytext, "type");
   yylval->v = NPLParser::parseType(yytext);
   
-  if(yylval->v.none()){
+  if(yylval->v.isNone()){
     nstr msg = "invalid type: ";
     msg += yytext;
     npl_error(PS, yyscanner, msg.c_str());
