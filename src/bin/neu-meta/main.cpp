@@ -1417,10 +1417,14 @@ int main(int argc, char** argv){
   }
 
 #ifdef __APPLE__
-  const nstr& sdk = args["sdk"];
+  nstr foundSDK;
   
-  NSys::setEnv("SDKROOT", sdk);
-  NSys::setEnv("SDK_DIR", sdk);
+  if(!NSys::getEnv("SDKROOT", foundSDK)){
+    const nstr& sdk = args["sdk"];
+    
+    NSys::setEnv("SDKROOT", sdk);
+    NSys::setEnv("SDK_DIR", sdk);
+  }
 #endif
   
   stringstream ostr;

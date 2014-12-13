@@ -1,12 +1,12 @@
 include Makefile.defs
 
 export MAJOR = 1
-export MINOR = 4
+export MINOR = 6
 export RELEASE = 0
 
 export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 
-all: neu neu-test
+all: neu neu-test neu-haskell
 
 neu: libneu
 	(cd src/bin/neu; $(MAKE))
@@ -16,6 +16,9 @@ neu-test: libneu_core
 
 neu-meta: libneu_core
 	(cd src/bin/neu-meta; $(MAKE))
+
+neu-haskell: libneu
+	(cd src/bin/neu-haskell; $(MAKE))
 
 libneu_core:
 	(cd src/lib/core; $(MAKE))
@@ -28,6 +31,7 @@ concepts: libneu
 
 spotless:
 	(cd src/bin/neu; $(MAKE) spotless)
+	(cd src/bin/neu-test; $(MAKE) spotless)
 	(cd src/bin/neu-meta; $(MAKE) spotless)
 	(cd src/lib/core; $(MAKE) spotless)
 	(cd src/lib/neu; $(MAKE) spotless)
@@ -35,6 +39,7 @@ spotless:
 
 clean:
 	(cd src/bin/neu; $(MAKE) clean)
+	(cd src/bin/neu-test; $(MAKE) clean)
 	(cd src/bin/neu-meta; $(MAKE) clean)
 	(cd src/lib/core; $(MAKE) clean)
 	(cd src/lib/neu; $(MAKE) clean)

@@ -108,6 +108,14 @@ namespace neu{
       lastChar_ = char_;
     }
     
+    void addTag(const nvar& t, const nstr& tag){
+      if(tags_){
+        nvar tn = t;
+        tn("tag") = tag;
+        tags_->pushBack(move(tn));
+      }
+    }
+    
     nvar token(const char* text, const nstr& tag=""){
       char_ += strlen(text);
       

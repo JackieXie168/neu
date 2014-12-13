@@ -123,6 +123,7 @@ expr: expr_num {
   $$ = $2;
 }
 | IDENTIFIER {
+  PS->addTag($1, "symbol");
   $$ = PS->sym($1);
 }
 | KW_TRUE {
@@ -375,6 +376,7 @@ expr: expr_num {
   PS->addItems(nvar::Queue, nvar::HashSet, $$, $7);
 }
 | IDENTIFIER gets {
+  PS->addTag($1, "symbol");
   $$ = undef;
   PS->handleGet(PS->sym($1), $2, $$);
 }
@@ -382,6 +384,7 @@ expr: expr_num {
   $$ = PS->func("New") << move($2);
 }
 | KW_NEW IDENTIFIER {
+  PS->addTag($2, "symbol");
   $$ = PS->func("New") << PS->func($2);
 }
 | func {
@@ -426,6 +429,7 @@ exprs: /* empty */ {
 ;
 
 func: IDENTIFIER '(' args ')' {
+  PS->addTag($1, "call");
   $$ = PS->func($1);
   $$.append($3);
 }
@@ -476,6 +480,7 @@ stmt: expr end {
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
 }
 | KW_FOR '(' IDENTIFIER ':' expr ')' block {
+  PS->addTag($3, "symbol");
   $7.str() = "ScopedBlock";
   $$ = PS->func("ForEach") << PS->sym($3) << move($5) << move($7);
 }
@@ -489,9 +494,11 @@ stmt: expr end {
   $$ = PS->func("Def") << move($1) << move($2);
 }
 | KW_CLASS IDENTIFIER '{' class_defs '}' {
+  PS->addTag($2, "class");
   PS->createClass($$, $2, $4);
 }
 | KW_IMPORT IDENTIFIER {
+  PS->addTag($2, "symbol");
   $$ = PS->func("Import") << PS->sym($2);
 }
 ;
@@ -587,6 +594,7 @@ class_defs: class_defs stmt {
 ;
 
 ctor: func ':' IDENTIFIER block {
+  PS->addTag($3, "symbol");
   $$ = PS->func("Ctor") << PS->func($3) << move($1) << move($4);
 }
 | func ':' func block {
@@ -598,6 +606,7 @@ get: '[' expr ']' {
   $$ = PS->func("Idx") << move($2);
 }
 | '.' IDENTIFIER {
+  PS->addTag($2, "symbol");
   $$ = PS->func("Dot") << PS->sym($2);
 }
 | '.' '(' expr ')' {

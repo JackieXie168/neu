@@ -3408,6 +3408,17 @@ namespace neu{
       return ostr.str();
     }
     
+    nstr toString() const{
+      switch(t_){
+        case String:
+        case Symbol:
+        case StringPointer:
+          return *h_.s;
+        default:
+          return toStr();
+      }
+    }
+    
     static nvar fromStr(const nstr& str);
     
     size_t size() const;

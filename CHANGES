@@ -1,4 +1,15 @@
+Neu 1.6.0 - 12/12/14
 
+ -Added a first version of the Neu Haskell interface which allows
+  Haskell code to be run from C++ and allows Haskell code to be
+  conveniently constructed dynamically using a familiar N code
+  representation. The Haskell interface consists of a parser
+  (NHSParser) which parses Haskell code to an N code representation
+  and NHSGenerator for going the other direction. The Haskell N code
+  can be run() via an NHSObject. The neu-haskell command is a simple
+  instantiation of NHSParser and NHSObject, allowing Haskell code to
+  be interpreted and using the -show flag, to allow the Haskell N code
+  to be viewed. See test/regress/nhs1 for an example.
 
 Neu 1.5.0 - 12/7/14
 

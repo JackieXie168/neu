@@ -2,11 +2,11 @@ COMPILE += -I$(NEU_HOME)/lib/src -I$(LLVM_DIR)/include -D__STDC_LIMIT_MACROS -D_
 
 LINK += -L$(NEU_LIB)
 
-CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o
+CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o NHSGenerator.o NHSObject.o
 
 META_MODULES = NConcept.o NCOntology.o NLib.o
 
-SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
+SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o nhs/parse.tab.o nhs/NHSParser.o nhs/parse.l.o
 
 ALL_MODULES = $(CPP_MODULES) $(SUB_MODULES) $(META_MODULES)
 
@@ -23,9 +23,12 @@ neu_m:
 neu_pl:
 	(cd npl; $(MAKE))
 
+neu_hs:
+	(cd nhs; $(MAKE))
+
 LLVM_LINK = -L$(LLVM_DIR)/lib -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMJIT -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMAnalysis -lLLVMTarget -lLLVMObject -lLLVMMCParser -lLLVMBitReader -lLLVMExecutionEngine -lLLVMMC -lLLVMCore -lLLVMSupport -lcurses -ldl -lz
 
-libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl
+libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl neu_hs
 
 ifeq ($(PLATFORM), Darwin)
 	$(LINK) -single_module -dynamiclib -o $(NEU_LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
@@ -68,9 +71,11 @@ clean:
 	rm -f $(C_MODULES)
 	(cd nm; $(MAKE) clean)
 	(cd npl; $(MAKE) clean)
+	(cd nhs; $(MAKE) clean)
 
 spotless: clean
 	rm -f $(NEU_LIB)/libneu.*
 	rm -f $(NEU_LIB)/libneu_static.a	
 	(cd nm; $(MAKE) spotless)
 	(cd npl; $(MAKE) spotless)
+	(cd nhs; $(MAKE) spotless)
