@@ -346,14 +346,38 @@ KW_IMPORT import
   return *yytext;
 }
 
-[\[\(\{] {
-  PS->advance(1, "operator");
+[\{] {
+  PS->advance(1, "openBrace");
   PS->openToken();
   return *yytext;
 }
 
-[\]\)\}] {
-  PS->advance(1, "operator");
+[\(] {
+  PS->advance(1, "openParen");
+  PS->openToken();
+  return *yytext;
+}
+
+[\[] {
+  PS->advance(1, "openBracket");
+  PS->openToken();
+  return *yytext;
+}
+
+[\}] {
+  PS->advance(1, "closeBrace");
+  PS->closeToken();
+  return *yytext;
+}
+
+[\)] {
+  PS->advance(1, "closeParen");
+  PS->closeToken();
+  return *yytext;
+}
+
+[\]] {
+  PS->advance(1, "closeBracket");
   PS->closeToken();
   return *yytext;
 }

@@ -148,6 +148,7 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
+      lastChar_ = 0;
       status_ = 0;
       file_ = "";
       
@@ -178,6 +179,7 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
+      lastChar_ = 0;
       status_ = 0;
       file_ = "";
       
@@ -209,6 +211,7 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
+      lastChar_ = 0;
       status_ = 0;
       file_ = NSys::basename(path);
       
