@@ -156,7 +156,7 @@ public:
   
   void getInitLog(nstr& log);
   
-  int numOpenMarkers(const nstr& s){
+  static int numOpenMarkers(const nstr& s){
     size_t len = s.length();
     
     int open = 0;
