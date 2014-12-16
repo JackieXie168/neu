@@ -94,18 +94,16 @@ namespace neu{
     }
     
     void advance(size_t count, const nstr& tag=""){
-      char_ += count;
-      
       if(tags_ && !tag.empty()){
         nvar t;
         t("tag") = tag;
-        t("start") = lastChar_;
-        t("end") = char_;
+        t("start") = char_;
+        t("length") = count;
         t("line") = line_;
         tags_->pushBack(move(t));
       }
       
-      lastChar_ = char_;
+      char_ += count;
     }
     
     void addTag(const nvar& t, const nstr& tag){
@@ -117,11 +115,11 @@ namespace neu{
     }
     
     nvar token(const char* text, const nstr& tag=""){
-      char_ += strlen(text);
+      size_t len = strlen(text);
       
       nvar token = text;
-      token("start") = lastChar_;
-      token("end") = char_;
+      token("start") = char_;
+      token("length") = len;
       token("line") = line_;
       
       if(!tag.empty()){
@@ -129,13 +127,13 @@ namespace neu{
           tags_->pushBack(nvar());
           nvar& t = tags_->back();
           t("tag") = tag;
-          t("start") = lastChar_;
-          t("end") = char_;
+          t("start") = char_;
+          t("length") = len;
           t("line") = line_;
         }
       }
       
-      lastChar_ = char_;
+      char_ += len;
       
       return token;
     }
@@ -148,7 +146,6 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
-      lastChar_ = 0;
       status_ = 0;
       file_ = "";
       
@@ -179,7 +176,6 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
-      lastChar_ = 0;
       status_ = 0;
       file_ = "";
       
@@ -211,7 +207,6 @@ namespace neu{
       tags_ = tags;
       line_ = 1;
       char_ = 0;
-      lastChar_ = 0;
       status_ = 0;
       file_ = NSys::basename(path);
       
@@ -465,7 +460,7 @@ namespace neu{
     
     void closeToken(){
       if(openTokens_ == 0){
-        NERROR("too many closing tokens");
+        error("too many closing tokens");
       }
       --openTokens_;
     }
@@ -694,7 +689,6 @@ namespace neu{
     nstr file_;
     size_t line_;
     size_t char_;
-    size_t lastChar_;
     int status_;
     nvar* tags_;
     void* scanner_;

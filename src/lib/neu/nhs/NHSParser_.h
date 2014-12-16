@@ -87,26 +87,24 @@ namespace neu{
     }
     
     void advance(size_t count, const nstr& tag=""){
-      char_ += count;
-      
       if(tags_ && !tag.empty()){
         nvar t;
         t("tag") = tag;
-        t("start") = lastChar_;
-        t("end") = char_;
+        t("start") = char_;
+        t("length") = count;
         t("line") = line_;
         tags_->pushBack(move(t));
       }
       
-      lastChar_ = char_;
+      char_ += count;
     }
     
     nvar token(const char* text, const nstr& tag=""){
-      char_ += strlen(text);
+      size_t len = strlen(text);
       
       nvar token = text;
-      token("start") = lastChar_;
-      token("end") = char_;
+      token("start") = char_;
+      token("length") = len;
       token("line") = line_;
       
       if(!tag.empty()){
@@ -114,13 +112,13 @@ namespace neu{
           tags_->pushBack(nvar());
           nvar& t = tags_->back();
           t("tag") = tag;
-          t("start") = lastChar_;
-          t("end") = char_;
+          t("start") = char_;
+          t("length") = len;
           t("line") = line_;
         }
       }
       
-      lastChar_ = char_;
+      char_ += len;
       
       return token;
     }
@@ -440,7 +438,6 @@ namespace neu{
     nstr file_;
     size_t line_;
     size_t char_;
-    size_t lastChar_;
     int status_;
     nvar* tags_;
     void* scanner_;
