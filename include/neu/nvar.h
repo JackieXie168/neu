@@ -4345,6 +4345,8 @@ namespace neu{
     
     void erase(const nvar& key);
     
+    void eraseIndex(int k);
+    
     void keys(nvec& v) const{
       switch(t_){
         case Function:

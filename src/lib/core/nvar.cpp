@@ -20407,6 +20407,38 @@ void nvar::erase(const nvar& key){
   }
 }
 
+void nvar::eraseIndex(int k){
+  switch(t_){
+    case Function:
+      h_.f->v.erase(k);
+      break;
+    case Vector:
+      h_.v->erase(k);
+      break;
+    case List:
+      h_.l->erase(k);
+      break;
+    case Queue:
+      h_.q->erase(k);
+      break;
+    case HeadSequence:
+      h_.hs->s->eraseIndex(k);
+      break;
+    case SequenceMap:
+      h_.sm->s->eraseIndex(k);
+      break;
+    case HeadSequenceMap:
+      h_.hsm->s->eraseIndex(k);
+      break;
+    case Reference:
+      h_.ref->v->eraseIndex(k);
+      break;
+    case Pointer:
+      h_.vp->eraseIndex(k);
+      break;
+  }
+}
+
 nvar nvar::keys() const{
   nvec ks;
   keys(ks);
