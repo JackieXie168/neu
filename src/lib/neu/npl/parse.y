@@ -527,6 +527,9 @@ stmt: expr ';' {
 | ';' {
   $$ = none;
 }
+| error ';' {
+  $$ = PS->sym("Error");
+}
 | var_decl ';' {
   $$ = PS->func("Local");
   $$ << move($1);

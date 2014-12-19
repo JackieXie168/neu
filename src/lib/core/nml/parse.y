@@ -456,6 +456,9 @@ stmt: expr end {
 | end {
   $$ = none;
 }
+| error end {
+  $$ = PS->sym("Error");
+}
 | if_stmt {
   $$ = move($1);
 }
