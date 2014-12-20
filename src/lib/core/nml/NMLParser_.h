@@ -106,36 +106,31 @@ namespace neu{
       char_ += count;
     }
     
-    void addTag(const nvar& t, const nstr& tag){
-      if(tags_){
-        nvar tn = t;
-        tn("tag") = tag;
-        tags_->pushBack(move(tn));
-      }
-    }
-    
-    nvar token(const char* text, const nstr& tag=""){
+    nvar token(const char* text){
       size_t len = strlen(text);
-      
       nvar token = text;
-      token("start") = char_;
-      token("length") = len;
-      token("line") = line_;
       
-      if(!tag.empty()){
-        if(tags_){
-          tags_->pushBack(nvar());
-          nvar& t = tags_->back();
-          t("tag") = tag;
-          t("start") = char_;
-          t("length") = len;
-          t("line") = line_;
-        }
+      if(tags_){
+        token("tagIndex") = tags_->size();
+        
+        tags_->pushBack(nvar());
+        nvar& t = tags_->back();
+        t("start") = char_;
+        t("length") = len;
+        t("line") = line_;
       }
       
       char_ += len;
       
       return token;
+    }
+    
+    void setTag(nvar& token, const nstr& tag){
+      if(token.has("tagIndex")){
+        size_t index = token["tagIndex"];
+        nvar& t = (*tags_)[index];
+        t("tag") = tag;
+      }
     }
     
     nvar parse(nvar* tags){
