@@ -3408,6 +3408,54 @@ namespace neu{
       return ostr.str();
     }
     
+    nstr toFormattedStr(const nstr& indent=""){
+      switch(t_){
+        case Function:{
+          const nstr& fs = str();
+          
+          nstr buf;
+          
+          buf += fs + "(";
+          
+          nstr idt = indent;
+          
+          bool isBlock = fs == "Block";
+          
+          if(isBlock){
+            idt += "  ";
+          }
+
+          size_t s = size();
+          
+          for(size_t i = 0; i < s; ++i){
+            if(i > 0){
+              buf += ",";
+            }
+
+            if(isBlock){
+              buf += "\n" + idt;
+            }
+            
+            buf += (*this)[i].toFormattedStr(idt);
+          }
+          
+          buf += ")";
+          
+          if(isBlock){
+            buf += "\n" + indent;
+          }
+          
+          return buf;
+        }
+        case Reference:
+          return h_.ref->v->toFormattedStr(indent);
+        case Pointer:
+          return h_.vp->toFormattedStr(indent);
+        default:
+          return toStr();
+      }
+    }
+    
     nstr toString() const{
       switch(t_){
         case String:
