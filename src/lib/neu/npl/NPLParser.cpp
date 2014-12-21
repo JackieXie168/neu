@@ -202,11 +202,11 @@ NPLParser::~NPLParser(){
   delete x_;
 }
 
-nvar NPLParser::parse(const nstr& code, nvar* tags){
+nvar NPLParser::parse(const nstr& code, nvec* tags){
   return x_->parse(code, tags);
 }
 
-nvar NPLParser::parseFile(const nstr& path, nvar* tags){
+nvar NPLParser::parseFile(const nstr& path, nvec* tags){
   return x_->parseFile(path, tags);
 }
 

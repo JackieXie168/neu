@@ -321,10 +321,10 @@ NMParser::~NMParser(){
   delete x_;
 }
 
-nvar NMParser::parse(const nstr& code, nvar* tags){
+nvar NMParser::parse(const nstr& code, nvec* tags){
   return x_->parse(code, tags);
 }
 
-nvar NMParser::parseFile(const nstr& path, nvar* tags){
+nvar NMParser::parseFile(const nstr& path, nvec* tags){
   return x_->parseFile(path, tags);
 }

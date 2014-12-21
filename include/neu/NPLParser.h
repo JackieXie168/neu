@@ -65,9 +65,9 @@ namespace neu{
     
     ~NPLParser();
     
-    nvar parse(const nstr& code, nvar* tags=0);
+    nvar parse(const nstr& code, nvec* tags=0);
     
-    nvar parseFile(const nstr& path, nvar* tags=0);
+    nvar parseFile(const nstr& path, nvec* tags=0);
     
     static nvar parseType(const nstr& typeSpec);
     

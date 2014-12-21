@@ -90,7 +90,7 @@ namespace neu{
         t("start") = char_;
         t("length") = count;
         t("line") = line_;
-        tags_->pushBack(move(t));
+        tags_->push_back(move(t));
       }
       
       char_ += count;
@@ -106,7 +106,7 @@ namespace neu{
       
       if(!tag.empty()){
         if(tags_){
-          tags_->pushBack(nvar());
+          tags_->push_back(nvar());
           nvar& t = tags_->back();
           t("tag") = tag;
           t("start") = char_;
@@ -120,7 +120,7 @@ namespace neu{
       return token;
     }
     
-    nvar parse(const nstr& code, nvar* tags){
+    nvar parse(const nstr& code, nvec* tags){
       out_ = undef;
       
       tags_ = tags;
@@ -148,7 +148,7 @@ namespace neu{
       return out_;
     }
     
-    nvar parseFile(const nstr& path, nvar* tags){
+    nvar parseFile(const nstr& path, nvec* tags){
       out_ = undef;
       
       tags_ = tags;
@@ -528,7 +528,7 @@ namespace neu{
     size_t line_;
     size_t char_;
     int status_;
-    nvar* tags_;
+    nvec* tags_;
     void* scanner_;
     nvar out_;
     nvar defineMap_;

@@ -70,11 +70,11 @@ namespace neu{
     }
     
     // interactive parsing
-    nvar parse(nvar* tags=0);
+    nvar parse(nvec* tags=0);
     
-    nvar parse(const nstr& code, nvar* tags=0);
+    nvar parse(const nstr& code, nvec* tags=0);
     
-    nvar parseFile(const nstr& path, nvar* tags=0);
+    nvar parseFile(const nstr& path, nvec* tags=0);
     
     void setErrorStream(std::ostream& estr);
     

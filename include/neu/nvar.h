@@ -3419,7 +3419,7 @@ namespace neu{
           
           nstr idt = indent;
           
-          bool isBlock = fs == "Block";
+          bool isBlock = fs.endsWith("Block");
           
           if(isBlock){
             idt += "  ";

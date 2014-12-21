@@ -89,15 +89,15 @@ NHSParser::~NHSParser(){
   delete x_;
 }
 
-nvar NHSParser::parse(nvar* tags){
+nvar NHSParser::parse(nvec* tags){
   return x_->parse(tags);
 }
 
-nvar NHSParser::parse(const nstr& code, nvar* tags){
+nvar NHSParser::parse(const nstr& code, nvec* tags){
   return x_->parse(code, tags);
 }
 
-nvar NHSParser::parseFile(const nstr& path, nvar* tags){
+nvar NHSParser::parseFile(const nstr& path, nvec* tags){
   return x_->parseFile(path, tags);
 }
 

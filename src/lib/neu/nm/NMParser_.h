@@ -85,7 +85,7 @@ namespace neu{
     void advance(size_t count, const nstr& tag=""){
       if(!tag.empty()){
         if(tags_){
-          tags_->pushBack(nvar());
+          tags_->push_back(nvar());
           nvar& t = tags_->back();
           t("tag") = tag;
           t("start") = char_;
@@ -108,7 +108,7 @@ namespace neu{
       
       if(!tag.empty()){
         if(tags_){
-          tags_->pushBack(nvar());
+          tags_->push_back(nvar());
           nvar& t = tags_->back();
           t("tag") = tag;
           t("start") = char_;
@@ -123,7 +123,7 @@ namespace neu{
       return token;
     }
     
-    nvar parse(const nstr& code, nvar* tags){
+    nvar parse(const nstr& code, nvec* tags){
       out_ = func("Block");
       
       tags_ = tags;
@@ -152,7 +152,7 @@ namespace neu{
       return out_.size() == 1 ? out_[0] : out_;
     }
     
-    nvar parseFile(const nstr& path, nvar* tags){
+    nvar parseFile(const nstr& path, nvec* tags){
       out_ = func("Block");
       
       tags_ = tags;
@@ -291,7 +291,7 @@ namespace neu{
     size_t char_;
     int token_;
     int status_;
-    nvar* tags_;
+    nvec* tags_;
     void* scanner_;
     nvar out_;
   };

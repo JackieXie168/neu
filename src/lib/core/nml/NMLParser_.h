@@ -100,7 +100,7 @@ namespace neu{
         t("start") = char_;
         t("length") = count;
         t("line") = line_;
-        tags_->pushBack(move(t));
+        tags_->push_back(move(t));
       }
       
       char_ += count;
@@ -113,7 +113,7 @@ namespace neu{
       if(tags_){
         token("tagIndex") = tags_->size();
         
-        tags_->pushBack(nvar());
+        tags_->push_back(nvar());
         nvar& t = tags_->back();
         t("start") = char_;
         t("length") = len;
@@ -133,7 +133,7 @@ namespace neu{
       }
     }
     
-    nvar parse(nvar* tags){
+    nvar parse(nvec* tags){
       out_ = func("Block");
       
       interactive_ = true;
@@ -163,7 +163,7 @@ namespace neu{
       return out_.size() == 1 ? out_[0] : out_;
     }
     
-    nvar parse(const nstr& code, nvar* tags){
+    nvar parse(const nstr& code, nvec* tags){
       out_ = func("Block");
       
       interactive_ = false;
@@ -194,7 +194,7 @@ namespace neu{
       return out_.size() == 1 ? out_[0] : out_;
     }
     
-    nvar parseFile(const nstr& path, nvar* tags){
+    nvar parseFile(const nstr& path, nvec* tags){
       out_ = func("Block");
       
       interactive_ = false;
@@ -685,7 +685,7 @@ namespace neu{
     size_t line_;
     size_t char_;
     int status_;
-    nvar* tags_;
+    nvec* tags_;
     void* scanner_;
     nvar out_;
     bool metadata_;
