@@ -1,7 +1,7 @@
-code is: Block(Import(NLib),VarSet(a,Call(sin(2))),Print("a is %v",a),VarSet(o,New(CPPObject())),VarSet(x,Call(o,add(1,3))),Print("x is %v",x),VarSet(y,Call(o,product([1,2,3,4,5]))),Print("y is %v",y),Class([ctors:[0:Ctor(NObject(),NMLObject(),Block(VarSet(attr,10))), 2:Ctor(NRandom(),NMLObject(a,b),Block(VarSet(attr,Add(a,b))))], name:NMLObject, stmts:Block(Def(sum(items),Block(VarSet(ret,0),For(VarSet(i,0),LT(i,Size(items)),Inc(i),ScopedBlock(AddBy(ret,Idx(items,i)))),Ret(ret))),Def(printAttr(),Block(Print("attr is %v",attr))),Def(testSwitch(c),Block(Switch(c,Block(Ret("the default")),[2:Block(Ret("two")), 9:Block(Ret("nine or ten")), 10:Block(Ret("nine or ten")), "str":Block(Ret("string")), [1,0]:Block(Ret("vec"))]))),Def(testWhile(),Block(VarSet(i,0),While(LT(i,10),ScopedBlock(Inc(i))),While(LT(i,100),ScopedBlock(If(GT(i,20),ScopedBlock(Break())),Inc(i))),VarSet(j,0),While(LT(j,10),ScopedBlock(Inc(j),If(GT(j,5),ScopedBlock(Continue())),AddBy(i,j))),Ret(i))),VarSet(attr,9))]),VarSet(o2,New(NMLObject())),VarSet(s,Call(o2,sum([1,2,3,4]))),Print("s is %v",s),Call(o2,printAttr()),VarSet(s1,Call(o2,testSwitch(10))),Print("s1 is %v",s1),VarSet(s2,Call(o2,testSwitch([1,0]))),Print("s2 is %v",s2),VarSet(s3,Call(o2,testSwitch(2))),Print("s3 is %v",s3),VarSet(s4,Call(o2,testSwitch("str"))),Print("s4 is %v",s4),VarSet(s5,Call(o2,testSwitch(99))),Print("s5 is %v",s5),VarSet(s6,Call(o2,testSwitch(9))),Print("s6 is %v",s6),VarSet(i1,Call(o2,testWhile())),Print("i1 is %v",i1),VarSet(x,Add([1,2,3],[4,5,6])),Print("x is: %v",x),VarSet(x,Cos(x)),Print("x is now: %v",x),Print("size is: %v",Size(x)),PushBack(x,29),Print("x is now: %v",x),VarSet(v,[:99,1,2,3,"test", a:5, b:6, [1,0]:"baz"]),Print("v is: %v",v),Print("v[3] is: %v",Idx(v,3)),Set(Idx(v,3),"new test"),Set(DotPut(v,a),9),Set(DotPut(v,d),59),Print("v is now: %v",v),VarSet(keys,Keys(v)),For(VarSet(i,0),LT(i,Size(keys)),Inc(i),ScopedBlock(VarSet(k,Idx(keys,i)),Print("v[%v] = %v",k,Idx(v,k)))),VarSet(z,Sub(Add(10,Div(Mul(2,4),2)),5)),AddBy(z,2),MulBy(z,3),DivBy(z,2),ModBy(z,10),Inc(z),Dec(z),PostInc(z),PostDec(z),Print("z is %v",z),If(GT(z,5),ScopedBlock(Print("yes!"))),If(And(GT(z,5),LT(z,10)),ScopedBlock(Print("yes again!"))))
+code is: Block(Import(NLib),VarSet(a,Call(sin(2.0))),Print("a is %v",a),VarSet(o,New(CPPObject())),VarSet(x,Call(o,add(1,3))),Print("x is %v",x),VarSet(y,Call(o,product([1,2,3,4,5]))),Print("y is %v",y),Class([ctors:[0:Ctor(NObject(),NMLObject(),Block(VarSet(attr,10))), 2:Ctor(NRandom(),NMLObject(a,b),Block(VarSet(attr,Add(a,b))))], name:NMLObject, stmts:Block(Def(sum(items),Block(VarSet(ret,0),For(VarSet(i,0),LT(i,Size(items)),Inc(i),ScopedBlock(AddBy(ret,Idx(items,i)))),Ret(ret))),Def(printAttr(),Block(Print("attr is %v",attr))),Def(testSwitch(c),Block(Switch(c,Block(Ret("the default")),[2:Block(Ret("two")), 9:Block(Ret("nine or ten")), 10:Block(Ret("nine or ten")), "str":Block(Ret("string")), [1,0]:Block(Ret("vec"))]))),Def(testWhile(),Block(VarSet(i,0),While(LT(i,10),ScopedBlock(Inc(i))),While(LT(i,100),ScopedBlock(If(GT(i,20),ScopedBlock(Break())),Inc(i))),VarSet(j,0),While(LT(j,10),ScopedBlock(Inc(j),If(GT(j,5),ScopedBlock(Continue())),AddBy(i,j))),Ret(i))),VarSet(attr,9))]),VarSet(o2,New(NMLObject())),VarSet(s,Call(o2,sum([1,2,3,4]))),Print("s is %v",s),Call(o2,printAttr()),VarSet(s1,Call(o2,testSwitch(10))),Print("s1 is %v",s1),VarSet(s2,Call(o2,testSwitch([1,0]))),Print("s2 is %v",s2),VarSet(s3,Call(o2,testSwitch(2))),Print("s3 is %v",s3),VarSet(s4,Call(o2,testSwitch("str"))),Print("s4 is %v",s4),VarSet(s5,Call(o2,testSwitch(99))),Print("s5 is %v",s5),VarSet(s6,Call(o2,testSwitch(9))),Print("s6 is %v",s6),VarSet(i1,Call(o2,testWhile())),Print("i1 is %v",i1),VarSet(x,Add([1,2,3],[4,5,6])),Print("x is: %v",x),VarSet(x,Cos(x)),Print("x is now: %v",x),Print("size is: %v",Size(x)),PushBack(x,29),Print("x is now: %v",x),VarSet(v,[:99,1,2,3,"test", a:5, b:6, [1,0]:"baz"]),Print("v is: %v",v),Print("v[3] is: %v",Idx(v,3)),Set(Idx(v,3),"new test"),Set(DotPut(v,a),9),Set(DotPut(v,d),59),Print("v is now: %v",v),VarSet(keys,Keys(v)),For(VarSet(i,0),LT(i,Size(keys)),Inc(i),ScopedBlock(VarSet(k,Idx(keys,i)),Print("v[%v] = %v",k,Idx(v,k)))),VarSet(z,Sub(Add(10,Div(Mul(2,4),2)),5)),AddBy(z,2),MulBy(z,3),DivBy(z,2),ModBy(z,10),Inc(z),Dec(z),PostInc(z),PostDec(z),Print("z is %v",z),If(GT(z,5),ScopedBlock(Print("yes!"))),If(And(GT(z,5),LT(z,10)),ScopedBlock(Print("yes again!"))))
 ------------- reconstructed NML
 import NLib;
-a = sin(2);
+a = sin(2.0);
 Print("a is %v", a);
 o = new CPPObject();
 x = o.add(1, 3);
@@ -124,7 +124,7 @@ if(z > 5 && z < 10){
   Print("yes again!");
 }
 
-a is 0.909297
+a is 0.9092974268256817
 x is 4
 y is 120
 s is 10
@@ -137,9 +137,9 @@ s5 is "the default"
 s6 is "nine or ten"
 i1 is 36
 x is: [5,7,9]
-x is now: [0.283662,0.753902,-0.91113]
+x is now: [0.2836621854632263,0.7539022543433046,-0.9111302618846769]
 size is: 3
-x is now: [0.283662,0.753902,-0.91113,29]
+x is now: [0.2836621854632263,0.7539022543433046,-0.9111302618846769,29]
 v is: [:99,1,2,3,"test", a:5, b:6, [1,0]:"baz"]
 v[3] is: "test"
 v is now: [:99,1,2,3,"new test", a:9, b:6, d:59, [1,0]:"baz"]
