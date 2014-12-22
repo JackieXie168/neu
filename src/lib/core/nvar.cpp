@@ -267,9 +267,39 @@ void nvar::streamOutput_(ostream& ostr) const{
     case Rational:
       ostr << *h_.r;
       break;
-    case Float:
-      ostr << h_.d;
+    case Float:{
+      stringstream sstr;
+      sstr.precision(16);
+      sstr.setf(ios::showpoint);
+      
+      sstr << h_.d;
+      
+      nstr s = sstr.str();
+      
+      size_t pos = s.find("e");
+      if(pos != nstr::npos){
+        if(s[pos + 1] == '+'){
+          s.erase(pos + 1, 1);
+        }
+        --pos;
+      }
+      else{
+        pos = s.length() - 1;
+      }
+      
+      for(;;){
+        if(s[pos] == '0' && s[pos - 1] != '.'){
+          s.erase(pos, 1);
+          --pos;
+        }
+        else{
+          break;
+        }
+      }
+      
+      ostr << s;
       break;
+    }
     case Real:
       ostr << *h_.x;
       break;
