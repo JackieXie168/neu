@@ -23196,6 +23196,141 @@ nvar nvar::fromStr(const nstr& str){
   NERROR("failed to parse: " + str);
 }
 
+nvar nvar::fromStr(const nstr& str, Type t){
+  if(t == String){
+    return str;
+  }
+  
+  NMLParser parser;
+  
+  nvar ret = parser.parse(str + ";");
+  
+  if(ret.isNone()){
+    NERROR("failed to parse: " + str);
+  }
+  
+  switch(t){
+    case None:
+    case Undefined:
+      return ret;
+    case False:
+    case True:
+      switch(ret.t_){
+        case False:
+        case True:
+          return ret;
+        default:
+          NERROR("expected a boolean");
+      }
+    case Integer:
+      switch(ret.t_){
+        case Integer:
+          return ret;
+        default:
+          NERROR("expected an integer");
+      }
+    case Rational:
+      switch(ret.t_){
+        case Integer:
+        case Rational:
+          return ret.toRat();
+        default:
+          NERROR("expected a rational");
+      }
+    case Float:
+      switch(ret.t_){
+        case Integer:
+        case Rational:
+        case Float:
+          return ret.toDouble();
+        default:
+          NERROR("expected a float");
+      }
+    case Real:
+      switch(ret.t_){
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+          return ret.toReal();
+        default:
+          NERROR("expected a real");
+      }
+    case Symbol:
+      switch(ret.t_){
+        case StringPointer:
+        case String:
+          if(nstr::isSymbol(*ret.h_.s)){
+            return nvar(*ret.h_.s, Sym);
+          }
+          
+          NERROR("expected a symbol");
+        case Symbol:
+          return ret;
+        default:
+          NERROR("expected a symbol");
+      }
+    case Vector:
+      switch(ret.t_){
+        case Vector:
+          return ret;
+        default:
+          NERROR("expected a vector");
+      }
+    case List:
+      switch(ret.t_){
+        case List:
+          return ret;
+        default:
+          NERROR("expected a list");
+      }
+    case Queue:
+      switch(ret.t_){
+        case Queue:
+          return ret;
+        default:
+          NERROR("expected a queue");
+      }
+    case Set:
+      switch(ret.t_){
+        case Set:
+          return ret;
+        default:
+          NERROR("expected a set");
+      }
+    case HashSet:
+      switch(ret.t_){
+        case HashSet:
+          return ret;
+        default:
+          NERROR("expected a hash set");
+      }
+    case Map:
+      switch(ret.t_){
+        case Map:
+          return ret;
+        default:
+          NERROR("expected a map");
+      }
+    case HashMap:
+      switch(ret.t_){
+        case HashMap:
+          return ret;
+        default:
+          NERROR("expected a hash map");
+      }
+    case Multimap:
+      switch(ret.t_){
+        case Multimap:
+          return ret;
+        default:
+          NERROR("expected a multimap");
+      }
+    default:
+      NERROR("invalid to type");
+  }
+}
+
 char* nvar::pack(uint32_t& size,
                  size_t minCompressSize,
                  size_t headerSize) const{

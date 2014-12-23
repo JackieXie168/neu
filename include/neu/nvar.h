@@ -3469,6 +3469,8 @@ namespace neu{
     
     static nvar fromStr(const nstr& str);
     
+    static nvar fromStr(const nstr& str, Type t);
+    
     size_t size() const;
     
     size_t numKeys() const;
