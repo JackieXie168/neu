@@ -358,7 +358,7 @@ namespace neu{
       return s_.substr(s_.length() - length, length) == str.s_;
     }
     
-    nstr after(const nstr& str){
+    nstr after(const nstr& str) const{
       size_t pos = s_.rfind(str.s_);
       if(pos == std::string::npos){
         return *this;
@@ -367,7 +367,7 @@ namespace neu{
       return s_.substr(pos);
     }
     
-    nstr before(const nstr& str){
+    nstr before(const nstr& str) const{
       size_t pos = s_.find(str.s_);
       if(pos == std::string::npos){
         return *this;
