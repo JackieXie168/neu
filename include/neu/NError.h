@@ -56,10 +56,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_N_ERROR_H
 
 #include <exception>
-
 #include <cassert>
+#include <sstream>
 
-#define NMESSAGE(msg) nstr(__PRETTY_FUNCTION__) + ": " + msg
+inline std::string __nmsg_int_to_str(int i){
+  std::stringstream sstr;
+  sstr << i;
+  return sstr.str();
+}
+
+#define NMESSAGE(msg) nstr(__FILE__) + nstr(":") + \
+nstr(__nmsg_int_to_str(__LINE__).c_str()) + nstr(": ") + \
+nstr(__PRETTY_FUNCTION__) + nstr("#: ") + msg
+
 #define NERROR(msg) throw NError(NMESSAGE(msg))
 
 #include <ostream>
