@@ -358,6 +358,24 @@ namespace neu{
       return s_.substr(s_.length() - length, length) == str.s_;
     }
     
+    nstr after(const nstr& str){
+      size_t pos = s_.rfind(str.s_);
+      if(pos == std::string::npos){
+        return *this;
+      }
+      
+      return s_.substr(pos);
+    }
+    
+    nstr before(const nstr& str){
+      size_t pos = s_.find(str.s_);
+      if(pos == std::string::npos){
+        return *this;
+      }
+      
+      return s_.substr(0, pos);
+    }
+    
     template<class InputIterator>
     void insert(iterator p, InputIterator first, InputIterator last){
       s_.insert(p, first, last);

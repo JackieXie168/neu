@@ -83,7 +83,7 @@ namespace neu{
     
     virtual const char* what() const throw();
     
-    const char* msg() const throw();
+    const nstr& msg() const throw();
     
     nvar& var() throw();
     

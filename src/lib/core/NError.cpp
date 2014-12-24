@@ -108,8 +108,8 @@ namespace neu{
       return what_.c_str();
     }
     
-    const char* msg() const{
-      return msg_.c_str();
+    const nstr& msg() const{
+      return msg_;
     }
     
     nvar& var(){
@@ -145,7 +145,7 @@ const char* NError::what() const throw(){
   return x_->what();
 }
 
-const char* NError::msg() const throw(){
+const nstr& NError::msg() const throw(){
   return x_->msg();
 }
 
