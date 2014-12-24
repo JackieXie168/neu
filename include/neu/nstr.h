@@ -364,7 +364,7 @@ namespace neu{
         return *this;
       }
       
-      return s_.substr(pos);
+      return s_.substr(pos + str.length());
     }
     
     nstr before(const nstr& str) const{
