@@ -4839,6 +4839,8 @@ namespace neu{
       }
     }
     
+    void intoType(Type t);
+    
     void intoVector();
     
     void intoVector(size_t size, const nvar& v=undef);

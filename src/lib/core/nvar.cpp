@@ -20489,6 +20489,37 @@ nvar nvar::allKeys() const{
   return nvar(move(ks));
 }
 
+void nvar::intoType(Type t){
+  switch(t_){
+    case Vector:
+      intoVector();
+      break;
+    case List:
+      intoList();
+      break;
+    case Queue:
+      intoQueue();
+      break;
+    case Set:
+      intoSet();
+      break;
+    case HashSet:
+      intoHashSet();
+      break;
+    case Map:
+      intoMap();
+      break;
+    case HashMap:
+      intoHashMap();
+      break;
+    case Multimap:
+      intoMultimap();
+      break;
+    default:
+      NERROR("invalid type");
+  }
+}
+
 void nvar::intoVector(){
   switch(t_){
     case None:
