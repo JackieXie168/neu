@@ -3136,6 +3136,7 @@ namespace neu{
         case Undefined:
         case False:
         case True:
+        case Integer:
         case Rational:
         case Float:
         case Real:
