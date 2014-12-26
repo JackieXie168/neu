@@ -20490,7 +20490,9 @@ nvar nvar::allKeys() const{
 }
 
 void nvar::intoType(Type t){
-  switch(t_){
+  switch(t){
+    case None:
+      break;
     case Vector:
       intoVector();
       break;

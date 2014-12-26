@@ -512,7 +512,19 @@ namespace neu{
             noMap = false;
           }
           
-          v << ii[0];
+          switch(mapType){
+            case nvar::Set:
+            case nvar::HashSet:
+              v << move(ii[0]);
+              break;
+            case nvar::Map:
+            case nvar::HashMap:
+            case nvar::Multimap:
+              v(ii[0]) = true;
+              break;
+            default:
+              assert(false);
+          }
         }
         else{
           assert(false);

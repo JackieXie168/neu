@@ -3130,6 +3130,33 @@ namespace neu{
       }
     }
     
+    bool isLeaf() const{
+      switch(t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case String:
+        case StringPointer:
+        case Binary:
+        case RawPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return true;
+        case Reference:
+          return h_.ref->v->isLeaf();
+        case Pointer:
+          return h_.vp->isLeaf();
+        default:
+          return false;
+      }
+    }
+    
     void setHead(const nvar& x);
     
     void clearHead(){
