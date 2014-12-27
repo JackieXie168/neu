@@ -2596,11 +2596,11 @@ namespace neu{
         case Queue:
           return t_;
         case HeadSequence:
-          return h_.hs->s->type();
+          return h_.hs->s->sequenceType();
         case SequenceMap:
-          return h_.sm->s->type();
+          return h_.sm->s->sequenceType();
         case HeadSequenceMap:
-          return h_.hsm->s->type();
+          return h_.hsm->s->sequenceType();
         default:
           return None;
       }
@@ -2615,11 +2615,11 @@ namespace neu{
         case Multimap:
           return t_;
         case HeadMap:
-          return h_.hm->m->type();
+          return h_.hm->m->mapType();
         case SequenceMap:
-          return h_.sm->m->type();
+          return h_.sm->m->mapType();
         case HeadSequenceMap:
-          return h_.hsm->m->type();
+          return h_.hsm->m->mapType();
         default:
           return None;
       }
