@@ -13,7 +13,7 @@
      \/__/         \/__/         \/__/
 
 
-The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
+The Neu Framework, Copyright (c) 2013-2015, Andrometa LLC
 All rights reserved.
 
 neu@andrometa.net
@@ -21,7 +21,7 @@ http://neu.andrometa.net
 
 Neu can be used freely for commercial purposes. If you find Neu
 useful, please consider helping to support our work and the evolution
-of Neu by making a PayPal donation to: neu@andrometa.net
+of Neu by making a donation via: http://donate.andrometa.net
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -226,7 +226,6 @@ namespace{
   static const nvar::Type PackShortString =   122;
   static const nvar::Type PackLongString =    121;
   static const nvar::Type PackLongSymbol =    120;
-  static const nvar::Type PackSmallVector =   119;
   static const nvar::Type PackShortVector =   118;
   static const nvar::Type PackLongVector =    117;
   static const nvar::Type PackShortList =     116;

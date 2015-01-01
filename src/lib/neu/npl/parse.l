@@ -17,7 +17,7 @@
      \/__/         \/__/         \/__/
 
 
-The Neu Framework, Copyright (c) 2013-2014, Andrometa LLC
+The Neu Framework, Copyright (c) 2013-2015, Andrometa LLC
 All rights reserved.
 
 neu@andrometa.net
@@ -25,7 +25,7 @@ http://neu.andrometa.net
 
 Neu can be used freely for commercial purposes. If you find Neu
 useful, please consider helping to support our work and the evolution
-of Neu by making a PayPal donation to: neu@andrometa.net
+of Neu by making a donation via: http://donate.andrometa.net
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
