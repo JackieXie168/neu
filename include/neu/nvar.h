@@ -1434,13 +1434,13 @@ namespace neu{
       }
     }
     
-    nvar toPtr(){
+    nvar toPtr() const{
       switch(t_){
         case Reference:
         case Pointer:
           return *this;
         default:
-          return nvar(this, Ptr);
+          return nvar(const_cast<nvar*>(this), Ptr);
       }
     }
     
@@ -1449,7 +1449,7 @@ namespace neu{
       return *h_.vp;
     }
     
-    nvar toRef(){
+    nvar toRef() const{
       switch(t_){
         case Reference:
         case Pointer:

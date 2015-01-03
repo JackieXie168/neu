@@ -1,12 +1,16 @@
 include Makefile.defs
 
 export MAJOR = 1
-export MINOR = 6
+export MINOR = 7
 export RELEASE = 0
 
 export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 
-all: neu neu-test neu-haskell
+ifdef JAVA_INCLUDE
+  all: neu neu-test neu-haskell libneu_java neu-java
+else
+  all: neu neu-test neu-haskell
+endif
 
 neu: libneu
 	(cd src/bin/neu; $(MAKE))
@@ -20,11 +24,17 @@ neu-meta: libneu_core
 neu-haskell: libneu
 	(cd src/bin/neu-haskell; $(MAKE))
 
+neu-java: libneu_core
+	(cd src/bin/neu-java; $(MAKE))
+
 libneu_core:
 	(cd src/lib/core; $(MAKE))
 
 libneu: libneu_core neu-meta
 	(cd src/lib/neu; $(MAKE))
+
+libneu_java: libneu_core
+	(cd src/lib/java; $(MAKE))
 
 concepts: libneu
 	(cd app/concepts/src/lib; $(MAKE))

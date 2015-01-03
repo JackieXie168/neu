@@ -20,6 +20,12 @@ export OPT = -O2
 # build threads
 export BUILD_THREADS = 8
 
+# uncomment to enable build of Neu Java interface lib
+# and set JAVA_INCLUDE and JAVA_LINK appropriately
+
+export JAVA_INCLUDE = -I/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/include -I/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/include/darwin
+export JAVA_LINK = -L/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/server -ljvm
+
 # neu library path
 export NEU_LIB = $(NEU_HOME)/lib
 
