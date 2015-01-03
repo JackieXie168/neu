@@ -1,0 +1,12 @@
+b is: true
+c is: 25
+s is: 454
+i is: 3214
+l is: 99993
+f is: 23.4
+d is: 1.0E-23
+d ret is: 15.5
+v is: [a:20, b:30]
+v2 is: [a:20, b:30, newKey:35.4]
+v2 is now: [a:20, b:30, newKey:35.4, vec:[1,2,3]]
+str is: this is a string modified

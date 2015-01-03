@@ -43,17 +43,27 @@ spotless:
 	(cd src/bin/neu; $(MAKE) spotless)
 	(cd src/bin/neu-test; $(MAKE) spotless)
 	(cd src/bin/neu-meta; $(MAKE) spotless)
+	(cd src/bin/neu-haskell; $(MAKE) spotless)
 	(cd src/lib/core; $(MAKE) spotless)
 	(cd src/lib/neu; $(MAKE) spotless)
 	(cd app/concepts/src/lib; $(MAKE) spotless)
+ifdef JAVA_INCLUDE
+	(cd src/bin/neu-java; $(MAKE) spotless)
+	(cd src/lib/java; $(MAKE) spotless)
+endif
 
 clean:
 	(cd src/bin/neu; $(MAKE) clean)
 	(cd src/bin/neu-test; $(MAKE) clean)
 	(cd src/bin/neu-meta; $(MAKE) clean)
+	(cd src/bin/neu-haskell; $(MAKE) clean)
 	(cd src/lib/core; $(MAKE) clean)
 	(cd src/lib/neu; $(MAKE) clean)
 	(cd app/concepts/src/lib; $(MAKE) clean)
+ifdef JAVA_INCLUDE
+	(cd src/bin/neu-java; $(MAKE) clean)
+	(cd src/lib/java; $(MAKE) clean)
+endif
 
 release:
 	$(MAKE) clean

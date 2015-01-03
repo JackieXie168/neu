@@ -184,14 +184,6 @@ public:
     NProgram::use();
     
     includes_.push_back(_home + "/include");
-
-    // ndm - remove
-    nstr localHome;
-    if(!NSys::getEnv("NEU_LOCAL_HOME", localHome)){
-      NERROR("NEU_LOCAL_HOME undefined");
-    }
-    
-    includes_.push_back(localHome + "/include");
     
     nTypes_.add("void", "Void");
     nTypes_.add("bool", "Bool");

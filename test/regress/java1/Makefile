@@ -6,6 +6,7 @@ OBJECTS = main.o
 LIBS = -L$(NEU_HOME)/lib -lneu_core -lneu_java
 
 all: .depend $(TARGET)
+	./test >test.out 2>&1
 
 .depend: $(OBJECTS:.o=.cpp) $(OBJECTS:.o=.h)
 	$(COMPILE) -MM $(OBJECTS:.o=.cpp) > .depend
