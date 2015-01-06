@@ -1,0 +1,20 @@
+--- Installation Quick Start ---
+
+Refer to the documentation (Neu Framework Guide) at
+http://neu.andrometa.net for complete installation instructions if you
+have problems.
+
+1. set environment variable NEU_HOME to point to this directory. Add
+$NEU_HOME/bin to your PATH. Add $NEU_HOME/lib to your
+DYLD_LIBRARY_PATH (Mac) or LD_LIBRARY_PATH (Linux) as appropriate. You
+may wish to modify your .bash_profile, .bashrc, etc. to include these
+definitions.
+
+2. edit Makefile.defs according to your installation and preference -
+the topmost items are the ones which will most likely need to be
+modified.
+
+3. make llvm (this step only needs to be done once, the first time you
+install)
+
+4. make release (for optimized build) or make (for debug build)
