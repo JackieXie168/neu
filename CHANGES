@@ -1,5 +1,12 @@
 
 
+Neu 1.7.1 - 1/6/15
+
+ -Simplified build process. Added INSTALL quick-start notes. In the
+  top-level Makefile, the 'llvm' target is now used to download and
+  build LLVM and Clang in one step with 'make llvm'. NO_PRECISE is now
+  set by default so libneu_core will be built without GMP and MPFR.
+
 Neu 1.7.0 - 1/3/15
 
  -Added a first version of the Neu Java interface. See the updated Neu

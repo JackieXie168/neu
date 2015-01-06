@@ -1,24 +1,6 @@
-# path to LLVM 3.5 install directory
-export LLVM_DIR = $(HOME)/llvm-3.5.0/build-release
-
-# uncomment to disable precise mode
+# comment out to enable precise mode
 # (building nreal and libneu_core with GMP and MPFR libraries)
-# export NO_PRECISE = 1
-
-# C++ compiler
-export CXX = c++
-
-# C compiler
-export CC = cc
-
-# paths to additional include directories
-export INCLUDE_DIRS = -I/usr/local/include
-
-# optimization level for release build
-export OPT = -O2
-
-# build threads
-export BUILD_THREADS = 8
+export NO_PRECISE = 1
 
 # uncomment to enable build of Neu Java interface lib
 # set JAVA_INCLUDE and JAVA_LINK appropriately
@@ -26,6 +8,24 @@ export BUILD_THREADS = 8
 
 # export JAVA_INCLUDE = -I/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/include -I/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/include/darwin
 # export JAVA_LINK = -L/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/server -ljvm
+
+# optimization level for release build
+export OPT = -O2
+
+# build threads
+export BUILD_THREADS = 8
+
+# paths to additional include directories
+export INCLUDE_DIRS = -I/usr/local/include
+
+# C++ compiler
+export CXX = c++
+
+# C compiler
+export CC = cc
+
+# LLVM install directory
+export LLVM_DIR = $(NEU_HOME)/llvm/build-release
 
 # neu library path
 export NEU_LIB = $(NEU_HOME)/lib
@@ -36,6 +36,13 @@ export PLATFORM = $(shell uname)
 # use libc++ if compiling on Mac
 ifeq ($(PLATFORM), Darwin)
   STD_LIB = -stdlib=libc++
+endif
+
+# command for HTTP get
+ifeq ($(PLATFORM), Darwin)
+  HTTP_GET = curl -O
+else
+  HTTP_GET = wget
 endif
 
 # beginning of C++ compile command
