@@ -133,9 +133,13 @@ public:
       c.Directory = ".";
         
       c.CommandLine =
-      {"clang-tool", "-std=c++11", "-stdlib=libc++", "-Wno-undefined-internal",
+      {"clang-tool", "-std=c++11", "-Wno-undefined-internal",
        "-resource-dir", resourceDir_};
 
+#ifdef __APPLE__
+      c.CommandLine.push_back("-stdlib=libc++");
+#endif
+      
       for(const nstr& i : includes_){
         c.CommandLine.push_back("-I" + i);
       }
