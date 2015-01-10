@@ -1,3 +1,3 @@
 [
- haskellPath: "/usr/bin/ghci"
+ haskellPath: "/usr/local/bin/ghci"
 ];
