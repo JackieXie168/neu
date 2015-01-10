@@ -268,7 +268,7 @@ void nvar::streamOutput_(ostream& ostr) const{
       break;
     case Float:{
       stringstream sstr;
-      sstr.precision(16);
+      sstr.precision(15);
       sstr.setf(ios::showpoint);
       
       sstr << h_.d;
