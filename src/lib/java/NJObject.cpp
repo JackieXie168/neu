@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NJObject.h>
 
+#include <cstring>
 #include <jni.h>
 
 #include <neu/NSys.h>
