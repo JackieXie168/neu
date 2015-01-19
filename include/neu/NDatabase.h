@@ -140,7 +140,8 @@ namespace neu{
       Hash
     };
     
-    typedef std::function<int(const nvar& r)> QueryFunc;
+    // query func returns false to stop querying
+    typedef std::function<bool(const nvar& r)> QueryFunc;
     
     void addIndex(const nstr& indexName,
                   IndexType indexType,
@@ -158,8 +159,10 @@ namespace neu{
     
     void erase(RowId rowId);
     
+    // end may be less than start to traverse backwards
     void query(const nstr& indexName,
                const nvar& start,
+               const nvar& end,
                QueryFunc f);
     
     void setQuery(const nstr& indexName,

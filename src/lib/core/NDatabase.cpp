@@ -477,15 +477,12 @@ namespace neu{
           size_t index = find(start);
           
           R* r;
-          RowId rowId;
           int s;
           size_t end = chunk_.size() - 1;
           
           for(;;){
             r = &chunk_[index];
-            rowId = r->rowId;
-            
-            s = f(rowId, r->exists() ? nvar(r->value) : none);
+            s = f(r->rowId, r->value);
 
             if(s < 0){
               if(index == 0){
@@ -778,6 +775,19 @@ namespace neu{
         return itr->second->get(value);
       }
       
+      R* touch(const V& value){
+        read();
+        
+        auto itr = findChunk(value);
+        if(itr == chunkMap_.end()){
+          return 0;
+        }
+        
+        current_ = false;
+        
+        return itr->second->get(value);
+      }
+      
       Page* split(uint64_t id){
         write();
         
@@ -983,6 +993,10 @@ namespace neu{
         }
       }
       
+      void setCurrent(bool flag){
+        current_ = flag;
+      }
+      
       void clear(){
         d_->safeRemoveAll(path_);
         
@@ -1186,6 +1200,10 @@ namespace neu{
         return findPage(value)->second->get(value);
       }
       
+      R* touchRecord(const V& value){
+        return findPage(value)->second->touch(value);
+      }
+      
       void traverse(TraverseFunc f){
         for(auto& itr : pageMap_){
           itr.second->traverse(f);
@@ -1356,9 +1374,20 @@ namespace neu{
 
       bool get(RowId rowId, uint32_t& dataId, uint32_t& offset){
         DataRecord* record = getRecord(rowId);
+
         if(record){
+          if(record->remap){
+            if(record->rowId == 0){
+              return false;
+            }
+            else{
+              return get(record->rowId, dataId, offset);
+            }
+          }
+
           dataId = record->dataId();
           offset = record->offset();
+          
           return true;
         }
         
@@ -1375,10 +1404,11 @@ namespace neu{
       }
       
       void erase(RowId rowId){
-        DataRecord* record = getRecord(rowId);
+        DataRecord* record = touchRecord(rowId);
         
         if(record){
           record->erase();
+          setCurrent(false);
         }
       }
       
@@ -1424,10 +1454,6 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
-      
-      bool exists(){
-        return true;
-      }
     };
     
     class Int64Index : public Index<Int64Record, int64_t>{
@@ -1452,10 +1478,6 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
-      }
-      
-      bool exists(){
-        return true;
       }
     };
     
@@ -1482,10 +1504,6 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
-      
-      bool exists(){
-        return true;
-      }
     };
     
     class RowIndex : public Index<RowRecord, RowId>{
@@ -1510,10 +1528,6 @@ namespace neu{
       
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
-      }
-      
-      bool exists(){
-        return true;
       }
     };
     
@@ -1545,9 +1559,6 @@ namespace neu{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
       
-      bool exists(){
-        return true;
-      }
     };
     
     class UInt32Index : public Index<UInt32Record, uint32_t>{
@@ -1574,9 +1585,6 @@ namespace neu{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
       
-      bool exists(){
-        return true;
-      }
     };
     
     class DoubleIndex : public Index<DoubleRecord, double>{
@@ -1603,9 +1611,6 @@ namespace neu{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
       
-      bool exists(){
-        return true;
-      }
     };
     
     class FloatIndex : public Index<FloatRecord, float>{
@@ -1631,10 +1636,7 @@ namespace neu{
       void dump() const{
         cout << "value: " << value << "; rowId: " << rowId << endl;
       }
-      
-      bool exists(){
-        return true;
-      }
+
     };
     
     class HashIndex : public Index<HashRecord, uint64_t>{
@@ -2427,6 +2429,7 @@ namespace neu{
     
     void erase(RowId rowId){
       dataIndex_->erase(rowId);
+      current_ = false;
     }
     
     void mapCompact(RowSet& rs, UpdateMap& um){
@@ -2709,14 +2712,30 @@ namespace neu{
     
     void query(const nstr& indexName,
                const nvar& start,
+               const nvar& end,
                NTable::QueryFunc qf){
+      
+      int direction;
+      
+      if(end < start){
+        direction = -1;
+      }
+      else{
+        direction = 1;
+      }
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
 
-        bool success = get(rowId, row);
-        assert(success);
-        return qf(row);
+        if(!get(rowId, row)){
+          return direction;
+        }
+
+        if(!qf(row)){
+          return 0;
+        }
+        
+        return direction;
       };
       
       query_(indexName, start, f);
@@ -3143,8 +3162,9 @@ void NTable::erase(RowId rowId){
 
 void NTable::query(const nstr& indexName,
                    const nvar& start,
+                   const nvar& end,
                    QueryFunc f){
-  x_->query(indexName, start, f);
+  x_->query(indexName, start, end, f);
 }
 
 void NTable::setQuery(const nstr& indexName,
