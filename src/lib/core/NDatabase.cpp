@@ -928,7 +928,6 @@ namespace neu{
           metaCurrent_ = false;
           
           firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
-          firstPage_->save(true);
           
           pageMap_.insert({min_, firstPage_});
           
