@@ -647,6 +647,8 @@ namespace neu{
         
         FILE* file = fopen(path_.c_str(), "rb");
         
+        assert(file);
+        
         uint32_t numChunks;
         uint32_t n = fread(&numChunks, 1, 4, file);
         if(n != 4){
@@ -829,7 +831,11 @@ namespace neu{
         locked_ = true;
         
         auto itr = findChunk(start);
-        assert(itr != chunkMap_.end());
+        
+        if(itr == chunkMap_.end()){
+          locked_ = false;
+          return 0;
+        }
         
         for(;;){
           int s = itr->second->query(start, f);
@@ -922,6 +928,8 @@ namespace neu{
           metaCurrent_ = false;
           
           firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
+          firstPage_->save(true);
+          
           pageMap_.insert({min_, firstPage_});
           
           if(NSys::exists(path_)){
@@ -978,6 +986,7 @@ namespace neu{
       
       void clear(){
         d_->safeRemoveAll(path_);
+        
         for(auto& itr : pageMap_){
           delete itr.second;
         }
@@ -985,6 +994,8 @@ namespace neu{
         pageMap_.clear();
         
         firstPage_ = new IndexPage(d_, this, nextPageId_++, true);
+        firstPage_->save(true);
+        
         pageMap_.insert({min_, firstPage_});
         
         metaCurrent_ = false;
