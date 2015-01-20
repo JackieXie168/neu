@@ -2768,8 +2768,10 @@ namespace neu{
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
-        if(get(rowId, row)){
-          return qf(row) != 0 ? 1 : 0;
+        if(get(v, row)){
+          if(!qf(row)){
+            return 0;
+          }
         }
 
         return 1;
@@ -2782,8 +2784,10 @@ namespace neu{
       
       auto f = [&](RowId rowId, const nvar& v) -> int{
         nvar row;
-        if(get(rowId, row)){
-          return qf(row) != 0 ? -1 : 0;
+        if(get(v, row)){
+          if(!qf(row)){
+            return 0;
+          }
         }
         
         return -1;
