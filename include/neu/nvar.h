@@ -2240,6 +2240,11 @@ namespace neu{
       return toBool();
     }
     
+    nvar& pushBack(){
+      pushBack(undef);
+      return back();
+    }
+    
     void pushBack(const nvar& x);
     
     void pushBack(nvar&& x){
@@ -2575,6 +2580,93 @@ namespace neu{
     
     nvar& operator<<(unsigned long x){
       return operator<<(nvar(x));
+    }
+    
+    const nvar& front() const{
+      switch(t_){
+        case Vector:
+          if(h_.v->empty()){
+            NERROR("vector is empty");
+          }
+          
+          return h_.v->front();
+        case List:
+          if(h_.l->empty()){
+            NERROR("list is empty");
+          }
+          
+          return h_.l->front();
+        case Queue:
+          if(h_.q->empty()){
+            NERROR("queue is empty");
+          }
+          
+          return h_.q->front();
+        case Function:
+          if(h_.f->v.empty()){
+            NERROR("function is empty");
+          }
+          
+          return h_.f->v.front();
+        case HeadSequence:
+          return h_.hs->s->front();
+        case SequenceMap:
+          return h_.sm->s->front();
+        case HeadSequenceMap:
+          return h_.hsm->s->front();
+        case Reference:
+          return h_.ref->v->front();
+        case Pointer:
+          return h_.vp->front();
+        default:
+          NERROR("no sequence");
+      }
+    }
+    
+    nvar& front(){
+      switch(t_){
+        case Vector:
+          if(h_.v->empty()){
+            NERROR("vector is empty");
+          }
+          
+          return h_.v->front();
+        case List:
+          if(h_.l->empty()){
+            NERROR("list is empty");
+          }
+          
+          return h_.l->front();
+        case Queue:
+          if(h_.q->empty()){
+            NERROR("queue is empty");
+          }
+          
+          return h_.q->front();
+        case Function:
+          if(h_.f->v.empty()){
+            NERROR("function is empty");
+          }
+          
+          return h_.f->v.front();
+        case HeadSequence:
+          return h_.hs->s->front();
+        case SequenceMap:
+          return h_.sm->s->front();
+        case HeadSequenceMap:
+          return h_.hsm->s->front();
+        case Reference:
+          return h_.ref->v->front();
+        case Pointer:
+          return h_.vp->front();
+        default:
+          NERROR("no sequence");
+      }
+    }
+    
+    nvar& pushFront(){
+      pushFront(undef);
+      return front();
     }
     
     void pushFront(const nvar& x);
