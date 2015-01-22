@@ -85,12 +85,18 @@ input: object {
 ;
 
 object: '{' members '}' {
-  $$ = $2;
+  $$ = move($2);
+  PS->convertObject($$);
 }
 ;
 
 value: STRING_LITERAL {
-  $$ = $1;
+  if($1 == "@undef"){
+    $$ = undef;
+  }
+  else{
+    $$ = $1;
+  }
 }
 | DOUBLE {
   $$ = $1;

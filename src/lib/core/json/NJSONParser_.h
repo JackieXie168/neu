@@ -244,6 +244,72 @@ namespace neu{
       return openTokens_ != 0;
     }
     
+    void convertObject(nvar& v){
+      if(!v.has("@type")){
+        return;
+      }
+      
+      nvar::Type t = v["@type"];
+      switch(t){
+        case nvar::Rational:
+          v = nrat(v["@numerator"], v["@denominator"]);
+          break;
+        case nvar::Real:
+          v = nreal(v["@real"].c_str());
+          break;
+        case nvar::Symbol:
+          v = nsym(v["@symbol"].str());
+          break;
+        case nvar::List:{
+          nvar& l = v["@list"];
+          l.intoList();
+          v = move(l);
+          break;
+        }
+        case nvar::Queue:{
+          nvar& q = v["@queue"];
+          q.intoQueue();
+          v = move(q);
+          break;
+        }
+        case nvar::Function:
+          v = move(nml(v["@function"]));
+          break;
+        case nvar::HeadSequence:
+          v = move(nvar(move(v["@head"]), move(v["@sequence"]),
+                        nvar::HeadSequenceType));
+          break;
+        case nvar::Set:{
+          v.intoSet();
+          break;
+        }
+        case nvar::HashSet:{
+          v.intoHashSet();
+          break;
+        }
+        case nvar::HashMap:{
+          v.intoHashMap();
+          break;
+        }
+        case nvar::Multimap:{
+          v.intoMultimap();
+          break;
+        }
+        case nvar::HeadMap:
+          v = move(nvar(move(v["@head"]), move(v["@map"]),
+                        nvar::HeadMapType));
+          break;
+        case nvar::SequenceMap:
+          v = move(nvar(move(v["@sequence"]), move(v["@map"]),
+                        nvar::SequenceMapType));
+          break;
+        case nvar::HeadSequenceMap:
+          v = move(nvar(move(v["@head"]), move(v["@sequence"]),
+                        move(v["@map"]), nvar::HeadSequenceMapType));
+          break;
+      }
+    }
+    
   private:
     NJSONParser* o_;
     ostream* estr_;

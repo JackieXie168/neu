@@ -111,8 +111,9 @@ namespace neu{
           const nrat& r = n.rat();
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Rational) << endl;
-          ostr << indent << "\"numerator\": " << r.numerator() << endl;
-          ostr << indent << "\"denominator\": " << r.denominator() << endl;
+          
+          ostr << indent << "\"@numerator\": " << r.numerator() << endl;
+          ostr << indent << "\"@denominator\": " << r.denominator() << endl;
           ostr << indent << "}";
           break;
         }
@@ -120,14 +121,16 @@ namespace neu{
           const nreal& r = n.real();
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Real) << endl;
-          ostr << indent << "\"real\": \"" << r.toStr() << "\"" << endl;
+          
+          ostr << indent << "\"@real\": \"" << r.toStr() << "\"" << endl;
           ostr << indent << "}";
           break;
         }
         case nvar::Symbol:{
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Symbol) << endl;
-          ostr << indent << "\"symbol\": \"" << n << "\"" << endl;
+          
+          ostr << indent << "\"@symbol\": \"" << n << "\"" << endl;
           ostr << indent << "}";
           break;
         }
@@ -144,7 +147,8 @@ namespace neu{
         case nvar::List:{
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::List) << endl;
-          ostr << indent << "\"list\": ";
+          
+          ostr << indent << "\"@list\": ";
           emitSequence(ostr, n.list(), indent + "  ");
           ostr << endl;
           ostr << indent << "}";
@@ -153,7 +157,8 @@ namespace neu{
         case nvar::Queue:{
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Queue) << endl;
-          ostr << indent << "\"queue\": ";
+          
+          ostr << indent << "\"@queue\": ";
           emitSequence(ostr, n.queue(), indent + "  ");
           ostr << endl;
           ostr << indent << "}";
@@ -162,12 +167,15 @@ namespace neu{
         case nvar::Function:{
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Function) << endl;
-          ostr << indent << "\"function\": \"" << n << "\"" << endl;
+          
+          ostr << indent << "\"@function\": \"" << n << "\"" << endl;
           ostr << indent << "}";
           break;
         }
         case nvar::HeadSequence:{
           ostr << "{" << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HeadSequence) << endl;
+          
           ostr << indent << "\"@head\": ";
           emitValue(ostr, n.head(), indent + "  ");
           ostr << endl;
@@ -257,6 +265,8 @@ namespace neu{
         }
         case nvar::HeadMap:{
           ostr << "{" << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HeadMap) << endl;
+          
           ostr << indent << "\"@head\": ";
           emitValue(ostr, n.head(), indent + "  ");
           ostr << endl;
@@ -269,6 +279,8 @@ namespace neu{
         }
         case nvar::SequenceMap:{
           ostr << "{" << endl;
+          ostr << indent << "\"@type\": " << int(nvar::SequenceMap) << endl;
+          
           ostr << indent << "\"@sequence\": ";
           emitValue(ostr, n.anySequence(), indent + "  ");
           ostr << endl;
@@ -281,6 +293,8 @@ namespace neu{
         }
         case nvar::HeadSequenceMap:{
           ostr << "{" << endl;
+          
+          ostr << indent << "\"@type\": " << int(nvar::HeadSequenceMap) << endl;
           
           ostr << indent << "\"@head\": ";
           emitValue(ostr, n.head(), indent + "  ");
