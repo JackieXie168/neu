@@ -2,7 +2,7 @@ C_MODULES = compress.o
 
 CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NClass.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMLGenerator.o NRandom.o NProc.o NEncoder.o NCommunicator.o NServer.o NBroker.o NDatabase.o NParser.o
 
-SUB_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o
+SUB_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o json/parse.tab.o json/NJSONParser.o json/parse.l.o
 
 ALL_MODULES = $(CPP_MODULES) $(C_MODULES) $(SUB_MODULES)
 
@@ -17,7 +17,10 @@ all: .depend libneu_core
 neu_ml:
 	(cd nml; $(MAKE))
 
-libneu_core: $(C_MODULES) $(CPP_MODULES) neu_ml
+neu_json:
+	(cd json; $(MAKE))
+
+libneu_core: $(C_MODULES) $(CPP_MODULES) neu_ml neu_json
 
 ifeq ($(PLATFORM), Darwin)
 	$(LINK) -single_module -dynamiclib -o $(NEU_LIB)/libneu_core.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz -install_name $(NEU_HOME)/lib/libneu_core.$(VERSION).dylib
@@ -46,8 +49,10 @@ clean:
 	rm -f $(C_MODULES)
 	rm -f $(CPP_MODULES)
 	(cd nml; $(MAKE) clean)
+	(cd json; $(MAKE) clean)
 
 spotless: clean
 	rm -f $(NEU_LIB)/libneu_core.*
 	rm -f $(NEU_LIB)/libneu_core_static.a
 	(cd nml; $(MAKE) spotless)
+	(cd json; $(MAKE) spotless)
