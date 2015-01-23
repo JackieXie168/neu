@@ -73,7 +73,12 @@ namespace neu{
     }
     
     void emitKey(ostream& ostr, const nvar& k){
-      ostr << "\"" << k.toString() << "\"";
+      if(k.hasString()){
+        ostr << "\"" << k.toString() << "\"";
+      }
+      else{
+        ostr << "\"@:" << k.toStr() << "\"";
+      }
     }
     
     template<class T>

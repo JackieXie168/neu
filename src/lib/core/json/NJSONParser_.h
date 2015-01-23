@@ -61,6 +61,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NJSONParser.h>
 #include <neu/NSys.h>
 #include <neu/NProgram.h>
+#include <neu/NMLParser.h>
 
 #include "parse.h"
 
@@ -328,6 +329,10 @@ namespace neu{
       }
     }
     
+    nvar parseKey(const nstr& k){
+      return parser_.parse(k.substr(2));
+    }
+    
   private:
     NJSONParser* o_;
     ostream* estr_;
@@ -339,6 +344,7 @@ namespace neu{
     void* scanner_;
     nvar out_;
     size_t openTokens_;
+    NMLParser parser_;
   };
   
 } // end namespace neu
