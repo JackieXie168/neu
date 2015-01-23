@@ -139,11 +139,11 @@ members: /* empty */ {
 }
 | STRING_LITERAL ':' value {
   $$ = undef;
-  $$($1.str()) = $3;
+  $$($1.str()) = move($3);
 }
 | members ',' STRING_LITERAL ':' value {
   $$ = move($1);
-  $$($3.str()) = $5;
+  $$($3.str()) = move($5);
 }
 ;
 
