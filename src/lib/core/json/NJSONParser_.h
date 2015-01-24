@@ -256,40 +256,31 @@ namespace neu{
       switch(t){
         case nvar::Rational:
           v = nrat(v["@numerator"], v["@denominator"]);
-          v.erase("@numerator");
-          v.erase("@denominator");
           break;
         case nvar::Real:
           v = nreal(v["@real"].c_str());
-          v.erase("@real");
           break;
         case nvar::Symbol:
           v = nsym(v["@symbol"].str());
-          v.erase("@symbol");
           break;
         case nvar::List:{
-          nvar& l = v["@list"];
+          nvar l = move(v["@list"]);
           l.intoList();
           v = move(l);
-          v.erase("@list");
           break;
         }
         case nvar::Queue:{
-          nvar& q = v["@queue"];
+          nvar q = move(v["@queue"]);
           q.intoQueue();
           v = move(q);
-          v.erase("@queue");
           break;
         }
         case nvar::Function:
           v = move(nml(v["@function"]));
-          v.erase("@function");
           break;
         case nvar::HeadSequence:
           v = move(nvar(move(v["@head"]), move(v["@sequence"]),
                         nvar::HeadSequenceType));
-          v.erase("@head");
-          v.erase("@sequence");
           break;
         case nvar::Set:{
           v.intoSet();
@@ -310,27 +301,27 @@ namespace neu{
         case nvar::HeadMap:
           v = move(nvar(move(v["@head"]), move(v["@map"]),
                         nvar::HeadMapType));
-          v.erase("@head");
-          v.erase("@map");
           break;
         case nvar::SequenceMap:
           v = move(nvar(move(v["@sequence"]), move(v["@map"]),
                         nvar::SequenceMapType));
-          v.erase("@sequence");
-          v.erase("@map");
           break;
         case nvar::HeadSequenceMap:
           v = move(nvar(move(v["@head"]), move(v["@sequence"]),
                         move(v["@map"]), nvar::HeadSequenceMapType));
-          v.erase("@head");
-          v.erase("@sequence");
-          v.erase("@map");
           break;
       }
     }
     
     nvar parseKey(const nstr& k){
-      return parser_.parse(k.substr(2));
+      nvar pk = parser_.parse(k.substr(2) + ";");
+      
+      if(pk == none){
+        error("invalid key: " + k.substr(2));
+        return nsym("Error");
+      }
+      
+      return pk;
     }
     
   private:

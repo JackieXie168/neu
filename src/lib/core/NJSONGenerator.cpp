@@ -127,7 +127,7 @@ namespace neu{
           ostr << "{" << endl;
           ostr << indent << "\"@type\": " << int(nvar::Real) << "," << endl;
           
-          ostr << indent << "\"@real\": \"" << r.toStr() << "\"" << "," << endl;
+          ostr << indent << "\"@real\": \"" << r.toStr() << "\"" << endl;
           ostr << indent << "}";
           break;
         }
@@ -208,7 +208,7 @@ namespace neu{
         }
         case nvar::HashSet:{
           ostr << "{" << endl;
-          ostr << indent << "\"@type\": " << int(nvar::HashSet) << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HashSet);
           
           const nhset& s = n.hset();
           for(const nvar& k : s){
@@ -245,7 +245,7 @@ namespace neu{
         }
         case nvar::HashMap:{
           ostr << "{" << endl;
-          ostr << indent << "\"@type\": " << int(nvar::HashMap) << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HashMap);
           
           const nhmap& m = n.hmap();
           for(auto& itr : m){
@@ -261,7 +261,7 @@ namespace neu{
         }
         case nvar::Multimap:{
           ostr << "{" << endl;
-          ostr << indent << "\"@type\": " << int(nvar::Multimap) << endl;
+          ostr << indent << "\"@type\": " << int(nvar::Multimap);
           
           nvar nm = n;
           nm.intoMap();
@@ -280,11 +280,11 @@ namespace neu{
         }
         case nvar::HeadMap:{
           ostr << "{" << endl;
-          ostr << indent << "\"@type\": " << int(nvar::HeadMap) << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HeadMap) << "," << endl;
           
           ostr << indent << "\"@head\": ";
           emitValue(ostr, n.head(), indent + "  ");
-          ostr << endl;
+          ostr << "," << endl;
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
@@ -297,7 +297,7 @@ namespace neu{
           
           ostr << indent << "\"@sequence\": ";
           emitValue(ostr, n.anySequence(), indent + "  ");
-          ostr << endl;
+          ostr << "," << endl;
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
@@ -307,15 +307,16 @@ namespace neu{
         case nvar::HeadSequenceMap:{
           ostr << "{" << endl;
           
-          ostr << indent << "\"@type\": " << int(nvar::HeadSequenceMap) << endl;
+          ostr << indent << "\"@type\": " << int(nvar::HeadSequenceMap) <<
+          "," << endl;
           
           ostr << indent << "\"@head\": ";
           emitValue(ostr, n.head(), indent + "  ");
-          ostr << endl;
+          ostr << "," << endl;
           
           ostr << indent << "\"@sequence\": ";
           emitValue(ostr, n.anySequence(), indent + "  ");
-          ostr << endl;
+          ostr << "," << endl;
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
@@ -323,6 +324,10 @@ namespace neu{
           ostr << endl << indent << "}";
           break;
         }
+        case nvar::Reference:
+        case nvar::Pointer:
+          emitValue(ostr, *n, indent);
+          break;
         default:
           ostr << n;
           break;

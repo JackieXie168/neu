@@ -438,7 +438,7 @@ namespace neu{
     }
     
     void reset_(){
-      reset_();
+      i_ = -1;
     }
     
   private:

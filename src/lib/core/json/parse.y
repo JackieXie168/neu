@@ -84,12 +84,6 @@ input: value {
 }
 ;
 
-object: '{' members '}' {
-  $$ = move($2);
-  PS->convertObject($$);
-}
-;
-
 value: STRING_LITERAL {
   if($1 == "@undef"){
     $$ = undef;
@@ -105,10 +99,10 @@ value: STRING_LITERAL {
   $$ = $1;
 }
 | object {
-  $$ = $1;
+  $$ = move($1);
 }
 | '[' elements ']' {
-  $$ = $2;
+  $$ = move($2);
 }
 | KW_TRUE {
   $$ = true;
@@ -121,12 +115,18 @@ value: STRING_LITERAL {
 }
 ;
 
+object: '{' members '}' {
+  $$ = move($2);
+  PS->convertObject($$);
+}
+;
+
 elements: /* empty */ {
   $$ = nvec();
 }
 | value {
   $$ = nvec();
-  $$ << $1;
+  $$ << move($1);
 }
 | elements ',' value {
   $$ = move($1);
