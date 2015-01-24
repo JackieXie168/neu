@@ -40,7 +40,7 @@ none
 << HRangeList(2,4,20)
 [2,4,6,8,10,12,14,16,18,20]
 << HRangeList(0.1,0.3,1)
-[0.1,0.3,0.5,0.7,0.8999999999999999,1.0999999999999999]
+[0.1,0.3,0.5,0.7,0.9,1.0999999999999999]
 << HCall(take(10,HCall(repeat(5))))
 [5,5,5,5,5,5,5,5,5,5]
 << HLC(Mul(x,2),HSet(x,HRangeList(1,10)))
@@ -94,7 +94,7 @@ Tuple(4,6)
 << HCall(initials("Charles","Smith"))
 "C. S."
 << HCall(cylinder(1.0,2.0))
-18.84955592153876
+18.8496
 << Eval([HIf(GT(5,3),"Woo","Boo"),HIf(GT(Char("a"),Char("b")),"Foo","Bar")])
 ["Woo","Bar"]
 << Add(Mul(4,HLet(Tuple([a,9]),Add(a,1))),2)
@@ -212,7 +212,7 @@ False
 << HDollar(and,HCall(map(HRFunc(">",4),[5,6,7,8])))
 True
 << HDollar(surface,HCall(Circle1(10,20,10)))
-314.15927
+314.159
 << HDollar(surface,HCall(Rectangle1(0,0,100,100)))
 10000.0
 NHSParser error: 1: syntax error

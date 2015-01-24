@@ -6,6 +6,8 @@ Neu 1.8.0 - 1/23/15
 
  -Fixes to NDatabase.
 
+ -Fixes to NList.
+
  -Added variant of nvar::pushBack() and pushFront().
 
 Neu 1.7.2 - 1/12/15

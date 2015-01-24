@@ -161,7 +161,7 @@ int main(int argc, char** argv){
   };
 
   // find all rows whose rank >= 99.9 and norm < 50
-  table->query("rank", 99.9, q1);
+  table->query("rank", 99.9, 100.0, q1);
 
   nvar u1;
   // get the user whose name is neu9999
