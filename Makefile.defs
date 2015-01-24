@@ -1,6 +1,6 @@
 # comment out to enable precise mode
 # (building nreal and libneu_core with GMP and MPFR libraries)
-# export NO_PRECISE = 1
+export NO_PRECISE = 1
 
 # uncomment to enable build of Neu Java interface lib
 # set JAVA_INCLUDE and JAVA_LINK appropriately
