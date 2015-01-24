@@ -425,8 +425,6 @@ namespace neu{
         advance(itr_, i);
       }
       else{
-        std::cout << "i is: " << i << std::endl;
-        std::cout << "i_ is: " << i_ << std::endl;
         advance(itr_, i - i_);
       }
       
