@@ -79,7 +79,7 @@ using namespace neu;
 
 %%
 
-input: object {
+input: value {
   PS->emit($1);
 }
 ;

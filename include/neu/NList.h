@@ -100,16 +100,20 @@ namespace neu{
     i_(-1){}
     
     NList(NList&& x)
-    : l_(std::move(x.l_)){}
+    : l_(std::move(x.l_)),
+    i_(-1){}
     
     NList(NList&& x, const allocator_type& a)
-    : l_(std::move(x), a){}
+    : l_(std::move(x), a),
+    i_(-1){}
     
     NList(std::initializer_list<value_type> il)
-    : l_(il){}
+    : l_(il),
+    i_(-1){}
     
     NList(std::initializer_list<value_type> il, const allocator_type& a)
-    : l_(il, a){}
+    : l_(il, a),
+    i_(-1){}
     
     ~NList(){}
     
@@ -124,12 +128,12 @@ namespace neu{
     template<class InputIterator>
     void assign(InputIterator first, InputIterator last){
       l_.assign(first, last);
-      i_ = -1;
+      reset_();
     }
     
     void assign(size_t n, const T& u){
       l_.assign(n, u);
-      i_ = -1;
+      reset_();
     }
     
     reference back(){
@@ -150,7 +154,7 @@ namespace neu{
     
     void clear() noexcept{
       l_.clear();
-      i_ = -1;
+      reset_();
     }
     
     bool empty() const noexcept{
@@ -166,19 +170,19 @@ namespace neu{
     }
 
     iterator erase(size_t index){
-      i_ = -1;
+      reset_();
       auto itr = l_.begin();
       advance(itr, index);
       return l_.erase(itr);
     }
     
     iterator erase(iterator position){
-      i_ = -1;
+      reset_();
       return l_.erase(position);
     }
     
     iterator erase(iterator first, iterator last){
-      i_ = -1;
+      reset_();
       return l_.erase(first, last);
     }
     
@@ -195,34 +199,36 @@ namespace neu{
     }
     
     iterator insert(iterator position, const T& x){
-      i_ = -1;
+      reset_();
       return l_.insert(position, x);
     }
     
     iterator insert(size_t index, const T& x){
-      i_ = -1;
+      reset_();
       auto itr = l_.begin();
       advance(itr, index);
       return l_.insert(itr, x);
     }
     
     void insert(iterator position, size_t n, const T& x){
-      i_ = -1;
+      reset_();
       return l_.insert(position, n, x);
     }
     
     template <class InputIterator>
     void insert(iterator position, InputIterator first, InputIterator last){
-      i_ = -1;
+      reset_();
       l_.insert(position, first, last);
     }
     
     void append(const NList& l){
+      reset_();
       l_.insert(l_.end(), l.begin(), l.end());
     }
     
     template<class S>
     void append(const NList<S>& l){
+      reset_();
       l_.insert(l_.end(), l.begin(), l.end());
     }
     
@@ -231,72 +237,77 @@ namespace neu{
     }
     
     void merge(NList& x){
-      i_ = -1;
+      reset_();
       l_.merge(x.l_);
     }
     
     template<class Compare>
     void merge(NList& x, Compare comp){
-      i_ = -1;
+      reset_();
       l_.merge(x.l_, comp);
     }
     
     NList& operator=(const NList& x){
-      i_ = -1;
+      reset_();
       l_ = x.l_;
       return *this;
     }
     
     NList& operator=(NList&& x){
-      i_ = -1;
+      reset_();
       l_ = std::move(x.l_);
       return *this;
     }
     
     NList<T, Allocator>& operator=(std::initializer_list<value_type> il){
-      i_ = -1;
+      reset_();
       l_ = il;
       return *this;
     }
     
     void pop_back(){
+      reset_();
       l_.pop_back();
     }
     
     T popBack(){
+      reset_();
       T ret = std::move(l_.back());
       l_.pop_back();
       return ret;
     }
     
     void pop_front(){
-      i_ = -1;
+      reset_();
       l_.pop_front();
     }
     
     T popFront(){
-      i_ = -1;
+      reset_();
       T ret = std::move(l_.front());
       l_.pop_front();
       return ret;
     }
     
     void push_back(const T& x){
+      reset_();
       l_.push_back(x);
     }
     
     template <class... Args>
     void emplace_back(Args&&... args){
+      reset_();
       return l_.emplace_back(std::forward<Args>(args)...);
     }
     
     void push_front(const T& x){
-      i_ = -1;
+      reset_();
       l_.push_front(x);
     }
     
     template <class... Args>
     void emplace_front(Args&&... args){
+      reset_();
       return l_.emplace_front(std::forward<Args>(args)...);
     }
     
@@ -309,13 +320,13 @@ namespace neu{
     }
     
     void remove(const T& value){
-      i_ = -1;
+      reset_();
       l_.remove(value);
     }
     
     template <class Predicate>
     void remove_if(Predicate pred){
-      i_ = -1;
+      reset_();
       l_.remove_if(pred);
     }
     
@@ -344,11 +355,12 @@ namespace neu{
     }
     
     void resize(size_t sz, T c=T()){
-      i_ = -1;
+      reset_();
       l_.resize(sz, c);
     }
     
     void reverse() noexcept{
+      reset_();
       l_.reverse();
     }
     
@@ -357,21 +369,23 @@ namespace neu{
     }
     
     void sort(){
+      reset_();
       l_.sort();
     }
     
     template<class Compare>
     void sort(Compare comp){
+      reset_();
       l_.sort(comp);
     }
     
     void splice(iterator position, NList& x){
-      i_ = -1;
+      reset_();
       l_.splice(position, x);
     }
     
     void splice(iterator position, NList& x, iterator i){
-      i_ = -1;
+      reset_();
       l_.splice(position, x, i);
     }
     
@@ -379,27 +393,28 @@ namespace neu{
                 NList& x,
                 iterator first,
                 iterator last){
-      i_ = -1;
+      reset_();
       l_.splice(position, x, first, last);
     }
     
     void swap(NList& lst){
-      i_ = -1;
+      reset_();
       l_.swap(lst);
     }
     
     void unique(){
-      i_ = -1;
+      reset_();
       l_.unique();
     }
     
     template<class BinaryPredicate>
     void unique(BinaryPredicate binary_pred){
-      i_ = -1;
+      reset_();
       l_.unique(binary_pred);
     }
     
     NList& operator<<(const T& x){
+      reset_();
       l_.push_back(x);
       return *this;
     }
@@ -410,6 +425,8 @@ namespace neu{
         advance(itr_, i);
       }
       else{
+        std::cout << "i is: " << i << std::endl;
+        std::cout << "i_ is: " << i_ << std::endl;
         advance(itr_, i - i_);
       }
       
@@ -419,8 +436,11 @@ namespace neu{
     }
     
     const_reference operator[](size_t i) const{
-      NList* l = const_cast<NList*>(this);
-      return l->operator[](i);
+      return const_cast<NList*>(this)->operator[](i);
+    }
+    
+    void reset_(){
+      reset_();
     }
     
   private:

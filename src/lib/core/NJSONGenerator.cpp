@@ -145,7 +145,7 @@ namespace neu{
         case nvar::SharedObject:
           NERROR("found pointer or object");
         case nvar::Binary:
-          assert(false && "unimplemented");
+          NERROR("found binary");
         case nvar::Vector:
           emitSequence(ostr, n.vec(), indent + "  ");
           break;
@@ -218,7 +218,7 @@ namespace neu{
             ostr << ": " << "true";
           }
           
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::Map:{
@@ -240,7 +240,7 @@ namespace neu{
             emitValue(ostr, itr.second, indent + "  ");
           }
           
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::HashMap:{
@@ -256,7 +256,7 @@ namespace neu{
             emitValue(ostr, itr.second, indent + "  ");
           }
           
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::Multimap:{
@@ -275,7 +275,7 @@ namespace neu{
             emitValue(ostr, itr.second, indent + "  ");
           }
           
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::HeadMap:{
@@ -288,8 +288,7 @@ namespace neu{
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
-          ostr << endl;
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::SequenceMap:{
@@ -302,8 +301,7 @@ namespace neu{
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
-          ostr << endl;
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         case nvar::HeadSequenceMap:{
@@ -321,9 +319,8 @@ namespace neu{
           
           ostr << indent << "\"@map\": ";
           emitValue(ostr, n.anyMap(), indent + "  ");
-          ostr << endl;
           
-          ostr << indent << "}";
+          ostr << endl << indent << "}";
           break;
         }
         default:
