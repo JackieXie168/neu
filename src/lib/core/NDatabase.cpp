@@ -1377,12 +1377,7 @@ namespace neu{
 
         if(record){
           if(record->remap){
-            if(record->rowId == 0){
-              return false;
-            }
-            else{
-              return get(record->rowId, dataId, offset);
-            }
+            return false;
           }
 
           dataId = record->dataId();
