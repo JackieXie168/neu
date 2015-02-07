@@ -2463,12 +2463,14 @@ namespace neu{
     }
 
     void compact(const RowSet& rs, const UpdateMap& um){
-      IndexMap_ newIndexMap_;
+      IndexMap_ newIndexMap;
       
       write();
       
-      for(auto& itr : indexMap_){
-        IndexBase* oldIndex = itr.second;
+      auto itr = indexMap_.begin();
+      
+      while(itr != indexMap_.end()){
+        IndexBase* oldIndex = itr->second;
         IndexBase* newIndex;
         
         nstr oldPath = oldIndex->path();
@@ -2550,11 +2552,12 @@ namespace neu{
         newIndex->save(true);
         newIndex->saveMeta();
         
+        newIndexMap.insert({itr->first, newIndex});
         delete oldIndex;
-        newIndexMap_.insert({itr.first, newIndex});
+        indexMap_.erase(itr++);
       }
       
-      indexMap_ = move(newIndexMap_);
+      indexMap_ = move(newIndexMap);
     }
     
     size_t memoryUsage(PMap& pm){
