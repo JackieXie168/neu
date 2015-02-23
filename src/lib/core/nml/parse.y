@@ -88,6 +88,7 @@ using namespace neu;
 %left '^'
 %left '!' INC DEC
 %left '.'
+%left '$'
 
 %%
 
@@ -125,6 +126,9 @@ expr: expr_num {
 | IDENTIFIER {
   PS->setTag($1, "symbol");
   $$ = PS->sym($1);
+}
+| '$' INTEGER {
+  $$ = PS->func("Tok") << $2;
 }
 | KW_TRUE {
   $$ = PS->var(true);

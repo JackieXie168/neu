@@ -788,6 +788,7 @@ public:
               
             nstr cn = t->getPointeeType().getAsString();
 
+            cn.findReplace("(anonymous namespace)::", "");
             cn.findReplace("<anonymous>::", "");
             cn.findReplace("class ", "");
               

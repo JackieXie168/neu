@@ -324,8 +324,13 @@ namespace neu{
     
     ~NMLGenerator_(){}
     
-    void generate(ostream& ostr, const nvar& v){
-      emitStatement(ostr, v, "");
+    void generate(ostream& ostr, const nvar& n){
+      if(n.isFunction("Block")){
+        emitStatement(ostr, n, "");
+      }
+      else{
+        emitExpression(ostr, n);
+      }
     }
     
     FunctionKey getFunctionKey(const nvar& f){
@@ -346,11 +351,6 @@ namespace neu{
     void emitStatement(ostream& ostr,
                        const nvar& n,
                        const nstr& indent){
-      if(!n.isFunction()){
-        emitExpression(ostr, n);
-        return;
-      }
-      
       FunctionKey key = getFunctionKey(n);
       
       switch(key){

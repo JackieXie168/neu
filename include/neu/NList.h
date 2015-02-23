@@ -441,6 +441,15 @@ namespace neu{
       i_ = -1;
     }
     
+    bool has(const T& x) const{
+      for(auto& itr : l_){
+        if(*itr == x){
+          return true;
+        }
+      }
+      return false;
+    }
+    
   private:
     List l_;
     iterator itr_;

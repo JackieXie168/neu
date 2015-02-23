@@ -419,6 +419,16 @@ namespace neu{
       q_.clear();
     }
     
+    bool has(const T& x) const{
+      size_t size = q_.size();
+      for(size_t i = 0; i < size; ++i){
+        if(q_[i] == x){
+          return true;
+        }
+      }
+      return false;
+    }
+    
     Queue& queue(){
       return q_;
     }
