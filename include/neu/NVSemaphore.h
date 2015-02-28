@@ -116,11 +116,11 @@ namespace neu{
           pthread_mutex_unlock(&mutex_);
           return false;
         }
-      }
-
-      if(disabled_){
-        pthread_mutex_unlock(&mutex_);
-        return false;
+        
+        if(disabled_){
+          pthread_mutex_unlock(&mutex_);
+          return false;
+        }
       }
       
       --count_;
@@ -139,13 +139,13 @@ namespace neu{
       
       while(count_ <= 0){
         pthread_cond_wait(&condition_, &mutex_);
+        
+        if(disabled_){
+          pthread_mutex_unlock(&mutex_);
+          return false;
+        }
       }
 
-      if(disabled_){
-        pthread_mutex_unlock(&mutex_);
-        return false;
-      }
-      
       --count_;
       pthread_mutex_unlock(&mutex_);
       
