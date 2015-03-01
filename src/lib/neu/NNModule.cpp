@@ -56,7 +56,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Verifier.h"
@@ -372,17 +373,24 @@ namespace neu{
     NNModule_(NNModule* o)
     : o_(o),
     context_(getGlobalContext()),
-    module_("NNModule", context_),
+    module_(new Module("module", context_)),
     builder_(context_){
       
       _mutex.lock();
       if(!_initialized){
         InitializeNativeTarget();
+        InitializeNativeTargetAsmPrinter();
+        InitializeNativeTargetAsmParser();
         _initialized = true;
       }
       _mutex.unlock();
-      
-      engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
+
+      unique_ptr<Module> m(module_);
+      engine_ = EngineBuilder(move(m))
+      .setMCJITMemoryManager(llvm::make_unique<SectionMemoryManager>())
+      .create();
+      module_->setDataLayout(engine_->getDataLayout());
+      assert(engine_);
       
       TypeVec args;
       args.push_back(doubleType());
@@ -403,7 +411,7 @@ namespace neu{
       Function* f = Function::Create(ft,
                                      Function::ExternalLinkage,
                                      name.c_str(),
-                                     &module_);
+                                     module_);
       
       externMap_[name] = f;
       
@@ -537,7 +545,7 @@ namespace neu{
         
         Function* f =
         Function::Create(ft, Function::ExternalLinkage,
-                         name.c_str(), &module_);
+                         name.c_str(), module_);
         
         BasicBlock* entry = BasicBlock::Create(context_, "entry", f);
         
@@ -592,6 +600,7 @@ namespace neu{
         
         runLayer->f = f;
         
+        engine_->finalizeObject();
         runLayer->fp = (void (*)(void*, void*, void*, int))
         engine_->getPointerToFunction(f);
         
@@ -655,7 +664,6 @@ namespace neu{
           free(layer->outputVecStart);
         }
         
-        engine_->freeMachineCodeForFunction(layer->f);
         layer->queue->clear(true);
         
         delete layer;
@@ -678,7 +686,7 @@ namespace neu{
     NNModule* o_;
     
     LLVMContext& context_;
-    Module module_;
+    Module* module_;
     IRBuilder<> builder_;
     ExecutionEngine* engine_;
     

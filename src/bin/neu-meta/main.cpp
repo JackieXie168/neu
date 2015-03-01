@@ -111,10 +111,10 @@ public:
     Action(MetaGenerator* visitor)
     : visitor_(visitor){}
       
-    ASTConsumer* CreateASTConsumer(CompilerInstance& compilerInstance,
-                                   StringRef file){
-        
-      return new Consumer(&compilerInstance, visitor_);
+    unique_ptr<ASTConsumer>
+    CreateASTConsumer(CompilerInstance& compilerInstance,
+                      StringRef file){
+      return unique_ptr<ASTConsumer>(new Consumer(&compilerInstance, visitor_));
     }
       
   private:

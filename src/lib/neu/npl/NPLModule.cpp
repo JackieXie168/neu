@@ -56,7 +56,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Verifier.h"
@@ -4936,6 +4937,8 @@ namespace{
   
   Global::Global(){
     InitializeNativeTarget();
+    InitializeNativeTargetAsmPrinter();
+    InitializeNativeTargetAsmParser();
     
     _initFunctionMap();
     _initSymbolMap();
@@ -4950,14 +4953,20 @@ namespace neu{
     NPLModule_(NPLModule* o)
     : o_(o),
     context_(getGlobalContext()),
-    module_("module", context_),
+    module_(new Module("module", context_)),
     estr_(&cerr),
-    compiler_(module_, functionMap_, structMap_, cerr){
+    compiler_(*module_, functionMap_, structMap_, cerr){
       
       initGlobal();
-      init();
       
-      engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
+      unique_ptr<Module> m(module_);
+      engine_ = EngineBuilder(move(m))
+      .setMCJITMemoryManager(llvm::make_unique<SectionMemoryManager>())
+      .create();
+      module_->setDataLayout(engine_->getDataLayout());
+      assert(engine_);
+      
+      init();
     }
     
     ~NPLModule_(){
@@ -5464,7 +5473,7 @@ namespace neu{
     }
         
     bool compile(const nvar& code){
-      NPLCompiler compiler(module_, functionMap_, structMap_, *estr_);
+      NPLCompiler compiler(*module_, functionMap_, structMap_, *estr_);
       
       return compiler.compileTop(code);
     }
@@ -5476,8 +5485,9 @@ namespace neu{
         NERROR("invalid function: " + func);
       }
       
+      engine_->finalizeObject();
       f->fp = (NPLFunc::FP)engine_->getPointerToFunction(itr->second);
-      
+
       functionPtrMap_[f->fp] = itr->second;
     }
     
@@ -5487,8 +5497,6 @@ namespace neu{
       if(itr == functionPtrMap_.end()){
         NERROR("invalid function");
       }
-      
-      engine_->freeMachineCodeForFunction(itr->second);
     }
     
     void initGlobal(){
@@ -5509,7 +5517,7 @@ namespace neu{
     NPLModule* o_;
     
     LLVMContext& context_;
-    Module module_;
+    Module* module_;
     ExecutionEngine* engine_;
     FunctionMap functionMap_;
     StructMap structMap_;

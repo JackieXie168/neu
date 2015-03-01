@@ -2,6 +2,10 @@ COMPILE += -I$(NEU_HOME)/lib/src -I$(LLVM_DIR)/include -D__STDC_LIMIT_MACROS -D_
 
 LINK += -L$(NEU_LIB)
 
+#LLVM_LIBS = -L$(LLVM_DIR)/lib -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMAnalysis -lLLVMTarget -lLLVMObject -lLLVMMCParser -lLLVMBitReader -lLLVMInterpreter -lLLVMExecutionEngine -lLLVMMC -lLLVMCore -lLLVMSupport -lcurses -ldl -lz
+
+LLVM_LIBS = -L$(LLVM_DIR)/lib -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMProfileData -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCJIT -lLLVMTarget -lLLVMExecutionEngine -lLLVMRuntimeDyld -lLLVMObject -lLLVMMCParser -lLLVMBitReader -lLLVMMC -lLLVMCore -lLLVMSupport -lz -lpthread -ledit -lcurses -lm
+
 CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o NHSGenerator.o NHSObject.o
 
 META_MODULES = NConcept.o NCOntology.o NLib.o
@@ -26,19 +30,17 @@ neu_pl:
 neu_hs:
 	(cd nhs; $(MAKE))
 
-LLVM_LINK = -L$(LLVM_DIR)/lib -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMJIT -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMAnalysis -lLLVMTarget -lLLVMObject -lLLVMMCParser -lLLVMBitReader -lLLVMExecutionEngine -lLLVMMC -lLLVMCore -lLLVMSupport -lcurses -ldl -lz
-
 libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl neu_hs
 
 ifeq ($(PLATFORM), Darwin)
-	$(LINK) -single_module -dynamiclib -o $(NEU_LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
+	$(LINK) -dynamiclib -o $(NEU_LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LIBS) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
 	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.dylib)
 	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
 	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
 	rm -f $(NEU_LIB)/libneu_static.a
 	ar rcs $(NEU_LIB)/libneu_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu.so -o $(NEU_LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
+	$(LINK) -shared -Wl,-soname,libneu.so -o $(NEU_LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LIBS)
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so)
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
