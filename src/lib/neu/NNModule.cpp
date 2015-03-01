@@ -600,10 +600,6 @@ namespace neu{
         
         runLayer->f = f;
         
-        engine_->finalizeObject();
-        runLayer->fp = (void (*)(void*, void*, void*, int))
-        engine_->getPointerToFunction(f);
-        
         for(size_t j = 0; j < layerSize; ++j){
           NNet::Neuron* nj = layer->neuron(j);
           
@@ -629,6 +625,13 @@ namespace neu{
         
         inputLayer = layer;
         lastRunLayer = runLayer;
+      }
+      
+      engine_->finalizeObject();
+      
+      for(RunLayer* l : runNetwork->layerVec){
+        l->fp = (void (*)(void*, void*, void*, int))
+        engine_->getPointerToFunction(l->f);
       }
       
       networkMap_.insert(make_pair(name, runNetwork));

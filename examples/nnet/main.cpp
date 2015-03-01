@@ -22,9 +22,9 @@ int main(int argc, char** argv){
 
   NNet::Layer* inputLayer = new NNet::Layer(2);
   network.addLayer(inputLayer);
-  network.addLayer(NNet::sigmoidFunc, 3000, -IW, IW);
-  network.addLayer(NNet::sigmoidFunc, 3000, -IW, IW);
-  network.addLayer(NNet::sigmoidFunc, 3000, -IW, IW);
+  network.addLayer(NNet::sigmoidFunc, 2000, -IW, IW);
+  network.addLayer(NNet::sigmoidFunc, 2000, -IW, IW);
+  network.addLayer(NNet::sigmoidFunc, 2000, -IW, IW);
   network.addLayer(NNet::sigmoidFunc, 2, -IW, IW);
 
   NNet::Layer* outputLayer = network.backLayer(0);
