@@ -4952,6 +4952,7 @@ namespace neu{
   public:
     NPLModule_(NPLModule* o)
     : o_(o),
+    finalized_(false),
     context_(getGlobalContext()),
     module_(new Module("module", context_)),
     estr_(&cerr),
@@ -5473,19 +5474,27 @@ namespace neu{
     }
         
     bool compile(const nvar& code){
+      if(finalized_){
+        NERROR("module has already been finalized");
+      }
+      
       NPLCompiler compiler(*module_, functionMap_, structMap_, *estr_);
       
       return compiler.compileTop(code);
     }
     
     void getFunc(const nvar& func, NPLFunc* f){
+      if(!finalized_){
+        engine_->finalizeObject();
+        finalized_ = true;
+      }
+      
       auto itr = functionMap_.find(func);
       
       if(itr == functionMap_.end()){
         NERROR("invalid function: " + func);
       }
       
-      engine_->finalizeObject();
       f->fp = (NPLFunc::FP)engine_->getPointerToFunction(itr->second);
 
       functionPtrMap_[f->fp] = itr->second;
@@ -5516,6 +5525,7 @@ namespace neu{
     
     NPLModule* o_;
     
+    bool finalized_;
     LLVMContext& context_;
     Module* module_;
     ExecutionEngine* engine_;

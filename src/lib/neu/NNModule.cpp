@@ -372,6 +372,7 @@ namespace neu{
     
     NNModule_(NNModule* o)
     : o_(o),
+    finalized_(false),
     context_(getGlobalContext()),
     module_(new Module("module", context_)),
     builder_(context_){
@@ -503,6 +504,9 @@ namespace neu{
     bool compile(const nstr& name,
                  NNet& network,
                  size_t threads){
+      if(finalized_){
+        NERROR("module has already been finalized");
+      }
       
       RunNetwork* runNetwork = new RunNetwork;
       
@@ -627,13 +631,6 @@ namespace neu{
         lastRunLayer = runLayer;
       }
       
-      engine_->finalizeObject();
-      
-      for(RunLayer* l : runNetwork->layerVec){
-        l->fp = (void (*)(void*, void*, void*, int))
-        engine_->getPointerToFunction(l->f);
-      }
-      
       networkMap_.insert(make_pair(name, runNetwork));
       
       return true;
@@ -642,6 +639,19 @@ namespace neu{
     void run(const nstr& name,
              void* inputVec,
              void* outputVec){
+      if(!finalized_){
+        for(auto& itr : networkMap_){
+          RunNetwork* runNetwork = itr.second;
+          
+          for(RunLayer* l : runNetwork->layerVec){
+            l->fp = (void (*)(void*, void*, void*, int))
+            engine_->getPointerToFunction(l->f);
+          }
+        }
+        engine_->finalizeObject();
+        finalized_ = true;
+      }
+      
       auto itr = networkMap_.find(name);
       assert(itr != networkMap_.end());
       RunNetwork* network = itr->second;
@@ -688,6 +698,7 @@ namespace neu{
     
     NNModule* o_;
     
+    bool finalized_;
     LLVMContext& context_;
     Module* module_;
     IRBuilder<> builder_;
