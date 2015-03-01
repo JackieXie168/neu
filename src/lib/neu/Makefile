@@ -40,7 +40,7 @@ ifeq ($(PLATFORM), Darwin)
 	rm -f $(NEU_LIB)/libneu_static.a
 	ar rcs $(NEU_LIB)/libneu_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu.so -o $(NEU_LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LIBS)
+	$(LINK) -shared -Wl,-soname,libneu.so -o $(NEU_LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LIBS) -ldl
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so)
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
 	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
