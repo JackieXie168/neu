@@ -1,4 +1,13 @@
 
+Neu 1.8.1 - 2/28/15
+
+ -Updated to use LLVM and Clang 3.6. When updating from a previous
+  version of Neu, one should remove neu/llvm and re-run 'make llvm'.
+
+ -Important fixes to NDatabase and NVSemaphore.
+
+ -Added has() to sequence containers.
+
 Neu 1.8.0 - 1/23/15
 
  -Added JSON parser and generator (NJSONParser and
